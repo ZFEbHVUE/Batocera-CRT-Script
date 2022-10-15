@@ -27,26 +27,23 @@ Monitor Profile info
 
 AMD Cards are preferred.
 
-Anything up to R9 380X will work. R5-R7-R9 Cards are recommended.
+    Anything up to R9 380X will work. R5-R7-R9 Cards are recommended.
 
 Intel is tested and works somewhat.
 
-  It works well with DisplayPort and somewhat on VGA
+    It works with DisplayPort and somewhat on VGA.
 
 Nvidia Cards are supported right now.
 
-   It works for Kelper / Maxwell / Pascal with Nvidia driver (best performances) and Nouveau
-   
-   Tested on : 
-   
-   8400GS        DVI-I /   VGA     Only Nouveau with dotclock_min 0
-   Quadro K600   DVI-I             Nvidia driver : dotclock_min 25.0      Nouveau : dotclock_min 0.0   
-   GTX 980       DVI-I / HMDI      DVI-I : dotclock_min 0.0        HDMI : dotclock_min 25.0  
-   GTX 1050ti    HDMI              dotclock_min 25.0
-   
-   Dipslay port (DP) works for all cards but it is only for Super-resolution 240p (no interlace here).
-   
-   Turing works poorly only in 240p (tested on GTX 1650 HDMI/DP).
-   
-   Conclusion with Nvidia cards, we recommand to use Maxwell who it is full 15KHz.
+    It works for Kelper / Maxwell / Pascal with Nvidia driver (best performances) and Nouveau
+    Tested on :
+    8400GS        DVI-I /   VGA     Only Nouveau with dotclock_min 0
+    Quadro K600   DVI-I             Nvidia driver : dotclock_min 25.0      Nouveau : dotclock_min 0.0
+    GTX 980       DVI-I / HMDI      DVI-I : dotclock_min 0.0        HDMI : dotclock_min 25.0
+    GTX 1050ti    HDMI              dotclock_min 25.0
+    
+    Dipslay port (DP) works for all cards but it is only for Super-resolution 240p (no interlace here).
+    Turing works poorly only in 240p (tested on GTX 1650 HDMI/DP).
+    
+    Conclusion with Nvidia cards, we recommand to use Maxwell who it is full 15KHz and performance.
   
