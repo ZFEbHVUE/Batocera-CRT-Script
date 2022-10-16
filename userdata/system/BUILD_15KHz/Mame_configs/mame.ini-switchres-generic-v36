@@ -292,7 +292,7 @@ view3                     auto
 # OSD FULL SCREEN OPTIONS
 #
 switchres                 1
-switchres_ini             0
+switchres_ini             1
 switchres_backend         auto
 modesetting               0
 modeline_generation       1
