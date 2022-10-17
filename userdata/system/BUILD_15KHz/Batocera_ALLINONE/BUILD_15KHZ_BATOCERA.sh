@@ -1290,7 +1290,6 @@ echo "global.bezel=none" 						>> /userdata/system/batocera.conf
 echo "global.bezel_stretch=0" 						>> /userdata/system/batocera.conf
 echo "global.bezel.tattoo=0" 						>> /userdata/system/batocera.conf
 echo "global.hud=none" 							>> /userdata/system/batocera.conf
-echo "io=core" 								>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
 #########################################################################################################
 ##  DISABLE GLOBAL NOTIFICATIONS  
@@ -1459,7 +1458,6 @@ echo "mame.bezel.tattoo=0"	>> /userdata/system/batocera.conf
 echo "mame.bgfxshaders=None"	>> /userdata/system/batocera.conf
 echo "mame.hud=none"		>> /userdata/system/batocera.conf
 echo "mame.switchres=1"		>> /userdata/system/batocera.conf
-echo "mame.video=opengl"        >> /userdata/system/batocera.conf
 
 echo "# MAME TATE MODE" >> /userdata/system/batocera.conf  
 
