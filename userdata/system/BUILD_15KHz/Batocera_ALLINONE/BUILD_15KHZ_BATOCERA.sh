@@ -540,7 +540,9 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 
 
 	dotclock_min=0
-
+        super_width=2560
+	super_width_mame=2560
+	
 	if [ "$drivers_type" == "AMDGPU" ]; then
 
 		if [ "$R9_380" == "YES" ]; then
@@ -614,7 +616,9 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 elif [ "$TYPE_OF_CARD" == "INTEL" ]; then
 
 	drivers_amd=""
-		
+	super_width=1920
+        super_width_mame=1920
+	
 	if [[ "$video_output" == *"DP"* ]]; then
 		
 		term_dp="DP"
@@ -640,7 +644,9 @@ elif [ "$TYPE_OF_CARD" == "INTEL" ]; then
 elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 	
 	drivers_amd=""
-		
+	super_width=3840
+        super_width_mame=3840
+	
 	if [[ "$video_output" == *"DP"* ]]; then
 		
 		term_dp="DP"
@@ -855,7 +861,7 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v32 /usr/bin/emulationstation-standalone                                    
 		chmod 755 /usr/bin/emulationstation-standalone
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v32 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v32 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 	;;
@@ -864,7 +870,7 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v33 /usr/bin/emulationstation-standalone                                    
 		chmod 755 /usr/bin/emulationstation-standalone
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v33 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v33 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 	;;
@@ -876,7 +882,7 @@ case $Version_of_batocera in
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v34 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v34 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v34 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 	;;
@@ -888,7 +894,7 @@ case $Version_of_batocera in
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v35 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v35 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v35 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
@@ -915,7 +921,7 @@ case $Version_of_batocera in
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v36 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 			# correction from V36 (dmanlfc)
@@ -1348,7 +1354,7 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/.mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-32 > /userdata/system/.mame/mame.ini            
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-32 > /userdata/system/.mame/mame.ini            
 		chmod 644 /userdata/system/.mame/mame.ini  
 		cp /userdata/system/BUILD_15KHz//Mame_configs/ui.ini-switchres            /userdata/system/.mame/ui.ini 
 		chmod 644 /userdata/system/.mame/ui.ini 
@@ -1367,7 +1373,7 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/ini
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-33 > /userdata/system/configs/mame/ini/mame.ini         		    chmod 644 /userdata/system/configs/mame/ini/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-33 > /userdata/system/configs/mame/ini/mame.ini         		    chmod 644 /userdata/system/configs/mame/ini/mame.ini 
 		cp /userdata/system/BUILD_15KHz//Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ini/ui.ini 
 		chmod 644 /userdata/system/configs/mame/ini/ui.ini 
 
@@ -1386,7 +1392,7 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v34 > /userdata/system/configs/mame/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v34 > /userdata/system/configs/mame/mame.ini 
 		chmod 644 /userdata/system/configs/mame/mame.ini 
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ui.ini  
 		chmod 644 /userdata/system/configs/mame/ui.ini 
@@ -1405,7 +1411,7 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v35 > /userdata/system/configs/mame/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v35 > /userdata/system/configs/mame/mame.ini 
 		chmod 644 /userdata/system/configs/mame/mame.ini 
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ui.ini  
 		chmod 644 /userdata/system/configs/mame/ui.ini 
@@ -1424,7 +1430,7 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v36 > /userdata/system/configs/mame/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v36 > /userdata/system/configs/mame/mame.ini 
 		chmod 644 /userdata/system/configs/mame/mame.ini 
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ui.ini  
 		chmod 644 /userdata/system/configs/mame/ui.ini 
