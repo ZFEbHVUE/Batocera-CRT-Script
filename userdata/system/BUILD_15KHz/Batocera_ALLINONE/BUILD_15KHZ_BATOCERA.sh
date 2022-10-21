@@ -1325,12 +1325,11 @@ echo "windows.bezel=none"							>> /userdata/system/batocera.conf
 echo "windows.bezel_stretch=0"							>> /userdata/system/batocera.conf 
 echo "windows.bezel.tattoo=0"							>> /userdata/system/batocera.conf 
 
-echo "# AMD Custom"                                                             >> /userdata/system/batocera.conf 
-echo "global.retroarch.crt_switch_resolution_super = \"1920\""                   >> /userdata/system/batocera.conf
-echo "global.retroarch.crt_switch_resolution_use_custom_refresh_rate = \"true\"" >> /userdata/system/batocera.conf 
-echo "global.retroarch.crt_video_refresh_rate = \"60.000000\""                   >> /userdata/system/batocera.conf 
-echo "global.retroarch.aspect_ratio_index = \"0\""                               >> /userdata/system/batocera.conf 
-echo "global.retroarch.video_aspect_ratio = \"-1.000000\""                       >> /userdata/system/batocera.conf 
+if [ "$dotclock_min" == "25.0" ]; then
+	echo "# INTEL/NVIDIA Custom"  	>> /userdata/system/batocera.conf 
+	echo "global.retroarch.crt_switch_resolution_super = \"$super_width\""   >> /userdata/system/batocera.conf
+fi
+
 #######################################################################################
 ##  Rotation of EmulationStation     
 #######################################################################################
