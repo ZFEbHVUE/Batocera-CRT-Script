@@ -102,7 +102,7 @@
 	sync_refresh_tolerance    2.0
 
 # Super resolution width: above this width, fractional scaling on the horizontal axis is applied without penalization
-	super_width               2560
+	super_width               [super_width]
 
 # Physical aspect ratio of the target monitor. Used to compensate aspect ratio when the target monitor is not 4:3
 	aspect                    4:3
