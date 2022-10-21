@@ -299,7 +299,7 @@ modeline_generation       1
 monitor                   [monitor-name]
 interlace                 1
 doublescan                0
-super_width               2560
+super_width               [super_width_mame]
 changeres                 1
 lock_system_modes         1
 lock_unsupported_modes    1
