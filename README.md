@@ -27,14 +27,14 @@ Monitor Profile info
 
 AMD Cards are preferred.
 
-    Anything up to R9 380X will work. R5-R7-R9 Cards are recommended.
+    Anything up to R9 380X will work. R5-R7-R9 Cards are highly recommended.
 
-Intel is tested and works somewhat.
+Intel have beentested and works somewhat.
     
     Tested on Optilex 790 and 7010
     It works with good on DisplayPort and somewhat on VGA (dotclock_min 25.0).
 
-Nvidia Cards are supported right now.
+Nvidia Cards that are supported right now.
 
     It works for Kelper / Maxwell / Pascal with Nvidia driver (best performances) and Nouveau
     Tested on :
@@ -46,6 +46,6 @@ Nvidia Cards are supported right now.
     Display port (DP) works for all cards but it is only for Super-resolution 240p (no interlace here).
     Turing works poorly only in 240p (tested on GTX 1650 HDMI/DP).
     
-    Conclusion with Nvidia cards, we recommand to use Maxwell (Nvidia driver) who it is full 15KHz with DVI-I 
-               and very good performances for GTX 970/980/980ti.
+    Conclusion with Nvidia cards, we recommand to use Maxwell (Nvidia driver) Which has full support for 15KHz with DVI-I 
+               and and with very good performance for GTX 970/980/980ti.
   
