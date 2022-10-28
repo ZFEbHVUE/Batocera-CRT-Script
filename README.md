@@ -1,5 +1,5 @@
 # Build-CRT-15KHz-Batocera-V35
-Build-CRT-15KHz-Batocera V32 to V35 (works for 36-beta)
+Build-CRT-15KHz-Batocera V32 to V35 and 36-dev-2022/10/28
 
 First public release
 
