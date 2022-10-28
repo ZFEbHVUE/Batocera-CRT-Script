@@ -757,7 +757,12 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 		echo "problems of Nvidia driver name"
 	fi	
 else
-	sed 's/.*nvidia-driver=.*/#nvidia-driver=true/'   		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+# test must be changed form the next versions for Batocera >= v36. 
+	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]||[ "$Version_of_batocera" == "v36" ]; then
+		sed 's/.*nvidia-driver=.*/nvidia-driver=false/'   		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+	else
+		sed 's/.*nvidia-driver=.*/#nvidia-driver=true/'   		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+	fi
 fi
 
 cp /boot/batocera-boot.conf.tmp  /boot/batocera-boot.conf
@@ -923,16 +928,7 @@ case $Version_of_batocera in
 		###############################################################################################################################################
 		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
-
-#			# correction from V36 (dmanlfc)
-#			cp /userdata/system/BUILD_15KHz/UsrBin_configs/Nvidia/batocera-nvidia.patch /usr/bin/batocera-nvidia
-#			chmod 755 /usr/bin/batocera-nvidia
-#			cp /userdata/system/BUILD_15KHz/etc_configs/Nvidia/S05nvidia.patch  /etc/init.d/S05nvidia
-#			chmod 755 /etc/init.d/S05nvidia
-
-
-
-		;;
+	;;
 	*)
 		echo "PROBLEM OF VERSION"
 		exit 1;
