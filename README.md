@@ -1,4 +1,17 @@
-# Build-CRT-15KHz-Batocera-V35
+## Foreword
+
+This script would not have been possible without the following people to name a few:
+ - ZFEbHVUE, main coder and tester
+ - myzar's Nvidia knowledge
+ - jfroco's work to output Batocera on a CRTs.
+ - rtissera's knowledge, enthusiasm and willingness to add 15 KHz patches.
+ - Calamity for his knowledge, drivers, tools and GroovyMame.
+ - D0023R Doozer's continued work at adding 15 KHz support to the Linux kernel.
+ - dmanlcf's work on keeping up to date for the 15khz patches for Batocera.
+
+
+
+## :video_game::penguin: Build-CRT-15KHz-Batocera-V35 :video_game::penguin:
 Build-CRT-15KHz-Batocera V32 to V35 and 36-dev-2022/10/28
 
 First public release
