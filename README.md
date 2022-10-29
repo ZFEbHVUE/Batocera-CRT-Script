@@ -6,9 +6,10 @@ This script would not have been possible without the following people to name a 
  - jfroco's work to output Batocera on a CRTs.
  - rtissera's knowledge, enthusiasm and willingness to add 15 KHz patches.
  - Calamity for his knowledge, drivers, tools and GroovyMame.
+ - Substring's work on GroovyArcade, SDL, KMS etcetera.
  - D0023R Doozer's continued work at adding 15 KHz support to the Linux kernel.
  - dmanlcf's work on keeping up to date for the 15khz patches for Batocera.
-
+ - Rion
 
 
 ## :video_game::penguin: Build-CRT-15KHz-Batocera-V35 :video_game::penguin:
