@@ -758,7 +758,7 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 	fi	
 else
 # test must be changed form the next versions for Batocera >= v36. 
-	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]||[ "$Version_of_batocera" == "v36" ]; then
+	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]&&[ "$Version_of_batocera" == "v36" ]; then
 		sed 's/.*nvidia-driver=.*/nvidia-driver=false/'   		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	else
 		sed 's/.*nvidia-driver=.*/#nvidia-driver=true/'   		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
