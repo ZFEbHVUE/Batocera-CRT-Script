@@ -189,7 +189,7 @@ drc_log_native            0
 bios                      
 cheat                     0
 skip_gameinfo             0
-uifont                    default
+uifont                    uismall.bdf
 ui                        cabinet
 ramsize                   
 confirm_quit              0
