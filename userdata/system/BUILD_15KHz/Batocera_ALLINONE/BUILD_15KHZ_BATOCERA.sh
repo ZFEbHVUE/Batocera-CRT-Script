@@ -1525,10 +1525,10 @@ if [ $es_rotation_choice -eq 2 ]; then
 			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_inverted.ini /userdata/system/configs/mame/ini/horizont.ini
 		;;
 		Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE//horizont_counter-clockwise.ini  /userdata/system/configs/mame/ini/horizont.ini
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
 		;;
 		Counter-Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
 		;;
 		*)
 			echo "Problems of rotation_choice"
