@@ -499,9 +499,16 @@ fi
 clear
 echo "                                                                       "
 echo "#######################################################################"
-echo "##                        EmulationStation ORIENTATION               ##"
+echo "##                  EmulationStation ORIENTATION                     ##"
+echo "##            MONITOR SETUP (FROM HORIZONTAL POSITION)               ##"
+echo "##                                                                   ##"
+echo "## HORIZONTAL                     MONITOR  = NORMAL   (0°)           ##"
+echo "## VERTICAL   (Counter-Clockwise) MONITOR  = TATE90   (90°)          ##"
+echo "## HORIZONTAL (Inverted)          MONITOR  = INVERTED (180°)         ##"
+echo "## VERTICAL   (Clockwise)         MONITOR =  TATE270  (-90° or 270°) ##"
+echo "##                                                                   ##"
 echo "#######################################################################"
-declare -a ES_orientation=( "Normal" "Right rotation for TATE90" "Inverted" "Left rotation for TATE270")
+declare -a ES_orientation=( "NORMAL" "TATE90" "INVERTED" "TATE270" )
 declare -a display_rotation=( "normal" "right" "inverted" "left")
 declare -a display_emulator_rotation=( "normal" "normal" "inverted" "normal")
 for var in "${!ES_orientation[@]}" ; do echo "                   $((var+1)) : ${ES_orientation[$var]}"; done
@@ -513,6 +520,27 @@ ES_rotation=${ES_orientation[$es_rotation_choice-1]}
 display_rotate=${display_rotation[$es_rotation_choice-1]}
 display_emulator_rotate=${display_emulator_rotation[$es_rotation_choice-1]}
 echo "                    Your choice is :  $ES_rotation"
+
+echo "                                                                       "
+echo "#######################################################################"
+echo "##                      FOR MAME ROTATING MONITOR                    ##"
+echo "##                                                                   ##"
+echo "##              FORM THE ACTUAL POSITION OF YOUR MONITOR             ##"
+echo "##   ROTATION OF YOUR MONITOR TO PASS TO HORIZONTAL OR TO VERTICAL   ##"
+echo "##                                                                   ##"
+echo "##   IF YOU WANT TO PLAY HORIZONTAL OR VERTICAL GAMES ON YOUR        ##"
+echo "##   MONITOR WITHOUT ROTATION PUT : NONE                             ##"
+echo "##                                                                   ##"
+echo "#######################################################################"
+declare -a Screen_rotating=( "None" "Clockwise" "Counter-Clockwise" )
+for var in "${!Screen_rotating[@]}" ; do echo "                   $((var+1)) : ${Screen_rotating[$var]}"; done
+echo "#######################################################################"
+echo "##             Make your choice for the EmulationStation ORIENTATION ##"
+echo "#######################################################################"
+read Screen_rotating_choice
+Rotating_screen=${Screen_rotating[$Screen_rotating_choice-1]}
+echo "                    Your choice is :  $Rotating_screen"
+
 ################################################################################################################################
 ################################################################################################################################
 ################################################################################################################################
@@ -1465,23 +1493,91 @@ echo "mame.switchres=1"		>> /userdata/system/batocera.conf
 
 echo "# MAME TATE MODE" >> /userdata/system/batocera.conf  
 
+
+if [ -d "/userdata/system/configs/mame/ini" ]||[ ! -f "/userdata/system/configs/mame/ini/*" ] ;then
+		rm  /userdata/system/configs/mame/ini/*
+fi	
+
 if [ $es_rotation_choice -eq 1 ]; then
-	echo "mame.rotation=none" >> /userdata/system/batocera.conf 
+	echo "mame.rotation=none" >> /userdata/system/batocera.conf
+	case $Rotating_screen in 
+		None)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_normal.ini /userdata/system/configs/mame/ini/vertical.ini
+		;;
+		Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
+		;;
+		Counter-Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
+		;;
+		*)
+			echo "Problems of rotation_choice"
+		;;
+	esac
+
 	echo "fbneo.video_allow_rotate=auto" >> /userdata/system/batocera.conf
 fi
 
 if [ $es_rotation_choice -eq 2 ]; then
 	echo "mame.rotation=autoror"  >> /userdata/system/batocera.conf
+	case $Rotating_screen in 
+		None)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_inverted.ini /userdata/system/configs/mame/ini/horizont.ini
+		;;
+		Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE//horizont_counter-clockwise.ini  /userdata/system/configs/mame/ini/horizont.ini
+		;;
+		Counter-Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
+		;;
+		*)
+			echo "Problems of rotation_choice"
+		;;
+	esac
+
 	echo "fbneo.video_allow_rotate=off" >> /userdata/system/batocera.conf
+
 fi
 
 if [ $es_rotation_choice -eq 3 ]; then
 	echo "mame.rotation=none" >> /userdata/system/batocera.conf
+
+	case $Rotating_screen in 
+		None)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_inverted.ini /userdata/system/configs/mame/ini/vertical.ini
+		;;
+		Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
+		;;
+		Counter-Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
+
+		;;
+		*)
+			echo "Problems of rotation_choice"
+		;;
+	esac
+
         echo "fbneo.video_allow_rotate=auto" >> /userdata/system/batocera.conf
 fi
 
 if [ $es_rotation_choice -eq 4 ]; then
 	echo "mame.rotation=autorol" >> /userdata/system/batocera.conf
+	case $Rotating_screen in 
+		None)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_normal.ini /userdata/system/configs/mame/ini/horizont.ini
+		;;
+		Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
+		;;
+		Counter-Clockwise)
+			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
+		;;
+		*)
+			echo "Problems of rotation_choice"
+		;;
+	esac
+
 	echo "fbneo.video_allow_rotate=off" >> /userdata/system/batocera.conf
 fi
 
