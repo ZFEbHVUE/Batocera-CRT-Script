@@ -654,6 +654,12 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	echo "##		Which kind of drivers you want to use ?              ##"
 	echo "##		If you get a black screen after reboot               ##"
 	echo "##              then choose another driver                           ##"
+	echo "##               Which kind of drivers do you want to use ?          ##"
+        echo "##                                                                   ##"
+        echo "##            Please note, RX and R cards older than the R7 240      ##"
+        echo "##            just do not support the amdgpu drivers, period, and    ##"
+        echo "##            doing this while using them will result in a           ##"
+        echo "##                       black screen after reboot.                  ##"
 	echo "#######################################################################"
 
         declare -a driver_ATI=( "AMDGPU" "RADEON" )
