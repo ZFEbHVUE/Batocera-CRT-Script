@@ -4,11 +4,11 @@ clear
 
 echo "#######################################################################"
 echo "##							             ##"
-echo "##                   15KHz BATOCERA V34 CONFIGURATION                ##"
+echo "##                 15KHz BATOCERA V32-V36 CONFIGURATION              ##"
 echo "##							             ##"
 echo "## RION(15KHz master) MYZAR(Nvidia) ZFEbHVUE(main coder and Tester)  ##"
 echo "##							             ##"
-echo "##                            20/02/2022                             ##"
+echo "##                            19/11/2022                             ##"
 echo "##							             ##"
 echo "##             BEFORE USING THE SCRIPT READ THE FOLLOWING TEXT       ##"   
 echo "##							             ##"
@@ -37,27 +37,23 @@ echo "##		                                                     ##"
 echo "## GREETING TO ALL RETRO DEVELOPERS !! (EMULATOR/DISTRIB/FRONTEND...)##"
 echo "##		         AND ALL RETRO GAMERS !!                     ##"	
 echo "##                            					     ##"
-echo "##  AMD/ATI DVI-I (Boot works) (ES Works) (Games work)               ##"
-echo "##          DP    (Boot works) (ES Works) (Games work)               ##"
-echo "##          VGA    Not Tested                                        ##"
-echo "##          HDMI   Not implemented yet                               ##"
-echo "##          DVI-D  Not implemented yet                               ##"
-echo "##          DIN    Not implemented yet                               ##"
-echo "##                            				 	     ##"
-echo "##   INTEL  DVI-I  Not implemented yet                               ##"
-echo "##          DP    (Boot works) (ES Works) (Games work)               ##"
-echo "##          VGA   (Boot works) (ES Works) (Games don't work)         ##"
-echo "##          HDMI   Not implemented yet                               ##"
-echo "##          DVI-D  Not implemented yet                               ##"
-echo "##          DIN    Not implemented yet                               ##"
-echo "##                            				             ##"
-echo "##   NVIDIA DVI-I (Boot works) (ES Works) (Games work)               ##"
-echo "##          DP    (Boot works) (ES Works) (Games works only 240p)    ##"
-echo "##          VGA    Not implemented yet                               ##"
-echo "##          HDMI  (Boot works) (ES Works) (Games don't work)         ##"
-echo "##          DVI-D  Not implemented yet                               ##"
-echo "##          DIN    Not implemented yet                               ##"
-
+echo "##                            					     ##"
+echo "##			   Cards Tested  		  	     ##"
+echo "##                            					     ##"
+echo "##   AMD/ATI:                         		         	     ##"
+echo "##   R7 350x with DVI-I and Display-Port                             ##"
+echo "##   R9 280x with DVI-I and Display-Port                             ##"
+echo "##                            					     ##"
+echo "##   Intel: display-port and VGA (Optiplex 790/7010    		     ##"
+echo "##        (VGA works somewhat on)                                    ##"
+echo "##                            					     ##"
+echo "##  Nvidia: 							     ##"
+echo "##  8400GS(Tesla)  DVI-I/HDMI/VGA (NOUVEAU)	         	     ##"
+echo "##  Quadro K600(Kelper) DVI-I/(Diplay-Port)  (Nvidia-Driver/Nouveau) ##"
+echo "##  GTX980(Maxwell) DVI-I/HDMI/(Diplay-Port) (Nvidia-Driver/Nouveau) ##"
+echo "##  GTX1050ti(Pascal) HDMI/(Diplay-Port)     (Nvidia-Driver/Nouveau) ##"
+echo "##  GTX1650(turing) (HDMI/Display-Port) Bad 15KHz with only 240p     ##"
+echo "##  All display-Port give only 240p with Bad 15KHz                   ##"
 echo "##                            					     ##"
 echo "#######################################################################"
 read 
@@ -135,7 +131,7 @@ case $temp in
 
 	echo "                                                                       "
 	echo "#######################################################################"
-	echo "##       		YOUR VIDEO CARD IS NVIDIA                          ##"
+	echo "##       		YOUR VIDEO CARD IS NVIDIA                    ##"
 	echo "#######################################################################"
 	echo "                                                                       "
 
@@ -283,7 +279,7 @@ echo "#######################################################################"
 read video_output_choice
 video_output=${OutputVideo[$video_output_choice-1]}                           
 #############################################################################
-echo "                    your choice is :  $video_output 		     "A
+echo "                    your choice is :  $video_output 		     "
 
 
 ########################################################################################
@@ -422,7 +418,7 @@ echo "                                                                       "
 if ([ "$Drivers_Nvidia_CHOICE" == "NONE" ] || [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]); then
 	echo "                                                                       "                                                                
 	echo "#######################################################################"                           
-	echo "##			EmulationStation Resolution                   ##"  
+	echo "##			EmulationStation Resolution                  ##"  
 	echo "#######################################################################" 
 	if [ "$TYPE_OF_CARD" == "INTEL" ] ; then
 		if [[ "$video_output" == *"VGA"* ]]; then
@@ -466,7 +462,7 @@ else
 
 	echo "                                                                       "                                                                
 	echo "#######################################################################"                           
-	echo "##			EmulationStation Resolution                ##"  
+	echo "##			EmulationStation Resolution                  ##"  
 	echo "##                          NVIDIA (Nvidia Drivers)                  ##"
 	echo "#######################################################################"                                                               
 	if [[ "$video_output" == *"DVI"* ]]; then
@@ -493,10 +489,63 @@ else
 	echo "                    Your choice is :  $ES_resolution"        
 
 fi
+
 ################################################################################################################################
 ################################################################################################################################
 ################################################################################################################################
 clear
+echo "                                                                       "
+echo "#######################################################################"
+echo "##                          ROTATING SCREEN                          ##"
+echo "##                                                                   ##"
+echo "##              FORM THE ACTUAL POSITION OF YOUR MONITOR             ##"
+echo "##                    WHAT IS THE SENS OF ROTATION                   ##"
+echo "##               TO PASS TO HORIZONTAL OR TO VERTICAL                ##"
+echo "##                                                                   ##"
+echo "##   IF YOU WANT TO PLAY HORIZONTAL OR VERTICAL GAMES ON YOUR        ##"
+echo "##   MONITOR WITHOUT ROTATION PUT : NONE                             ##"
+echo "##                                                                   ##"
+echo "##   			    REMEMBER                                 ##"
+echo "##                                                                   ##"
+echo "##   FOR MAME(Groovymame) IT WORKS FOR ALL HORIZONTAL AND VERTICAL   ##"
+echo "##                        GAMES FOR ALL CONFIGURATIONS SCREEN SETUP  ##"
+echo "##                                                                   ##"
+echo "##   FOR FBNEO:           HORIZONTAL SCREEN:                         ##"
+echo "##                        HORIZONTAL GAMES  (NO ROTATION)            ##"
+echo "##                        VERTICAL  GAMES   (WITH ROTATION)          ##"
+echo "##                        VERTICAL  SCREEN:                          ##"
+echo "##                        HORIZONTAL GAMES  (WITH ROTATION)          ##"
+echo "##                        VERTICAL  GAMES   (NO ROTATION)            ##"
+echo "##                                                                   ##"
+echo "##   FOR LIBRETRO:        IT WORKS FOR ALL HORIZONTAL GAMES FOR      ##"
+echo "##                        ROTATING SCREEN WITH BUG IN TATE           ##"
+echo "##                                                                   ##"
+echo "##   FOR STANDALONE:      IT WORKS FOR HORIZONTAL GAMES FOR          ##"
+echo "##                        ROTATING SCREEN                            ##"
+echo "##                        THERE ARE SOME BUG FOR SOME EMULATORS      ##"
+echo "##                        IN TATE (WINDOWS/...)                      ##"
+echo "##                                                                   ##"
+echo "##   FOR FPINBALL         IT WORKS FOR IN HORIZONTALE AND VERTICALE  ##"
+echo "##                        SCREEN                                     ##"
+echo "##                                                                   ##"
+echo "## ALL THESE THINGS ARE TO PLAY CLASSIC HORIZONTAL GAMES ON VERTICAL ##"
+echo "## SCREEN WITH OR WITHOUT ROTATION WITH CLASSIC EMULATORS. REMENBER  ##"
+echo "## BY DEFAULT THEY RUN ON HORIZONTAL SCREEN (WITH NO ROTATION)       ##"
+echo "##                                                                   ##"
+echo "## ONLY GROOVYMAME CAN PLAY HORIZONTAL OR VERTICAL GAMES ON ANY      ##"
+echo "## SCREEN POSITION BECAUSE GROOVYMAME CAN DETECT IF THE GAMES ARE    ##"
+echo "## HORITONTAL OR VERTCIAL AT THE START OF THE GAME                   ##"
+echo "##                                                                   ##"
+echo "#######################################################################"
+declare -a Screen_rotating=( "None" "Clockwise" "Counter-Clockwise" )
+for var in "${!Screen_rotating[@]}" ; do echo "                   $((var+1)) : ${Screen_rotating[$var]}"; done
+echo "#######################################################################"
+echo "##             Make your choice for the sens of your rotation screen ##"
+echo "#######################################################################"
+read Screen_rotating_choice
+Rotating_screen=${Screen_rotating[$Screen_rotating_choice-1]}
+
+echo "                    Your choice is :  $Rotating_screen"
 echo "                                                                       "
 echo "#######################################################################"
 echo "##                  EmulationStation ORIENTATION                     ##"
@@ -508,54 +557,103 @@ echo "## HORIZONTAL (Inverted)          MONITOR  = INVERTED (180°)         ##"
 echo "## VERTICAL   (Clockwise)         MONITOR =  TATE270  (-90° or 270°) ##"
 echo "##                                                                   ##"
 echo "#######################################################################"
-declare -a ES_orientation=( "NORMAL" "TATE90" "INVERTED" "TATE270" )
-declare -a display_rotation=( "normal" "right" "inverted" "left")
-declare -a display_emulator_rotation=( "normal" "normal" "inverted" "normal")
+
+declare -a ES_orientation=( 	"NORMAL" 	"TATE90" 	"INVERTED" 	"TATE270" )
+
+if ([ "$TYPE_OF_CARD" == "NVIDIA" ]&&[ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]); then
+	 
+	
+	declare -a display_rotation=( 		"normal" 	"normal" 	"normal" 	"normal"	)
+	declare -a display_mame_rotation=( 	"normal" 	"left" 		"normal" 	"right"		)
+	
+	case $Rotating_screen in
+		None)
+			declare -a display_libretro_rotation=( 		"normal" 	"right"		"normal" 	"right"	)
+			declare -a display_standalone_rotation=(	"normal" 	"normal"   	"normal" 	"normal")
+			declare -a display_fbneo_rotation=(		"normal" 	"right"   	"normal" 	"right"	)
+
+		;;
+		Clockwise)
+
+			declare -a display_libretro_rotation=( 		"normal"	"left"     	"normal"	"right"	)
+			declare -a display_standalone_rotation=( 	"normal"	"left"     	"normal"	"left"	)
+			declare -a display_fbneo_rotation=(		"normal" 	"right"   	"normal" 	"right"	)
+
+		;;
+		Counter-Clockwise)
+			declare -a display_libretro_rotation=( 		"normal" 	"right"		"normal" 	"right"	)
+			declare -a display_standalone_rotation=( 	"normal" 	"right"		"normal" 	"right"	)
+			declare -a display_fbneo_rotation=(		"normal" 	"right"   	"normal" 	"right"	)
+		;;
+		*)
+			echo "problems of choice of rotation"
+		;;
+	esac
+	
+else
+
+	declare -a display_rotation=( 		"normal" 	"right" 	"inverted" 	"left"		)	
+	declare -a display_mame_rotation=( 	"normal" 	"normal" 	"inverted" 	"normal"	)
+
+	case $Rotating_screen in
+		None)
+			declare -a display_libretro_rotation=( 		"normal"	"right"   	"inverted" 	"left"	)
+			declare -a display_standalone_rotation=(	"normal"	"right"   	"inverted" 	"left"	)
+			declare -a display_fbneo_rotation=(		"normal" 	"inverted"   	"inverted" 	"normal"	)
+		;;
+		Clockwise)
+			declare -a display_libretro_rotation=( 		"normal" 	"normal" 	"inverted"	"inverted"	)
+			declare -a display_standalone_rotation=( 	"normal" 	"normal" 	"inverted"	"inverted"	)
+			declare -a display_fbneo_rotation=(		"normal" 	"inverted"   	"inverted" 	"normal"	)
+		;;
+		Counter-Clockwise)
+			declare -a display_libretro_rotation=( 		"normal" 	"inverted"   	"inverted" 	"normal"	)
+			declare -a display_standalone_rotation=( 	"normal" 	"inverted"   	"inverted" 	"normal"	)
+			declare -a display_fbneo_rotation=(		"normal" 	"inverted"   	"inverted" 	"normal"	)
+		;;
+		*)
+			echo "problems of choice of rotation"
+		;;
+	esac
+
+fi
+
 for var in "${!ES_orientation[@]}" ; do echo "                   $((var+1)) : ${ES_orientation[$var]}"; done
 echo "#######################################################################"
 echo "##             Make your choice for the EmulationStation ORIENTATION ##"
 echo "#######################################################################"
 read es_rotation_choice
 ES_rotation=${ES_orientation[$es_rotation_choice-1]}
+
 display_rotate=${display_rotation[$es_rotation_choice-1]}
-display_emulator_rotate=${display_emulator_rotation[$es_rotation_choice-1]}
+display_mame_rotate=${display_mame_rotation[$es_rotation_choice-1]}
+display_libretro_rotate=${display_libretro_rotation[$es_rotation_choice-1]}
+display_standalone_rotate=${display_standalone_rotation[$es_rotation_choice-1]}
+display_fbneo_rotate=${display_fbneo_rotation[$es_rotation_choice-1]}
+
 echo "                    Your choice is :  $ES_rotation"
 
-echo "                                                                       "
-echo "#######################################################################"
-echo "##                      FOR MAME ROTATING MONITOR                    ##"
-echo "##                                                                   ##"
-echo "##              FORM THE ACTUAL POSITION OF YOUR MONITOR             ##"
-echo "##   ROTATION OF YOUR MONITOR TO PASS TO HORIZONTAL OR TO VERTICAL   ##"
-echo "##                                                                   ##"
-echo "##   IF YOU WANT TO PLAY HORIZONTAL OR VERTICAL GAMES ON YOUR        ##"
-echo "##   MONITOR WITHOUT ROTATION PUT : NONE                             ##"
-echo "##                                                                   ##"
-echo "#######################################################################"
-declare -a Screen_rotating=( "None" "Clockwise" "Counter-Clockwise" )
-for var in "${!Screen_rotating[@]}" ; do echo "                   $((var+1)) : ${Screen_rotating[$var]}"; done
-echo "#######################################################################"
-echo "##             Make your choice for the EmulationStation ORIENTATION ##"
-echo "#######################################################################"
-read Screen_rotating_choice
-Rotating_screen=${Screen_rotating[$Screen_rotating_choice-1]}
-echo "                    Your choice is :  $Rotating_screen"
-
 ################################################################################################################################
 ################################################################################################################################
 ################################################################################################################################
 
 
-clear
+	super_width_vertical=1920
+	interlace_vertical=0
+	dotclock_min_vertical=25
+
+	super_width_horizont=1920
+	interlace_horizont=0
+	dotclock_min_horizont=25
+
+
+
 if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
         
 	echo "#######################################################################"
-	echo "##               Which kind of drivers do you want to use ?          ##"
-        echo "##                                                                   ##"
-        echo "##            Please note, RX and R cards older than the R7 240      ##"
-        echo "##            just do not support the amdgpu drivers, period, and    ##"
-        echo "##            doing this while using them will result in a           ##"
-        echo "##                       black screen after reboot.                  ##"
+	echo "##		Which kind of drivers you want to use ?              ##"
+	echo "##		If you get a black screen after reboot               ##"
+	echo "##              then choose another driver                           ##"
 	echo "#######################################################################"
 
         declare -a driver_ATI=( "AMDGPU" "RADEON" )
@@ -565,15 +663,17 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	echo "#######################################################################"
 	read type_of_drivers
         drivers_type=${driver_ATI[$type_of_drivers-1]}
-	echo "			Your choice is :   $drivers_type		     "
+	echo "			Your choice is :   $drivers_type			     "
 	echo "                                                                       "
 	##############################################################################
 
+	dotclock_min=0	
+	dotclock_min_mame=$dotclock_min
 
-	dotclock_min=0
-        super_width=2560
-	super_width_mame=2560
+	super_width=2560
+	super_width_mame=2560 
 	
+
 	if [ "$drivers_type" == "AMDGPU" ]; then
 
 		if [ "$R9_380" == "YES" ]; then
@@ -584,7 +684,6 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
            		drivers_amd="radeon.si_support=0 amdgpu.si_support=1 radeon.cik_support=0 amdgpu.cik_support=1"
 
 		fi
-
 	else
 		if [ "$R9_380" == "YES" ]; then
 
@@ -630,7 +729,7 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 			if [ "$R9_380" == "YES" ]; then
 				video_modeline=$term_DVI-$((nbr))
 			else
-				video_modeline=$term_DVI-$((nbr-1))
+				video_modeline=$term_DVI-$((nbr-1))n
 			fi
 		fi  
 
@@ -647,19 +746,21 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 elif [ "$TYPE_OF_CARD" == "INTEL" ]; then
 
 	drivers_amd=""
-	super_width=1920
-        super_width_mame=1920
-	
+
 	if [[ "$video_output" == *"DP"* ]]; then
 		
 		term_dp="DP"
 		term_displayport="DisplayPort"
-#		video_display=${video_output/$term_dp/$term_displayport}
          	video_display=$video_output 
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_modeline=$term_dp-$((nbr))   
 
-		dotclock_min=0	
+		dotclock_min=0
+		dotclock_min_mame=$dotclock_min
+
+		super_width=1920
+		super_width_mame=$super_width
+
 
 
 	elif [[ "$video_output" == *"VGA"* ]]; then
@@ -670,33 +771,51 @@ elif [ "$TYPE_OF_CARD" == "INTEL" ]; then
 		video_modeline=$term_VGA-$((nbr))
 		
 		dotclock_min=25.0
+		dotclock_min_mame=$dotclock_min
+		super_width=1920
+		super_width_mame=$super_width
+
+
         fi
 
 elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 	
 	drivers_amd=""
-	super_width=3840
-        super_width_mame=3840
-	
+
 	if [[ "$video_output" == *"DP"* ]]; then
 		
 		term_dp="DP"
 		term_displayport="DisplayPort"
-#		video_display=${video_output/$term_dp/$term_displayport}
          	video_display=$video_output 
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
 				video_modeline=$term_dp-$((nbr)) 
+			
 				dotclock_min=0
+				dotclock_min_mame=$dotclock_min
+
+				super_width=3840
+				super_width_mame=$super_width
+
 			else
 				video_modeline=$term_dp-$((nbr-1)) 
+
 				dotclock_min=0
+				dotclock_min_mame=$dotclock_min
+
+				super_width=3840
+				super_width_mame=$super_width
+
+
 			fi
 		        	
 		else	
 			video_modeline=$term_dp-$((nbr)) 
 		       	dotclock_min=0
+			super_width=3840
+			super_width_mame=$super_width
+
 		fi
 
 	elif [[ "$video_output" == *"DVI"* ]]; then
@@ -706,15 +825,35 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
 				video_modeline=$term_DVI-$((nbr-1))
+
 				dotclock_min=25
+				dotclock_min_mame=$dotclock_min
+
+				super_width=3840
+				super_width_mame=$super_width
+
+
 
 			else
 				video_modeline=$term_DVI-$((nbr-1))
+
 				dotclock_min=0
+				dotclock_min_mame=$dotclock_min
+
+				super_width=3840
+				super_width_mame=$super_width
+
 			fi
 		else
 			video_modeline=$term_DVI-$((nbr))
+
 			dotclock_min=0
+			dotclock_min_mame=$dotclock_min
+
+			super_width=3840
+			super_width_mame=$super_width
+
+
 		fi
 		
 	elif [[ "$video_output" == *"HDMI"* ]] ; then
@@ -725,14 +864,35 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then	
 				video_modeline=$term_HDMI-$((nbr-1))
+
 				dotclock_min=25.0
+				dotclock_min_mame=$dotclock_min
+
+				super_width=3840
+				super_width_mame=$super_width
+
+
 			else
 				video_modeline=$term_HDMI-$((nbr-1))
+
 			 	dotclock_min=25.0
+				dotclock_min_mame=$dotclock_min
+
+				super_width=3840
+				super_width_mame=$super_width
+
+
 			fi
 		else
 			video_modeline=$term_HDMI-$((nbr))
+
 			dotclock_min=25.0
+			dotclock_min_mame=$dotclock_min
+
+			super_width=3840
+			super_width_mame=$super_width
+
+
 		fi
 
         elif [[ "$video_output" == *"VGA"* ]] ; then
@@ -744,13 +904,33 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then	
 				video_modeline=$term_VGA-$((nbr-1))
 				dotclock_min=25.0
+				dotclock_min_mame=$dotclock_min
+
+				super_width=3840
+				super_width_mame=$super_width
+
+
 			else
 				video_modeline=$term_VGA-$((nbr-1))
+
 				dotclock_min=25.0
+				dotclock_min_mame=$dotclock_min
+
+				super_widthe=3840
+				super_width_mame=$super_width
+
+
 			fi
 		else
 			video_modeline=$term_VGA-$((nbr))
+
 			dotclock_min=0.0
+			dotclock_min_mame=$dotclock_min
+
+			super_width=3840
+			super_width_mame=$super_width
+
+
 		fi
         fi
 fi
@@ -788,8 +968,7 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 		echo "problems of Nvidia driver name"
 	fi	
 else
-# test must be changed form the next versions for Batocera >= v36. 
-	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]&&[ "$Version_of_batocera" == "v36" ]; then
+	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]||[ "$Version_of_batocera" == "v36" ]; then
 		sed 's/.*nvidia-driver=.*/nvidia-driver=false/'   		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	else
 		sed 's/.*nvidia-driver=.*/#nvidia-driver=true/'   		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
@@ -896,8 +1075,13 @@ case $Version_of_batocera in
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/batocera-resolution-v32 /usr/bin/batocera-resolution
 		chmod 755 /usr/bin/batocera-resolution
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v32 /usr/bin/emulationstation-standalone                                    
-		chmod 755 /usr/bin/emulationstation-standalone
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v32 > /etc/switchres.ini
+		chmod 755 /usr/bin/emulationstation-standalone	
+		###############################################################################################################################################
+#		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v32 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
+		###############################################################################################################################################
+
+#		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v32 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v32 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 	;;
@@ -905,8 +1089,13 @@ case $Version_of_batocera in
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/batocera-resolution-v33 /usr/bin/batocera-resolution
 		chmod 755 /usr/bin/batocera-resolution 
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v33 /usr/bin/emulationstation-standalone                                    
-		chmod 755 /usr/bin/emulationstation-standalone
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v33 > /etc/switchres.ini
+		chmod 755 /usr/bin/emulationstation-standalone	
+		###############################################################################################################################################
+#		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v33 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
+		###############################################################################################################################################
+
+#		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g"  -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v33 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v33 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 	;;
@@ -918,7 +1107,8 @@ case $Version_of_batocera in
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v34 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v34 > /etc/switchres.ini
+#		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g"  -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v34 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v34 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 	;;
@@ -930,7 +1120,8 @@ case $Version_of_batocera in
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v35 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v35 > /etc/switchres.ini
+#		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g"  -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v35 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v35 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
@@ -957,9 +1148,11 @@ case $Version_of_batocera in
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v36 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
-		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
+#		sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
-	;;
+
+		;;
 	*)
 		echo "PROBLEM OF VERSION"
 		exit 1;
@@ -1064,7 +1257,8 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
         	es_res_50iHz="#"
 		es_SR_res_60iHz="#"                                                                                                      
         	es_SR_res_50iHz="#"
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then	
+
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 640 480 --screenoffset 00 00"	
 		else
 			es_customsargs="es.customsargs=--screensize 480 640 --screenoffset 00 00"	
@@ -1074,7 +1268,7 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
         	es_res_50iHz=""
 		es_SR_res_60iHz="#"                                                                                                      
         	es_SR_res_50iHz="#"
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then	
+		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 768 576 --screenoffset 00 00"	
 		else
 			es_customsargs="es.customsargs=--screensize 576 768 --screenoffset 00 00"	
@@ -1084,7 +1278,7 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
         	es_res_50iHz="#"
 		es_SR_res_60iHz=""                                                                                                      
         	es_SR_res_50iHz="#"
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then	
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1920 240 --screenoffset 00 00"	
 		else
 			es_customsargs="es.customsargs=--screensize 240 1920 --screenoffset 00 00"	
@@ -1094,7 +1288,7 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
         	es_res_50iHz="#"
 		es_SR_res_60iHz="#"                                                                                                      
         	es_SR_res_50iHz=""
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then	
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1920 256 --screenoffset 00 00"	
 		else
 			es_customsargs="es.customsargs=--screensize 256 1920 --screenoffset 00 00"	
@@ -1121,7 +1315,7 @@ else
 		es_SR_res_60iHz="#"
         	es_SR_res_50iHz="#"
 		es_SR_res_60Hz="#"
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 640 480 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 480 640 --screenoffset 00 00"
@@ -1132,7 +1326,7 @@ else
 		es_SR_res_60iHz="#"
         	es_SR_res_50iHz="#"
 		es_SR_res_60Hz="#"
-        	if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then
+        	if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 768 576 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 576 768 --screenoffset 00 00"
@@ -1143,7 +1337,7 @@ else
 		es_SR_res_60iHz=""
         	es_SR_res_50iHz="#"
 		es_SR_res_60Hz="#"
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1280 480 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 480 1280 --screenoffset 00 00"
@@ -1155,7 +1349,8 @@ else
 		es_SR_res_60iHz="#"
         	es_SR_res_50iHz=""
 		es_SR_res_60Hz="#"
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then
+
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1280 576 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 576 1280 --screenoffset 00 00"
@@ -1166,7 +1361,7 @@ else
 		es_SR_res_60iHz="#"
         	es_SR_res_50iHz="#"
 		es_SR_res_60Hz=""
- 		if [ "$display_rotate" == "normal" ] || [ "$display_rotate" == "inverted" ]; then
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1280 240 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 240 1280 --screenoffset 00 00"
@@ -1274,6 +1469,7 @@ else
 	chmod 755 /userdata/system/custom-es-config
 
 fi
+
 #######################################################################################
 # Create a first_script.sh for exiting of Emulationstatio
 #######################################################################################
@@ -1282,7 +1478,9 @@ if [ ! -d "/userdata/system/scripts" ];then
 	mkdir /userdata/system/scripts
 fi
 
-sed -e "s/\[display_emulator_rotation\]/$display_emulator_rotate/g" -e "s/\[display_ES_rotation\]/$display_rotate/g" -e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$ES_resolution_V33/g"  /userdata/system/BUILD_15KHz/System_configs/First_script/first_script.sh-generic-v33  >  /userdata/system/scripts/first_script.sh
+sed -e "s/\[display_mame_rotation\]/$display_mame_rotate/g" -e "s/\[display_fbneo_rotation\]/$display_fbneo_rotate/g" -e "s/\[display_libretro_rotation\]/$display_libretro_rotate/g" \
+    -e "s/\[display_standalone_rotation\]/$display_standalone_rotate/g" -e "s/\[display_ES_rotation\]/$display_rotate/g" \
+    -e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$ES_resolution_V33/g" /userdata/system/BUILD_15KHz/System_configs/First_script/first_script.sh-generic-v33  >  /userdata/system/scripts/first_script.sh
 
 chmod 755 /userdata/system/scripts/first_script.sh
 
@@ -1314,7 +1512,11 @@ echo "global.retroarch.menu_driver=rgui" 				>> /userdata/system/batocera.conf
 echo "global.retroarch.menu_show_advanced_settings=true" 		>> /userdata/system/batocera.conf
 echo "global.retroarch.menu_enable_widgets=false" 			>> /userdata/system/batocera.conf
 echo "global.retroarch.crt_switch_resolution = \"4\"" 			>> /userdata/system/batocera.conf
-echo "global.retroarch.crt_switch_resolution_super = \"0\""	 	>> /userdata/system/batocera.conf
+if [ "$dotclock_min" == "25.0" ]; then
+	echo "global.retroarch.crt_switch_resolution_super = \"$super_width\""   >> /userdata/system/batocera.conf
+else
+	echo "global.retroarch.crt_switch_resolution_super = \"0\""	 	>> /userdata/system/batocera.conf
+fi
 echo "global.retroarch.crt_switch_hires_menu = \"true\"" 		>> /userdata/system/batocera.conf
 echo "global.smooth=0" 							>> /userdata/system/batocera.conf
 echo "global.rewind=0" 						        >> /userdata/system/batocera.conf
@@ -1323,6 +1525,7 @@ echo "global.bezel=none" 						>> /userdata/system/batocera.conf
 echo "global.bezel_stretch=0" 						>> /userdata/system/batocera.conf
 echo "global.bezel.tattoo=0" 						>> /userdata/system/batocera.conf
 echo "global.hud=none" 							>> /userdata/system/batocera.conf
+echo "io=core" 								>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
 #########################################################################################################
 ##  DISABLE GLOBAL NOTIFICATIONS  
@@ -1346,17 +1549,9 @@ echo "global.retroarch.notification_show_patch_applied = \"true\""		>> /userdata
 echo "global.retroarch.notification_show_remap_load = \"true\"" 		>> /userdata/system/batocera.conf
 echo "global.retroarch.notification_show_screenshot = \"true\""			>> /userdata/system/batocera.conf
 echo "global.retroarch.notification_show_set_initial_disk = \"true\""		>> /userdata/system/batocera.conf
-
-
 echo "windows.bezel=none"							>> /userdata/system/batocera.conf 
 echo "windows.bezel_stretch=0"							>> /userdata/system/batocera.conf 
-echo "windows.bezel.tattoo=0"							>> /userdata/system/batocera.conf 
-
-if [ "$dotclock_min" == "25.0" ]; then
-	echo "# INTEL/NVIDIA Custom"  	>> /userdata/system/batocera.conf 
-	echo "global.retroarch.crt_switch_resolution_super = \"$super_width\""   >> /userdata/system/batocera.conf
-fi
-
+echo "windows.bezel.tattoo=0"							>> /userdata/system/batocera.conf
 #######################################################################################
 ##  Rotation of EmulationStation     
 #######################################################################################
@@ -1380,7 +1575,8 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/.mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-32 > /userdata/system/.mame/mame.ini            
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_mame\]/$dotclock_min_mame/g" \
+			/userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-32 > /userdata/system/.mame/mame.ini            
 		chmod 644 /userdata/system/.mame/mame.ini  
 		cp /userdata/system/BUILD_15KHz//Mame_configs/ui.ini-switchres            /userdata/system/.mame/ui.ini 
 		chmod 644 /userdata/system/.mame/ui.ini 
@@ -1399,7 +1595,8 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/ini
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-33 > /userdata/system/configs/mame/ini/mame.ini         		    chmod 644 /userdata/system/configs/mame/ini/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_mame\]/$dotclock_min_mame/g" \
+		       	/userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-33 > /userdata/system/configs/mame/ini/mame.ini         		    chmod 644 /userdata/system/configs/mame/ini/mame.ini 
 		cp /userdata/system/BUILD_15KHz//Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ini/ui.ini 
 		chmod 644 /userdata/system/configs/mame/ini/ui.ini 
 
@@ -1418,7 +1615,8 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v34 > /userdata/system/configs/mame/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_mame\]/$dotclock_min_mame/g" \
+		       	/userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v34 > /userdata/system/configs/mame/mame.ini 
 		chmod 644 /userdata/system/configs/mame/mame.ini 
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ui.ini  
 		chmod 644 /userdata/system/configs/mame/ui.ini 
@@ -1437,7 +1635,8 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v35 > /userdata/system/configs/mame/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_mame\]/$dotclock_min_mame/g" \
+		       	/userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v35 > /userdata/system/configs/mame/mame.ini  
 		chmod 644 /userdata/system/configs/mame/mame.ini 
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ui.ini  
 		chmod 644 /userdata/system/configs/mame/ui.ini 
@@ -1456,7 +1655,8 @@ case $Version_of_batocera in
 
 		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/
 
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" /userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v36 > /userdata/system/configs/mame/mame.ini 
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_mame\]/$dotclock_min_mame/g" \
+		       	/userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v36 > /userdata/system/configs/mame/mame.ini 
 		chmod 644 /userdata/system/configs/mame/mame.ini 
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres            /userdata/system/configs/mame/ui.ini  
 		chmod 644 /userdata/system/configs/mame/ui.ini 
@@ -1465,6 +1665,7 @@ case $Version_of_batocera in
 
 	*)
 	echo "Problem of version"
+
 	;;
 esac
 
@@ -1475,7 +1676,7 @@ esac
 if [ ! -d "/userdata/system//mame" ];then                                                              
 
           mkdir /userdata/system/mame
-
+l
 fi
 
 ####################################################################################### 
@@ -1490,95 +1691,108 @@ echo "mame.bezel.tattoo=0"	>> /userdata/system/batocera.conf
 echo "mame.bgfxshaders=None"	>> /userdata/system/batocera.conf
 echo "mame.hud=none"		>> /userdata/system/batocera.conf
 echo "mame.switchres=1"		>> /userdata/system/batocera.conf
+echo "mame.video=opengl"        >> /userdata/system/batocera.conf
 
-echo "# MAME TATE MODE" >> /userdata/system/batocera.conf  
+echo "# MAME TATE MODE" >> /userdata/system/batocera.conf 
+ 
+if [ -d "/userdata/system/configs/mame/ini" ];then
 
+	if [ -f "/userdata/system/configs/mame/ini/horizont.ini" ];then
+		rm  /userdata/system/configs/mame/ini/horizont.ini
+	fi
 
-if [ -d "/userdata/system/configs/mame/ini" ]||[ ! -f "/userdata/system/configs/mame/ini/*" ] ;then
-		rm  /userdata/system/configs/mame/ini/*
-fi	
+	if [ -f "/userdata/system/configs/mame/ini/vertical.ini" ];then
+		rm  /userdata/system/configs/mame/ini/vertical.ini
+	fi
+
+fi
 
 if [ $es_rotation_choice -eq 1 ]; then
 	echo "mame.rotation=none" >> /userdata/system/batocera.conf
 	case $Rotating_screen in 
 		None)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_normal.ini /userdata/system/configs/mame/ini/vertical.ini
+			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
+				  /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_normal.ini > /userdata/system/configs/mame/ini/vertical.ini			
 		;;
 		Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
+			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
+				  /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini
 		;;
 		Counter-Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
+			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
+				 /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini		
 		;;
 		*)
 			echo "Problems of rotation_choice"
 		;;
 	esac
-
-	echo "fbneo.video_allow_rotate=auto" >> /userdata/system/batocera.conf
+	echo "fbneo.video_allow_rotate=off" >> /userdata/system/batocera.conf
 fi
 
 if [ $es_rotation_choice -eq 2 ]; then
 	echo "mame.rotation=autoror"  >> /userdata/system/batocera.conf
-	case $Rotating_screen in 
-		None)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_inverted.ini /userdata/system/configs/mame/ini/horizont.ini
+	case $Rotating_screen in 	
+		None)	
+			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
+				  /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_inverted.ini > /userdata/system/configs/mame/ini/horizont.ini			
 		;;
+
 		Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
+				sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
+				  	/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
 		;;
 		Counter-Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
+				sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
+			 	 	/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
 		;;
 		*)
-			echo "Problems of rotation_choice"
+				echo "Problems of rotation_choice"
 		;;
 	esac
-
 	echo "fbneo.video_allow_rotate=off" >> /userdata/system/batocera.conf
-
 fi
 
 if [ $es_rotation_choice -eq 3 ]; then
 	echo "mame.rotation=none" >> /userdata/system/batocera.conf
-
 	case $Rotating_screen in 
 		None)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_inverted.ini /userdata/system/configs/mame/ini/vertical.ini
+			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
+				/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_inverted.ini > /userdata/system/configs/mame/ini/vertical.ini	
 		;;
 		Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
+			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
+				/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini			
 		;;
 		Counter-Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini /userdata/system/configs/mame/ini/vertical.ini
-
+			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
+			       	/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini      
 		;;
 		*)
 			echo "Problems of rotation_choice"
 		;;
 	esac
-
-        echo "fbneo.video_allow_rotate=auto" >> /userdata/system/batocera.conf
+        echo "fbneo.video_allow_rotate=off" >> /userdata/system/batocera.conf
 fi
 
 if [ $es_rotation_choice -eq 4 ]; then
 	echo "mame.rotation=autorol" >> /userdata/system/batocera.conf
 	case $Rotating_screen in 
 		None)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_normal.ini /userdata/system/configs/mame/ini/horizont.ini
+			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
+				/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_normal.ini > /userdata/system/configs/mame/ini/horizont.ini
 		;;
 		Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
+			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
+			       	/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
 		;;
 		Counter-Clockwise)
-			cp /userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini /userdata/system/configs/mame/ini/horizont.ini
-		;;
-		*)
-			echo "Problems of rotation_choice"
-		;;
-	esac
-
+			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
+			       	/userdata/system/BUILD_15KHz/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
+			;;
+			*)
+				echo "Problems of rotation_choice"
+			;;
+		esac
 	echo "fbneo.video_allow_rotate=off" >> /userdata/system/batocera.conf
 fi
-
-chmod 755 /userdata/system/batocera.conf 
+chmod 755 /userdata/system/batocera.conf
