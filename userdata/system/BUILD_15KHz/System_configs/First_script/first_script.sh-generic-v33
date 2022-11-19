@@ -5,52 +5,51 @@
 #Set logfile location and filename
 logfile=/tmp/scriptlog.txt
 
-#Case selection for first parameter parsed
 case $1 in
-    gameStart)
-        echo $2 > /dev/shm/sysname.txt
-        echo $4 > /dev/shm/core.txt
+	gameStart)
+
+        	echo $2 > /dev/shm/sysname.txt
+		echo $3 > /dev/shm/emulator.txt
+        	echo $4 > /dev/shm/core.txt
 		echo $5 > /dev/shm/args.txt
-		# = means is not; == means equal
-        if [[ "$4" == "dolphin" ]]; then
-        xrandr -display :0.0 --output [card_display] --set TearFree ON
-	    fi
-        if [[ "$4" == "xemu" ]]; then
-        xrandr -display :0.0 --output [card_display] --set TearFree ON
-	    fi
-        if [[ "$2" == "windows" ]]; then
-        xrandr -display :0.0 --output [card_display] --set TearFree ON
-	    fi
-    	if [[ "$2" == "psx" ]] || [[ "$2" == "psp" ]] || [[ "$2" == "ps2" ]] || [[ "$2" == "ps3" ]]; then
-       	        xrandr -display :0.0 -o [display_emulator_rotation]
-		xrandr -display :0.0 --output [card_display] --set TearFree ON
-	fi
 
-        if [[ "$2" == "ps3" ]]; then
-        xrandr -display :0.0 --output [card_display] --set TearFree ON
-	    fi
-        if [[ "$2" == "wiiu" ]]; then
-        xrandr -display :0.0 --output [card_display] --set TearFree ON
-	    fi
-        if [[ "$2" == "switch" ]]; then
-        xrandr -display :0.0 --output [card_display] --set TearFree ON
-	    fi
-        if [[ "$2" == "mame" ]]; then
-        xrandr -display :0.0 -o [display_emulator_rotation]
-        fi
+		if [[ "$3" == "libretro" ]]; then
 
-	if [[ "$2" == "fbneo" ]]; then
-        xrandr -display :0.0 -o [display_emulator_rotation]
+			if [[ "$2" == "fbneo" ]]; then
 
-        fi
+	       			xrandr -display :0.0 -o [display_fbneo_rotation]
 
-	if [[ "$2" == "saturn" ]]; then
-	xrandr -display :0.0 -o [display_emulator_rotation]
-        fi
+			else
 
-    ;;
-    gameStop)
-	        xrandr -display :0.0 -o [display_ES_rotation]
+				xrandr -display :0.0 -o [display_libretro_rotation]
+
+			fi
+
+		elif [[ "$3" == "mame" ]]; then
+
+			xrandr -display :0.0 -o [display_mame_rotation]
+
+		elif [[ "$3" == "fpinball" ]]; then
+
+			xrandr -display :0.0 -o [display_ES_rotation]
+
+		else
+
+			xrandr -display :0.0 -o [display_standalone_rotation]
+
+			if ([[ "$4" == "dolphin" ]]||[[ "$4" == "xemu" ]]||[[ "$2" == "windows" ]]||[[ "$4" == "xemu" ]]|| \
+		   	    [[ "$2" == "wiiu" ]]||[[ "$2" == "psx" ]]||[[ "$2" == "psp" ]]||[[ "$2" == "ps2" ]]|| \
+			    [[ "$2" == "ps3" ]]||[[ "$2" == "wiiu" ]]||[[ "$2" == "switch" ]]); then
+
+	       			xrandr -display :0.0 --output [card_display] --set TearFree ON
+
+			fi
+
+		fi
+    	;;
+    	gameStop)
+
+		xrandr -display :0.0 -o [display_ES_rotation]
 		xrandr -display :0.0 --output [card_display] --set TearFree OFF
 		xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
 	;;
