@@ -11,6 +11,9 @@ This script would not have been possible without the following people to name a 
  - dmanlcf's work on keeping up to date for the 15khz patches for Batocera.
  - Rion
 
+### Tester's 
+ - GecKoTDF
+ - Sirmagb
 
 ## :video_game::penguin: Build-CRT-15KHz-Batocera-V35 :video_game::penguin:
 Build-CRT-15KHz-Batocera V32 to V35 and 36-dev-2022/10/28
