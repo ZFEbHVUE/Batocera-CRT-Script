@@ -152,7 +152,7 @@ do
     batocera-resolution currentOutput > "/var/run/switch_screen_current"
 
     cd /userdata # es need a PWD
-    %BATOCERA_EMULATIONSTATION_PREFIX% emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required %BATOCERA_EMULATIONSTATION_ARGS% ${CUSTOMESOPTIONS}
+     emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed ${CUSTOMESOPTIONS}
 
     # es flag when rebooting (https://github.com/batocera-linux/batocera-emulationstation/blob/master/es-core/src/platform.cpp#L194)
     if test -e "/tmp/restart.please" -o -e "/tmp/shutdown.please"
