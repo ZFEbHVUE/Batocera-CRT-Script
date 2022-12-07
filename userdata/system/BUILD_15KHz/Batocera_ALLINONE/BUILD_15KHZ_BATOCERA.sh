@@ -1681,7 +1681,6 @@ esac
 if [ ! -d "/userdata/system//mame" ];then                                                              
 
           mkdir /userdata/system/mame
-l
 fi
 
 ####################################################################################### 
