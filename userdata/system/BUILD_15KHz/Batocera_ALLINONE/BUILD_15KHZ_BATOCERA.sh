@@ -281,6 +281,25 @@ video_output=${OutputVideo[$video_output_choice-1]}
 #############################################################################
 echo "                    your choice is :  $video_output 		     "
 
+########################################################################################
+#####################	           15KHz/25KHz/31KHz                  ##################
+########################################################################################
+clear
+
+echo "#######################################################################"
+echo "##               DO YOU HAVE A 15KHz, 25KHz OR 31KHz CRT SCREEN      ##"
+echo "#######################################################################"
+
+#declare -a CRT_Frequency=( "15KHz" "31KHz" )
+declare -a CRT_Frequency=( "15KHz" "25KHz" "31KHz" )
+
+for var in "${!CRT_Frequency[@]}" ; do echo "			$((var+1)) : ${CRT_Frequency[$var]}"; done
+echo "#######################################################################"
+echo "##	     Make your choice the frequency screen                 ##"
+echo "#######################################################################"
+read CRT_Frequency_choice
+CRT_Freq=${CRT_Frequency[$CRT_Frequency_choice-1]}
+echo "                    your choice is :  $CRT_Freq  
 
 ########################################################################################
 #####################		GENERAL  MONITOR                      ##################
@@ -289,29 +308,48 @@ echo "                    your choice is :  $video_output 		     "
 echo "#######################################################################"
 echo "##                     your type of monitor                          ##"
 echo "#######################################################################"
-if [ "$TYPE_OF_CARD" == "INTEL" ]; then
-	if [[ "$video_output" == *"VGA"* ]]; then
-		declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
-        elif  [[ "$video_output" == *"DP"* ]]; then
-		declare -a type_of_monitor=( "arcade_15" "arcade_15_25_31"  "arcade_15ex" "generic_15"  "ntsc" "pal") 
-        elif  [[ "$video_output" == *"HDMI"* ]]; then
-		declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
+
+if [ "$CRT_Freq" == "15KHz" ]; then
+	if [ "$TYPE_OF_CARD" == "INTEL" ]; then
+		if [[ "$video_output" == *"VGA"* ]]; then
+			declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
+        	elif  [[ "$video_output" == *"DP"* ]]; then
+			declare -a type_of_monitor=( "arcade_15" "arcade_15_25_31"  "arcade_15ex" "generic_15"  "ntsc" "pal") 
+        	elif  [[ "$video_output" == *"HDMI"* ]]; then
+			declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
+		fi
+	elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
+		if [[ "$video_output" == *"DVI"* ]]; then
+			declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
+		elif [[ "$video_output" == *"VGA"* ]]; then
+			declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" "arcade_15_SR240" "generic_15_SR240" ) 
+        	elif  [[ "$video_output" == *"DP"* ]]; then
+			declare -a type_of_monitor=(  "arcade_15_SR240" "generic_15_SR240" ) 
+        	elif  [[ "$video_output" == *"HDMI"* ]]; then
+			declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
+        	else
+			declare -a type_of_monitor=( "arcade_15"  "arcade_15_25_31"  "arcade_15ex" "generic_15"  "ntsc" "pal")
+		fi	
+	elif [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
+		declare -a type_of_monitor=( "arcade_15"  "arcade_15_25_31"  "arcade_15ex" "generic_15"  "ntsc" "pal") 
 	fi
-elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
-	if [[ "$video_output" == *"DVI"* ]]; then
-		declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
-	elif [[ "$video_output" == *"VGA"* ]]; then
-		declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" "arcade_15_SR240" "generic_15_SR240" ) 
-        elif  [[ "$video_output" == *"DP"* ]]; then
-		declare -a type_of_monitor=(  "arcade_15_SR240" "generic_15_SR240" ) 
-        elif  [[ "$video_output" == *"HDMI"* ]]; then
-		declare -a type_of_monitor=( "arcade_15_SR480" "generic_15_SR480" ) 
-        else
-		declare -a type_of_monitor=( "arcade_15"  "arcade_15_25_31"  "arcade_15ex" "generic_15"  "ntsc" "pal")
-	fi	
-elif [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
-	declare -a type_of_monitor=( "arcade_15"  "arcade_15_25_31"  "arcade_15ex" "generic_15"  "ntsc" "pal") 
+
+	for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
+	echo "#######################################################################"
+	echo "##	     Make your choice for monitor type to use                ##"
+	echo "#######################################################################"
+	read monitor_choice
+	monitor_firmware=${type_of_monitor[$monitor_choice-1]}
+	echo "                    your choice is :  $monitor_firmware                "
+	monitor_name=$monitor_firmware
+elif [ "$CRT_Freq" == "25KHz" ]; then
+	monitor_firmware="arcade_25"
+	monitor_name=$monitor_firmware
+else
+	monitor_firmware="arcade_31"
+	monitor_name=$monitor_firmware
 fi
+monitor_firmware+=".bin"
 
 
 for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
@@ -328,47 +366,49 @@ monitor_firmware+=".bin"
 ########################################################################################
 
 clear
-echo "                                                                       "                                                               
-echo "#######################################################################"                  
-echo "##    Do you want configurate a particular monitor for M.A.M.E       ##"                   
-echo "#######################################################################"                                                               
-declare -a Mame_monitor_choice=( "YES" "NO" ) 
-for var in "${!Mame_monitor_choice[@]}" ; do echo "			$((var+1)) : ${Mame_monitor_choice[$var]}"; done
-echo "#######################################################################"
-echo "##	     Make your choice 					     ##"
-echo "#######################################################################"
-read choice_MAME_monitor
-monitor_MAME_CHOICE=${Mame_monitor_choice[$choice_MAME_monitor-1]}
-echo "                    your choice is :  $monitor_MAME_CHOICE           "
 
-if [ "$monitor_MAME_CHOICE" == "YES" ]; then
-	clear
+if [ "$CRT_Freq" == "15KHz" ]; then
+	echo "                                                                       "                                                               
+	echo "#######################################################################"                  
+	echo "##    Do you want configurate a particular monitor for M.A.M.E       ##"                   
+	echo "#######################################################################"                                                               
+	declare -a Mame_monitor_choice=( "YES" "NO" ) 
+	for var in "${!Mame_monitor_choice[@]}" ; do echo "			$((var+1)) : ${Mame_monitor_choice[$var]}"; done
 	echo "#######################################################################"
-	echo "##                     Your type of monitor for M.A.M.E              ##"
+	echo "##	     Make your choice 					     ##"
 	echo "#######################################################################"
+	read choice_MAME_monitor
+	monitor_MAME_CHOICE=${Mame_monitor_choice[$choice_MAME_monitor-1]}
+	echo "                    your choice is :  $monitor_MAME_CHOICE           "
 
-  	if [ "$TYPE_OF_CARD" == "INTEL" ] ||  [ "$TYPE_OF_CARD" == "NVIDIA" ]; then 
-
-		declare -a type_of_monitor=( "arcade_15" "arcade_15_SR480" "arcade_15_SR240" "arcade_15_25_31"  \
-			    	             "arcade_15ex"  "generic_15" "generic_15_SR480" "generic_15_SR240" "ntsc" "pal"  )
+	if [ "$monitor_MAME_CHOICE" == "YES" ]; then
+		echo "#######################################################################"
+		echo "##                     Your type of monitor for M.A.M.E              ##"
+		echo "#######################################################################"
+  		if [ "$TYPE_OF_CARD" == "INTEL" ] ||  [ "$TYPE_OF_CARD" == "NVIDIA" ]; then 
+			declare -a type_of_monitor=( "arcade_15" "arcade_15_SR480" "arcade_15_SR240" "arcade_15_25_31"  \
+		   	             	     	     "arcade_15ex"  "generic_15" "generic_15_SR480" "generic_15_SR240" "ntsc" "pal"  )
+		else
+			declare -a type_of_monitor=( "arcade_15"  "arcade_15_25_31"  \
+		                             	     "arcade_15ex"  "generic_15" "ntsc" "pal" )
+		fi
+		for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
+		echo "#######################################################################"
+		echo "## Make your choice for your monitor for playing Groovy M.A.M.E.     ##"
+		echo "#######################################################################"
+		read monitor_choice_MAME
+		monitor_firmware_MAME=${type_of_monitor[$monitor_choice_MAME-1]}
+		echo "                    your choice is :  $monitor_firmware_MAME           "
+		monitor_name_MAME=$monitor_firmware_MAME
 	else
-		declare -a type_of_monitor=( "arcade_15"  "arcade_15_25_31"  \
-		                             "arcade_15ex"  "generic_15" "ntsc" "pal" )
+		monitor_name_MAME=$monitor_firmware
 	fi
-
-	for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
-	echo "#######################################################################"
-	echo "## Make your choice for your monitor for playing Groovy M.A.M.E.     ##"
-	echo "#######################################################################"
-	read monitor_choice_MAME
-	monitor_firmware_MAME=${type_of_monitor[$monitor_choice_MAME-1]}
-	echo "                    your choice is :  $monitor_firmware_MAME           "
-	monitor_name_MAME=$monitor_firmware_MAME
-	monitor_firmware_MAME+=".bin"
+elif [ "$CRT_Freq" == "25KHz" ]; then
+	monitor_name_MAME="arcade_25"
 else
-	monitor_name_MAME=$monitor_firmware
-	monitor_firmware_MAME+=".bin"
+	monitor_name_MAME="arcade_31"
 fi
+monitor_firmware_MAME+=".bin"
 
 
 clear
@@ -380,114 +420,127 @@ echo "#######################################################################"
 echo "##			Boot Resolution                              ##"                   
 echo "#######################################################################"          
 
-if [ "$TYPE_OF_CARD" == "INTEL" ] ; then
-	if [[ "$video_output" == *"VGA"* ]]; then
-		declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
-	elif  [[ "$video_output" == *"DP"* ]]; then
+if [ "$CRT_Freq" == "15KHz" ]; then
+	if [ "$TYPE_OF_CARD" == "INTEL" ] ; then
+		if [[ "$video_output" == *"VGA"* ]]; then
+			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
+		elif  [[ "$video_output" == *"DP"* ]]; then
+			declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
+       		elif  [[ "$video_output" == *"HDMI"* ]]; then
+			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
+		fi
+	elif [ "$TYPE_OF_CARD" == "NVIDIA" ] ; then
+		if [[ "$video_output" == *"DVI"* ]]; then
+			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
+		elif [[ "$video_output" == *"VGA"* ]]; then
+			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
+        	elif  [[ "$video_output" == *"DP"* ]]; then
+			declare -a boot_resolution=("1280x240ieS" )
+		elif  [[ "$video_output" == *"HDMI"* ]]; then
+			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
+		fi
+	else
 		declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
-       	elif  [[ "$video_output" == *"HDMI"* ]]; then
-		declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
 	fi
-elif [ "$TYPE_OF_CARD" == "NVIDIA" ] ; then
-	if [[ "$video_output" == *"DVI"* ]]; then
-		declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
-	elif [[ "$video_output" == *"VGA"* ]]; then
-		declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
-        elif  [[ "$video_output" == *"DP"* ]]; then
-		declare -a boot_resolution=("1280x240ieS" )
-	elif  [[ "$video_output" == *"HDMI"* ]]; then
-		declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
-
-	fi
+	for var in "${!boot_resolution[@]}" ; do echo "			$((var+1)) : ${boot_resolution[$var]}"; done                            
+	echo "#######################################################################"                           
+	echo "##	     Make your choice for the boot resolution                ##"                          
+	echo "#######################################################################"                                                               
+	read boot_resolution_choice                                                                                                                  
+	boot_resolution=${boot_resolution[$boot_resolution_choice-1]}                                                                                
+	echo "                    your choice is :  $boot_resolution                 	"                                                                                
+	echo "      									"
+elif [ "$CRT_Freq" == "25KHz" ]; then
+	boot_resolution="e"
 else
-	declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
-fi
-
-for var in "${!boot_resolution[@]}" ; do echo "			$((var+1)) : ${boot_resolution[$var]}"; done                            
-echo "#######################################################################"                           
-echo "##	     Make your choice for the boot resolution                ##"                          
-echo "#######################################################################"                                                               
-read boot_resolution_choice                                                                                                                  
-boot_resolution=${boot_resolution[$boot_resolution_choice-1]}                                                                                
-echo "                    your choice is :  $boot_resolution                 "                                                                                
-echo "                                                                       "      
+	boot_resolution="e"
+fi   
 ################################################################################################################################
 #####################              ES RESOLUTION          ######################################################################
 ################################################################################################################################
 
-if ([ "$Drivers_Nvidia_CHOICE" == "NONE" ] || [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]); then
-	echo "                                                                       "                                                                
-	echo "#######################################################################"                           
-	echo "##			EmulationStation Resolution                  ##"  
-	echo "#######################################################################" 
-	if [ "$TYPE_OF_CARD" == "INTEL" ] ; then
-		if [[ "$video_output" == *"VGA"* ]]; then
-			declare -a ES_resolution=( "1280x576_50iHz" "1280x480_60iHz" )                                                                                
-			declare -a ES_resolution_V33=( "1280x576_50" "1280x480_60" )
-	        elif  [[ "$video_output" == *"DP"* ]]; then	
-			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
-			declare -a ES_resolution_V33=( "768x576" "640x480" )
-                elif  [[ "$video_output" == *"HDMI"* ]]; then
-			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
-			declare -a ES_resolution_V33=( "768x576" "640x480" )
-		fi
-	elif [ "$TYPE_OF_CARD" == "NVIDIA" ] ; then
+if [ "$CRT_Freq" == "15KHz" ]; then
+	if ([ "$Drivers_Nvidia_CHOICE" == "NONE" ] || [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]); then
+		echo "                                                                       "                                                                
+		echo "#######################################################################"                           
+		echo "##			EmulationStation Resolution                   ##"  
+		echo "#######################################################################" 
+		if [ "$TYPE_OF_CARD" == "INTEL" ]; then
+			if [[ "$video_output" == *"VGA"* ]]; then
+				declare -a ES_resolution=( "1280x576_50iHz" "1280x480_60iHz" )                                                                                
+				declare -a ES_resolution_V33=( "1280x576_50" "1280x480_60" )
+	        	elif  [[ "$video_output" == *"DP"* ]]; then	
+				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
+				declare -a ES_resolution_V33=( "768x576" "640x480" )
+                	elif  [[ "$video_output" == *"HDMI"* ]]; then
+				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
+				declare -a ES_resolution_V33=( "768x576" "640x480" )
+			fi
+		elif [ "$TYPE_OF_CARD" == "NVIDIA" ] ; then
 
+			if [[ "$video_output" == *"DVI"* ]]; then
+				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
+				declare -a ES_resolution_V33=( "768x576" "640x480" )
+			elif [[ "$video_output" == *"VGA"* ]]; then
+				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
+				declare -a ES_resolution_V33=( "768x576" "640x480" )
+	        	elif  [[ "$video_output" == *"DP"* ]]; then
+				declare -a ES_resolution=( "1280x240_60iHz" )                                                                                
+				declare -a ES_resolution_V33=( "1280x240" )	
+                	elif  [[ "$video_output" == *"HDMI"* ]]; then
+				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" "1280x576_50iHz" "1280x480_60iHz" "1280x240_60iHz") 
+				declare -a ES_resolution_V33=( "768x576" "640x480" "1280x576_50" "1280x480_60" "1280x240_60")
+			fi
+        	else
+			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
+			declare -a ES_resolution_V33=( "768x576" "640x480" )
+        	fi
+
+		for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"; done                                
+		echo "#######################################################################"
+		echo "##	     Make your choice for the EmulationStation Resolution    ##"                  
+		echo "#######################################################################"                                   
+		read es_resolution_choice                                                                                        
+		ES_resolution=${ES_resolution[$es_resolution_choice-1]}
+		ES_resolution_V33=${ES_resolution_V33[$es_resolution_choice-1]}
+		echo "                    Your choice is :  $ES_resolution"    
+	else
+		echo "                                                                       "                                                                
+		echo "#######################################################################"                           
+		echo "##			EmulationStation Resolution                ##"  
+		echo "##                          NVIDIA (Nvidia Drivers)                  ##"
+		echo "#######################################################################"                                                               
 		if [[ "$video_output" == *"DVI"* ]]; then
 			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
 			declare -a ES_resolution_V33=( "768x576" "640x480" )
 		elif [[ "$video_output" == *"VGA"* ]]; then
-			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
-			declare -a ES_resolution_V33=( "768x576" "640x480" )
-	        elif  [[ "$video_output" == *"DP"* ]]; then
-			declare -a ES_resolution=( "1280x240_60iHz" )                                                                                
-			declare -a ES_resolution_V33=( "1280x240" )	
-                elif  [[ "$video_output" == *"HDMI"* ]]; then
-			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" "1280x576_50iHz" "1280x480_60iHz" "1280x240_60iHz") 
-			declare -a ES_resolution_V33=( "768x576" "640x480" "1280x576_50" "1280x480_60" "1280x240_60")
+			declare -a ES_resolution=( "1280x576_50iHz" "1280x480_60iHz" "1280x240_60iHz")                                                                                
+			declare -a ES_resolution_V33=( "640x480" "1280x576_50" "1280x480_60" "1280x240_60")
+        	elif  [[ "$video_output" == *"DP"* ]]; then
+			declare -a ES_resolution=( "1920x240_60iHz" "1920x256_50iHz")                                                                                
+			declare -a ES_resolution_V33=( "1920x240" "1920x256" )	
+       	 	elif  [[ "$video_output" == *"HDMI"* ]]; then
+			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz"  "1280x480_60iHz" "1280x240_60iHz") 
+			declare -a ES_resolution_V33=( "768x576" "640x480" "1280x480_60" "1280x240_60")
 		fi
-        else
-		declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
-		declare -a ES_resolution_V33=( "768x576" "640x480" )
-        fi
-	for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"; done                                
-	echo "#######################################################################"
-	echo "##	     Make your choice for the EmulationStation Resolution    ##"                  
-	echo "#######################################################################"                                   
-	read es_resolution_choice                                                                                        
-	ES_resolution=${ES_resolution[$es_resolution_choice-1]}
-	ES_resolution_V33=${ES_resolution_V33[$es_resolution_choice-1]}
-	echo "                    Your choice is :  $ES_resolution"    
-else
 
-	echo "                                                                       "                                                                
-	echo "#######################################################################"                           
-	echo "##			EmulationStation Resolution                  ##"  
-	echo "##                          NVIDIA (Nvidia Drivers)                  ##"
-	echo "#######################################################################"                                                               
-	if [[ "$video_output" == *"DVI"* ]]; then
-		declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )                                                                                
-		declare -a ES_resolution_V33=( "768x576" "640x480" )
-	elif [[ "$video_output" == *"VGA"* ]]; then
-		declare -a ES_resolution=( "1280x576_50iHz" "1280x480_60iHz" "1280x240_60iHz")                                                                                
-		declare -a ES_resolution_V33=( "640x480" "1280x576_50" "1280x480_60" "1280x240_60")
-        elif  [[ "$video_output" == *"DP"* ]]; then
-		declare -a ES_resolution=( "1920x240_60iHz" "1920x256_50iHz")                                                                                
-		declare -a ES_resolution_V33=( "1920x240" "1920x256" )	
-        elif  [[ "$video_output" == *"HDMI"* ]]; then
-		declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz"  "1280x480_60iHz" "1280x240_60iHz") 
-		declare -a ES_resolution_V33=( "768x576" "640x480" "1280x480_60" "1280x240_60")
+		for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"; done                                
+		echo "#######################################################################"
+		echo "##	     Make your choice for the EmulationStation Resolution    ##"                  
+		echo "#######################################################################"                                   
+		read es_resolution_choice                                                                                        
+		ES_resolution=${ES_resolution[$es_resolution_choice-1]}
+		ES_resolution_V33=${ES_resolution_V33[$es_resolution_choice-1]}
+		echo "                    Your choice is :  $ES_resolution"        
 	fi
+elif [ "$CRT_Freq" == "25KHz" ]; then
 
-	for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"; done                                
-	echo "#######################################################################"
-	echo "##	     Make your choice for the EmulationStation Resolution    ##"                  
-	echo "#######################################################################"                                   
-	read es_resolution_choice                                                                                        
-	ES_resolution=${ES_resolution[$es_resolution_choice-1]}
-	ES_resolution_V33=${ES_resolution_V33[$es_resolution_choice-1]}
-	echo "                    Your choice is :  $ES_resolution"        
+	ES_resolution="1024x768_60iHz"
+	ES_resolution_V33="1024x768"
 
+else
+	ES_resolution="640x480_60iHz"
+	ES_resolution_V33="640x480"
 fi
 
 ################################################################################################################################
@@ -938,9 +991,13 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 
 
 		fi
-        fi
+    fi
 fi
 
+if [ "$CRT_Freq" == "31KHz" ]; then
+	dotclock_min=25.0
+	dotclock_min_mame=$dotclock_min
+fi
 
 #############################################################################
 ## Make the boot writable
@@ -1158,6 +1215,13 @@ case $Version_of_batocera in
 		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 
+        if [ ! -f "/etc/init.d/S31emulationstation.bak" ];then
+    			cp /etc/init.d/S31emulationstation  /etc/init.d/S31emulationstation.bak  
+		fi
+
+		cp /userdata/system/BUILD_15KHz/etc_configs/S31emulationstation-generic /etc/init.d/S31emulationstation 
+		chmod 755 /etc/init.d/S31emulationstation 
+
 		;;
 	*)
 		echo "PROBLEM OF VERSION"
@@ -1253,7 +1317,13 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 
 
 	# MYZAR's WORK and TESTS : THX DUDE !!
-	cp /userdata/system/BUILD_15KHz/System_configs/Nvidia/99-nvidia.conf-generic  /userdata/system/99-nvidia.conf
+	if [ "$CRT_Freq" == "15KHz" ]; then
+		cp /userdata/system/BUILD_15KHz/System_configs/Nvidia/99-nvidia.conf-generic_15  	/userdata/system/99-nvidia.conf
+	elif [ "$CRT_Freq" == "25KHz" ]; then
+		cp /userdata/system/BUILD_15KHz/System_configs/Nvidia/99-nvidia.conf-generic_25  	/userdata/system/99-nvidia.conf
+	else
+		cp /userdata/system/BUILD_15KHz/System_configs/Nvidia/99-nvidia.conf-generic_31  	/userdata/system/99-nvidia.conf
+	fi
 	chmod 644 /userdata/system/99-nvidia.conf
 
 
@@ -1266,8 +1336,22 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 
  		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 640 480 --screenoffset 00 00"	
+			es_arg="--screensize 640 480 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 480 640 --screenoffset 00 00"	
+			es_arg="--screensize 480 640 --screenoffset 00 00"
+		fi
+	elif [[ "$ES_resolution" == "1024x768_60iHz" ]]; then
+		es_res_60iHz="#"
+        	es_res_50iHz="#"
+		es_SR_res_60iHz="#"
+        	es_SR_res_50iHz="#"
+		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
+        		es_customsargs="es.customsargs=--screensize 1024 768 --screenoffset 00 00"
+			es_arg="--screensize 1024 768 --screenoffset 00 00"
+		else
+			es_customsargs="es.customsargs=--screensize 768 1024 --screenoffset 00 00"
+			es_arg="--screensize 768 1024 --screenoffset 00 00"
 		fi
 	elif [[ "$ES_resolution" == "768x576_50iHz" ]]; then                                                                                               
 		es_res_60iHz="#"                                                                                                      
@@ -1276,8 +1360,10 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
         	es_SR_res_50iHz="#"
 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 768 576 --screenoffset 00 00"	
+			es_arg="--screensize 768 576 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 576 768 --screenoffset 00 00"	
+			es_arg="--screensize 576 768 --screenoffset 00 00"
 		fi
 	elif [ "$ES_resolution" == "1920x240_60iHz" ]; then 
 		es_res_60iHz="#"                                                                                                      
@@ -1286,8 +1372,10 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
         	es_SR_res_50iHz="#"
  		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1920 240 --screenoffset 00 00"	
+			es_arg="--screensize 1920 240 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 240 1920 --screenoffset 00 00"	
+			es_arg="--screensize 240 1920 --screenoffset 00 00"
 		fi
 	elif [ "$ES_resolution" == "1920x256_50iHz" ]; then 
 		es_res_60iHz="#"                                                                                                      
@@ -1296,15 +1384,22 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
         	es_SR_res_50iHz=""
  		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1920 256 --screenoffset 00 00"	
+			es_arg="--screensize 1920 256 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 256 1920 --screenoffset 00 00"	
+			es_arg="--screensize 256 1920 --screenoffset 00 00"
 		fi
 	else 
         	echo "#### NO RESOLUTION HERE"        
 	fi
 
-	sed -e "s/\[card_display\]/$video_modeline/g" -e "s/\[640x480\]/$es_res_60iHz/g" -e "s/\[768x576\]/$es_res_50iHz/g" -e "s/\[1920x240\]/$es_SR_res_60iHz/g" -e "s/\[1920x256\]/$es_SR_res_50iHz/g" /userdata/system/BUILD_15KHz/System_configs/Nvidia/custom-es-config-Nvidia-generic >  /userdata/system/custom-es-config
-
+	if [ "$CRT_Freq" == "15KHz" ]; then
+		sed -e "s/\[card_display\]/$video_modeline/g" -e "s/\[640x480\]/$es_res_60iHz/g" -e "s/\[768x576\]/$es_res_50iHz/g" -e "s/\[1920x240\]/$es_SR_res_60iHz/g" -e "s/\[1920x256\]/$es_SR_res_50iHz/g" /userdata/system/BUILD_15KHz/System_configs/Nvidia/custom-es-config-Nvidia-generic_15 >  /userdata/system/custom-es-config
+	elif [ "$CRT_Freq" == "25KHz" ]; then
+		sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/Nvidia/custom-es-config-Nvidia-generic_25 >  /userdata/system/custom-es-config
+	else
+		sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/Nvidia/custom-es-config-Nvidia-generic_31 >  /userdata/system/custom-es-config
+	fi
 	chmod 755  /userdata/system/custom-es-config
 
 else
@@ -1323,8 +1418,11 @@ else
 		es_SR_res_60Hz="#"
  		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 640 480 --screenoffset 00 00"
+			es_arg="--screensize 640 480 --screenoffset 00 00"
+
 		else
 			es_customsargs="es.customsargs=--screensize 480 640 --screenoffset 00 00"
+			es_arg="--screensize 480 640 --screenoffset 00 00"
 		fi
 	elif [ "$ES_resolution" == "768x576_50iHz" ]; then
 		es_res_60iHz="#"
@@ -1334,8 +1432,24 @@ else
 		es_SR_res_60Hz="#"
         	if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 768 576 --screenoffset 00 00"
+			es_arg="--screensize 768 576 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 576 768 --screenoffset 00 00"
+			es_arg="--screensize 576 768 --screenoffset 00 00"
+		fi
+	elif [ "$ES_resolution" == "1024x768_60iHz" ]; then
+		es_res_60iHz="#"
+        	es_res_50iHz="#"
+		es_SR_res_60iHz="#"
+        	es_SR_res_50iHz="#"
+		es_SR_res_60Hz="#"
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
+        		es_customsargs="es.customsargs=--screensize 1024 768 --screenoffset 00 00"
+			es_arg="--screensize 1024 768 --screenoffset 00 00"
+
+		else
+			es_customsargs="es.customsargs=--screensize 768 1024 --screenoffset 00 00"
+			es_arg="--screensize 768 1024 --screenoffset 00 00"
 		fi
 	elif [ "$ES_resolution" == "1280x480_60iHz" ]; then
 		es_res_60iHz="#"
@@ -1345,8 +1459,10 @@ else
 		es_SR_res_60Hz="#"
  		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1280 480 --screenoffset 00 00"
+			es_arg="--screensize 1280 480 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 480 1280 --screenoffset 00 00"
+			es_arg="--screensize 480 1280 --screenoffset 00 00"
 		fi
 	elif [ "$ES_resolution" == "1280x576_50iHz" ]; then
 		es_res_60iHz="#"
@@ -1358,8 +1474,10 @@ else
 
  		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1280 576 --screenoffset 00 00"
+			es_arg="--screensize 1280 576 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 576 1280 --screenoffset 00 00"
+			es_arg="--screensize 576 1280 --screenoffset 00 00"
 		fi
 	elif [ "$ES_resolution" == "1280x240_60iHz" ]; then
 		es_res_60iHz="#"
@@ -1369,8 +1487,10 @@ else
 		es_SR_res_60Hz=""
  		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
         		es_customsargs="es.customsargs=--screensize 1280 240 --screenoffset 00 00"
+			es_arg="--screensize 1280 240 --screenoffset 00 00"
 		else
 			es_customsargs="es.customsargs=--screensize 240 1280 --screenoffset 00 00"
+			es_arg="--screensize 240 1280 -screenoffset 00 00"
 		fi
 	else
         	echo "#### NO RESOLUTION HERE"
@@ -1409,8 +1529,10 @@ else
 		sed -e "s/\[card_display\]/$video_modeline/g" -e "s/\[640x480\]/$es_res_60iHz/g" -e "s/\[768x576\]/$es_res_50iHz/g" /userdata/system/BUILD_15KHz/System_configs/Custom-es-config_v34/custom-es-config-arcade_15ex >  /userdata/system/custom-es-config
 		;;
 		arcade_25)
+		sed -e "s/\[card_display\]/$video_modeline/g"  /userdata/system/BUILD_15KHz/System_configs/Custom-es-config_v34/custom-es-config-arcade_25 >  /userdata/system/custom-es-config
 		;;
 		arcade_31)
+		sed -e "s/\[card_display\]/$video_modeline/g"  /userdata/system/BUILD_15KHz/System_configs/Custom-es-config_v34/custom-es-config-arcade_31 >  /userdata/system/custom-es-config
 		;;
 		d9200)
 		;;
