@@ -1650,7 +1650,7 @@ echo "###################################################"		>> /userdata/system/
 echo "#	DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR" 		>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
 echo "global.retroarch.shaderset= \"none\""
-echo "global.retroarch.smooth = 0"	 				>> /userdata/system/batocera.conf
+echo "global.retroarch.smooth = \"0\""	 				>> /userdata/system/batocera.conf
 echo "global.retroarch.vrr_runloop_enable = \"0\""	 		>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
 echo "#	DISABLE GLOBAL NOTIFICATIONS IN RETROARCH" 			>> /userdata/system/batocera.conf
