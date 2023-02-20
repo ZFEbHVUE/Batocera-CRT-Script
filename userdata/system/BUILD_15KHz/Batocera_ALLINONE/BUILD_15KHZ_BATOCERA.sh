@@ -1599,7 +1599,7 @@ else
 fi
 
 #######################################################################################
-# Create a first_script.sh for exiting of Emulationstatio
+# Create a first_script.sh for exiting of Emulationstation
 #######################################################################################
 ## if the folder doesn't exist, it will be create now
 if [ ! -d "/userdata/system/scripts" ];then
@@ -1631,10 +1631,10 @@ echo "## ES Settings, See wiki page on how to center EmulationStation" 	>> /user
 echo $es_customsargs 							>> /userdata/system/batocera.conf
 
 #######################################################################################"		
-## CRT GLOBAL CONFIG RETROARCH
+## CRT GLOBAL CONFIG FOR RETROARCH
 #######################################################################################"
 echo "###################################################"		>> /userdata/system/batocera.conf
-echo "#CRT CONFIG RETROARCH" 						>> /userdata/system/batocera.conf
+echo "#	CRT CONFIG RETROARCH" 						>> /userdata/system/batocera.conf
 echo "###################################################"	 	>> /userdata/system/batocera.conf
 echo "global.retroarch.menu_driver=rgui" 				>> /userdata/system/batocera.conf
 echo "global.retroarch.menu_show_advanced_settings=true" 		>> /userdata/system/batocera.conf
@@ -1646,17 +1646,15 @@ else
 	echo "global.retroarch.crt_switch_resolution_super = \"0\""	 	>> /userdata/system/batocera.conf
 fi
 echo "global.retroarch.crt_switch_hires_menu = \"true\"" 		>> /userdata/system/batocera.conf
-echo "global.smooth=0" 							>> /userdata/system/batocera.conf
-echo "global.rewind=0" 						        >> /userdata/system/batocera.conf
-echo "global.shaderset=none" 						>> /userdata/system/batocera.conf
-echo "global.bezel=none" 						>> /userdata/system/batocera.conf
-echo "global.bezel_stretch=0" 						>> /userdata/system/batocera.conf
-echo "global.bezel.tattoo=0" 						>> /userdata/system/batocera.conf
-echo "global.hud=none" 							>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
-#########################################################################################################
-##  DISABLE GLOBAL NOTIFICATIONS  
-#########################################################################################################
+echo "#	DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR" 		>> /userdata/system/batocera.conf
+echo "###################################################"		>> /userdata/system/batocera.conf
+echo "global.retroarch.shaderset= \"none\""
+echo "global.retroarch.smooth = 0"	 				>> /userdata/system/batocera.conf
+echo "global.retroarch.vrr_runloop_enable = \"0\""	 		>> /userdata/system/batocera.conf
+echo "###################################################"		>> /userdata/system/batocera.conf
+echo "#	DISABLE GLOBAL NOTIFICATIONS IN RETROARCH" 			>> /userdata/system/batocera.conf
+echo "###################################################"		>> /userdata/system/batocera.conf
 echo "##  Disable Retroarch Notifications for setting refresh rate" 	  >> /userdata/system/batocera.conf
 echo "global.retroarch.notification_show_refresh_rate = \"false\""	 	>> /userdata/system/batocera.conf
 echo "## Change Notifications Size. Default is 32 (way to big) but 10 looks better on a CRT " >> /userdata/system/batocera.conf
@@ -1664,7 +1662,7 @@ echo "global.retroarch.video_font_size = 10"					>> /userdata/system/batocera.co
 echo "### Disable Everything with notifications"					>> /userdata/system/batocera.conf
 echo "global.retroarch.settings_show_onscreen_display = \"false\""      	>> /userdata/system/batocera.conf
 #########################################################################################################
-##  SOME GLOBAL NOTIFICATIONS CAN BE AVOID WITH REPLACING TRUE BY FALSE    
+##  SOME GLOBAL RETROARCH NOTIFICATIONS CAN BE AVOID WITH REPLACING TRUE BY FALSE    
 #########################################################################################################
 echo "## global notifications can be avoid with replacing \"true\" by \"false\"" >> /userdata/system/batocera.conf 
 echo "global.retroarch.notification_show_autoconfig = \"true\""			>> /userdata/system/batocera.conf
@@ -1676,9 +1674,19 @@ echo "global.retroarch.notification_show_patch_applied = \"true\""		>> /userdata
 echo "global.retroarch.notification_show_remap_load = \"true\"" 		>> /userdata/system/batocera.conf
 echo "global.retroarch.notification_show_screenshot = \"true\""			>> /userdata/system/batocera.conf
 echo "global.retroarch.notification_show_set_initial_disk = \"true\""		>> /userdata/system/batocera.conf
-echo "windows.bezel=none"							>> /userdata/system/batocera.conf 
-echo "windows.bezel_stretch=0"							>> /userdata/system/batocera.conf 
-echo "windows.bezel.tattoo=0"							>> /userdata/system/batocera.conf
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "##  GUNCON2 SHADER SAVE FIX" 						>> /userdata/system/batocera.conf     
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "global.retroarch.video_shader_preset_save_reference_enable = \"true\""	>> /userdata/system/batocera.conf
+echo "global.retroarch.video_shader_enable = \"true\""				>> /userdata/system/batocera.conf
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "##  GLOBAL EMULATOR SETTINGS" 						>> /userdata/system/batocera.conf     
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "global.bezel= \"none\""
+echo "global.bezel.resize_tattoo= \"0\""
+echo "global.bezel.tattoo= \"0\""
+echo "global.bezel_stretch= \"0\""
+echo "global.hud= \"none\""
 #######################################################################################
 ##  Rotation of EmulationStation     
 #######################################################################################
@@ -1808,7 +1816,9 @@ fi
 ####################################################################################### 
 
 
-echo "## Mame configuration parameters" >> /userdata/system/batocera.conf
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "##  GROOVYMAME EMULATOR SETTINGS" 					>> /userdata/system/batocera.conf     
+echo "###################################################"			>> /userdata/system/batocera.conf
 echo "mame.bezel=none"   	>> /userdata/system/batocera.conf
 echo "mame.bezel_stretch=0"	>> /userdata/system/batocera.conf
 echo "mame.core=mame"		>> /userdata/system/batocera.conf
@@ -1818,7 +1828,9 @@ echo "mame.bgfxshaders=None"	>> /userdata/system/batocera.conf
 echo "mame.hud=none"		>> /userdata/system/batocera.conf
 echo "mame.switchres=1"		>> /userdata/system/batocera.conf
 
-echo "# MAME TATE MODE" >> /userdata/system/batocera.conf 
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "##  GROOVYMAME TATE SETTINGS" 					>> /userdata/system/batocera.conf     
+echo "###################################################"			>> /userdata/system/batocera.conf
  
 if [ -d "/userdata/system/configs/mame/ini" ];then
 
