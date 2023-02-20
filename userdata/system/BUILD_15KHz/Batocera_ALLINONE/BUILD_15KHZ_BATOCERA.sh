@@ -788,7 +788,7 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 			if [ "$R9_380" == "YES" ]; then
 				video_modeline=$term_DVI-$((nbr))
 			else
-				video_modeline=$term_DVI-$((nbr-1))n
+				video_modeline=$term_DVI-$((nbr-1))
 			fi
 		fi  
 
