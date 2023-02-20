@@ -1649,9 +1649,9 @@ echo "global.retroarch.crt_switch_hires_menu = \"true\"" 		>> /userdata/system/b
 echo "###################################################"		>> /userdata/system/batocera.conf
 echo "#	DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR" 		>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
-echo "global.retroarch.shaderset= \"none\""
-echo "global.retroarch.smooth = \"0\""	 				>> /userdata/system/batocera.conf
-echo "global.retroarch.vrr_runloop_enable = \"0\""	 		>> /userdata/system/batocera.conf
+echo "global.retroarch.shaderset=none"
+echo "global.retroarch.smooth=0"	 				>> /userdata/system/batocera.conf
+echo "global.retroarch.vrr_runloop_enable=0"	 			>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
 echo "#	DISABLE GLOBAL NOTIFICATIONS IN RETROARCH" 			>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
@@ -1682,11 +1682,11 @@ echo "global.retroarch.video_shader_enable = \"true\""				>> /userdata/system/ba
 echo "###################################################"			>> /userdata/system/batocera.conf
 echo "##  GLOBAL EMULATOR SETTINGS" 						>> /userdata/system/batocera.conf     
 echo "###################################################"			>> /userdata/system/batocera.conf
-echo "global.bezel= \"none\""
-echo "global.bezel.resize_tattoo= \"0\""
-echo "global.bezel.tattoo= \"0\""
-echo "global.bezel_stretch= \"0\""
-echo "global.hud= \"none\""
+echo "global.bezel=none"
+echo "global.bezel.resize_tattoo=0"
+echo "global.bezel.tattoo=0"
+echo "global.bezel_stretch=0"
+echo "global.hud=none"
 #######################################################################################
 ##  Rotation of EmulationStation     
 #######################################################################################
