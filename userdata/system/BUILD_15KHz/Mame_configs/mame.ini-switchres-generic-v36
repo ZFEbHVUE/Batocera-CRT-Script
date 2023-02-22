@@ -304,7 +304,7 @@ changeres                 1
 lock_system_modes         1
 lock_unsupported_modes    1
 refresh_dont_care         0
-dotclock_min              [dotclock_min_value]
+dotclock_min              [dotclock_min_mame]
 h_size                    1
 h_shift                   0
 v_shift                   0
