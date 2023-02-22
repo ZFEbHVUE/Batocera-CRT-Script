@@ -1649,7 +1649,7 @@ echo "global.retroarch.crt_switch_hires_menu = \"true\"" 		>> /userdata/system/b
 echo "###################################################"		>> /userdata/system/batocera.conf
 echo "#	DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR" 		>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
-echo "global.retroarch.shaderset=none"
+echo "global.retroarch.shaderset=none"					>> /userdata/system/batocera.conf
 echo "global.retroarch.smooth=0"	 				>> /userdata/system/batocera.conf
 echo "global.retroarch.vrr_runloop_enable=0"	 			>> /userdata/system/batocera.conf
 echo "###################################################"		>> /userdata/system/batocera.conf
