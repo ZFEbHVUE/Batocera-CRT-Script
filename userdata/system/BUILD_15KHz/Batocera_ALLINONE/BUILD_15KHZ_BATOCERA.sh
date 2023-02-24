@@ -299,7 +299,7 @@ echo "##	     Make your choice the frequency screen                 ##"
 echo "#######################################################################"
 read CRT_Frequency_choice
 CRT_Freq=${CRT_Frequency[$CRT_Frequency_choice-1]}
-echo "                    your choice is :  $CRT_Freq  
+echo "                    your choice is :  $CRT_Freq	"  
 
 ########################################################################################
 #####################		GENERAL  MONITOR                      ##################
@@ -350,22 +350,11 @@ else
 	monitor_name=$monitor_firmware
 fi
 monitor_firmware+=".bin"
+clear
 
-
-for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
-echo "#######################################################################"
-echo "##	     Make your choice for monitor type to use                ##"
-echo "#######################################################################"
-read monitor_choice
-monitor_firmware=${type_of_monitor[$monitor_choice-1]}
-echo "                    your choice is :  $monitor_firmware                "
-monitor_name=$monitor_firmware
-monitor_firmware+=".bin"
 ########################################################################################
 #####################		MAME MONITOR                      ######################
 ########################################################################################
-
-clear
 
 if [ "$CRT_Freq" == "15KHz" ]; then
 	echo "                                                                       "                                                               
