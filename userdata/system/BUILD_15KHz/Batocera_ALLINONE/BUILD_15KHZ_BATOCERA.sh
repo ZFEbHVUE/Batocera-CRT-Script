@@ -1673,11 +1673,11 @@ echo "global.retroarch.video_shader_enable = \"true\""				>> /userdata/system/ba
 echo "###################################################"			>> /userdata/system/batocera.conf
 echo "##  GLOBAL EMULATOR SETTINGS" 						>> /userdata/system/batocera.conf     
 echo "###################################################"			>> /userdata/system/batocera.conf
-echo "global.bezel=none"
-echo "global.bezel.resize_tattoo=0"
-echo "global.bezel.tattoo=0"
-echo "global.bezel_stretch=0"
-echo "global.hud=none"
+echo "global.bezel=none"							>> /userdata/system/batocera.conf
+echo "global.bezel.resize_tattoo=0"						>> /userdata/system/batocera.conf
+echo "global.bezel.tattoo=0"							>> /userdata/system/batocera.conf
+echo "global.bezel_stretch=0"							>> /userdata/system/batocera.conf
+echo "global.hud=none"								>> /userdata/system/batocera.conf
 #######################################################################################
 ##  Rotation of EmulationStation     
 #######################################################################################
