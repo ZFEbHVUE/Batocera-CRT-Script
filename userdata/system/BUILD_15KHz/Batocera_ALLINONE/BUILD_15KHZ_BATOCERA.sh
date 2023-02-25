@@ -386,12 +386,7 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 		for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
 		echo "#######################################################################"
 		echo "## Make your choice for your monitor for playing Groovy M.A.M.E.     ##"
-		echo "#############################################################if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]&&[ "$Version_of_batocera" == "v36" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=false/' -e  's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'	 	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
-	else
-		sed -e 's/.*nvidia-driver=.*/#nvidia-driver=true/' -e 's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
-	fi
-##########"
+		echo "#######################################################################"
 		read monitor_choice_MAME
 		monitor_firmware_MAME=${type_of_monitor[$monitor_choice_MAME-1]}
 		echo "                    your choice is :  $monitor_firmware_MAME           "
