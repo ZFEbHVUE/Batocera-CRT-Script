@@ -1121,7 +1121,7 @@ if [ ! -f "/usr/bin/batocera-resolution.bak" ];then
 	cp /usr/bin/batocera-resolution /usr/bin/batocera-resolution.bak                         
 fi 
 
-if [  -f "/usr/bin/emulationstation-standalone.bak" ];then                                             
+if [ ! -f "/usr/bin/emulationstation-standalone.bak" ];then                                             
 		cp /usr/bin/emulationstation-standalone /usr/bin/emulationstation-standalone.bak
 fi
 
