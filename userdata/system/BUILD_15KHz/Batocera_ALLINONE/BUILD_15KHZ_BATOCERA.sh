@@ -1120,12 +1120,18 @@ cp -rf /userdata/system/BUILD_15KHz/Firmware_configs/edid /lib/firmware/
 if [ ! -f "/usr/bin/batocera-resolution.bak" ];then                                                           
 	cp /usr/bin/batocera-resolution /usr/bin/batocera-resolution.bak                         
 fi 
-if [  -f "/usr/bin/emulationstation-standalone" ];then                                             
+
+if [  -f "/usr/bin/emulationstation-standalone.bak" ];then                                             
 		cp /usr/bin/emulationstation-standalone /usr/bin/emulationstation-standalone.bak
-     	fi
+fi
+
 if [ ! -f "/usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py.bak" ];then
 	cp /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py.bak
 fi
+
+if [ ! -f "/usr/bin/retroarch.bak" ];then                                                           
+	cp /usr/bin/retroarch /usr/bin/retroarch.bak                         
+fi 
 
 ## Only for Batocera >= V32
 case $Version_of_batocera in
@@ -1133,7 +1139,9 @@ case $Version_of_batocera in
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/batocera-resolution-v32 /usr/bin/batocera-resolution
 		chmod 755 /usr/bin/batocera-resolution
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v32 /usr/bin/emulationstation-standalone                                    
-		chmod 755 /usr/bin/emulationstation-standalone	
+		chmod 755 /usr/bin/emulationstation-standalone
+#		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch                                    
+#		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v32 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
@@ -1148,6 +1156,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v33 /usr/bin/emulationstation-standalone                                    
 		chmod 755 /usr/bin/emulationstation-standalone	
+#		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch                                   
+#		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v33 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
@@ -1162,6 +1172,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v34 /usr/bin/emulationstation-standalone                                    
 		chmod 755 /usr/bin/emulationstation-standalone
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch                                    
+		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v34 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
@@ -1175,6 +1187,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution
 	       	cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v35 /usr/bin/emulationstation-standalone                                    
 		chmod 755 /usr/bin/emulationstation-standalone
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch                                    
+		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 #		cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v35 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
@@ -1203,6 +1217,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v36 /usr/bin/emulationstation-standalone                                    
 		chmod 755 /usr/bin/emulationstation-standalone
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch                                    
+		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 		#cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v36 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
@@ -1223,6 +1239,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v36 /usr/bin/emulationstation-standalone                                    
 		chmod 755 /usr/bin/emulationstation-standalone
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch                                    
+		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 		#cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v36 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
