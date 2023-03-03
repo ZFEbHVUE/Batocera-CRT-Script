@@ -1881,6 +1881,20 @@ echo "mame.bgfxshaders=None"	>> /userdata/system/batocera.conf
 echo "mame.hud=none"		>> /userdata/system/batocera.conf
 echo "mame.switchres=1"		>> /userdata/system/batocera.conf
 
+
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "##  NEOGEO SYSTEM SETTINGS"						>> /userdata/system/batocera.conf     
+echo "###################################################"			>> /userdata/system/batocera.conf
+echo "neogeo.bezel=none"   	>> /userdata/system/batocera.conf
+echo "neogeo.bezel_stretch=0"	>> /userdata/system/batocera.conf
+echo "neogeo.core=mame"		>> /userdata/system/batocera.conf
+echo "neogeo.emulator=mame"	>> /userdata/system/batocera.conf
+echo "neogeo.bezel.tattoo=0"	>> /userdata/system/batocera.conf
+echo "neogeo.bgfxshaders=None"	>> /userdata/system/batocera.conf
+echo "neogeo.hud=none"		>> /userdata/system/batocera.conf
+echo "neogeo.switchres=1"	>> /userdata/system/batocera.conf
+
+
 echo "###################################################"			>> /userdata/system/batocera.conf
 echo "##  GROOVYMAME TATE SETTINGS" 					>> /userdata/system/batocera.conf     
 echo "###################################################"			>> /userdata/system/batocera.conf
