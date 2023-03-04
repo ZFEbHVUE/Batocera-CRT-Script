@@ -1645,15 +1645,19 @@ sed -e "s/\[display_mame_rotation\]/$display_mame_rotate/g" -e "s/\[display_fbne
 
 chmod 755 /userdata/system/scripts/first_script.sh
 
+
 #######################################################################################
-# Create a 1_GunCon2.sh.sh for exiting of Emulationstation
+# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36 and V37
 #######################################################################################
-## if the folder doesn't exist, it will be create now
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
 
-sed -e "s/\[card_display\]/$video_modeline/g"  /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic  >  /userdata/system/scripts/1_GunCon2.sh
+	sed -e "s/\[card_display\]/$video_modeline/g"  /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic  >  /userdata/system/scripts/1_GunCon2.sh
+	chmod 755 /userdata/system/scripts/1_GunCon2.sh
 
-chmod 755 /userdata/system/scripts/1_GunCon2.sh
-
+	sed -e "s/\[card_display\]/$video_modeline/g"  /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic  >  /userdata/roms/ports/GunCon2_Calibration.sh
+	chmod 755 /userdata/roms/ports/GunCon2_Calibration.sh
+	
+fi
 #######################################################################################
 ## Copy of batocera.conf for Libretro cores for use with Switchres
 #######################################################################################
