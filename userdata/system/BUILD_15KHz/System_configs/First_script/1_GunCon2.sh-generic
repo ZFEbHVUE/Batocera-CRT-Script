@@ -9,7 +9,7 @@ case $1 in
 
 		#if [[ "$4" == "mesen" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi
 		#if [[ "$4" == "nestopia" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi
-        #if [[ "$4" == "fceumm" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi	
+        	#if [[ "$4" == "fceumm" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi	
 	
 		## Super Nintendo ##
 
@@ -17,15 +17,15 @@ case $1 in
 
 		## DreamCast ##
 
-        #if [[ "$2" == "dreamcast" ]]&&[[ "$3" == "libretro" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi	
+        	#if [[ "$2" == "dreamcast" ]]&&[[ "$3" == "libretro" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi	
 
 		## Atomiswave ##
 
-        #if [[ "$2" == "atomiswave" ]]&&[[ "$3" == "libretro" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi
+        	#if [[ "$2" == "atomiswave" ]]&&[[ "$3" == "libretro" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi
 		
 		## Naomi ##
 
-        #if [[ "$2" == "naomi" ]]&&[[ "$3" == "libretro" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi
+        	#if [[ "$2" == "naomi" ]]&&[[ "$3" == "libretro" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi
         
 		## Sega Master System ##
 		#if [[ "$4" == "genesisplusgx" ]]; then evdev-joystick --e /dev/input/by-id/usb-0b9a_016a-event-mouse -m 122 -M 730 -a 3 -f 0; fi
