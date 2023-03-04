@@ -1646,6 +1646,14 @@ sed -e "s/\[display_mame_rotation\]/$display_mame_rotate/g" -e "s/\[display_fbne
 chmod 755 /userdata/system/scripts/first_script.sh
 
 #######################################################################################
+# Create a 1_GunCon2.sh.sh for exiting of Emulationstation
+#######################################################################################
+
+sed -e "s/\[card_display\]/$video_modeline/g"  /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic  >  /userdata/system/scripts/1_GunCon2.sh
+
+chmod 755 /userdata/system/scripts/1_GunCon2.sh
+
+#######################################################################################
 ## Copy of batocera.conf for Libretro cores for use with Switchres
 #######################################################################################
 # first time using the script save the batocera.conf in batocera.conf.bak                                                                                                                                                                          
