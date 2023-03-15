@@ -1665,8 +1665,16 @@ fi
 if [ ! -f "/userdata/system/batocera.conf.bak" ];then                                                                                                                                                                                                 
 	cp /userdata/system/batocera.conf /userdata/system/batocera.conf.bak                                                                                                                                                                  
 fi      
+# avoid append on each script launch
 
-cp /userdata/system/batocera.conf.bak /userdata/system/batocera.conf
+LINE_NO=$(sed -n '/## ES Settings, See wiki page on how to center EmulationStation/{=;q;}' /userdata/system/batocera.conf.bak)
+
+if [ -z "$LINE_NO" ]; then 
+	cp /userdata/system/batocera.conf.bak /userdata/system/batocera.conf 
+else 
+	truncate -s 0 batocera.conf
+	sed -n "1,$(( LINE_NO - 1 )) p; $LINE_NO q" /userdata/system/batocera.conf.bak > /userdata/system/batocera.conf
+fi
 
 
 #######################################################################################
