@@ -994,6 +994,90 @@ if [ "$CRT_Freq" == "31KHz" ]; then
 	dotclock_min_mame=$dotclock_min
 fi
 
+#######################################################################
+###                 Start of dotclock_min config                   ####
+#######################################################################	
+
+echo "#######################################################################"
+echo "##                    Advanced configuration                         ##"
+echo "##           Tinker only if you know what you are doing              ##"
+echo "##               or if you have problems launching                   ##"
+echo "##                some cores like nes or pcengine                    ##"
+echo "##                        (Black Screen)                             ##"
+echo "##                                                                   ##"
+echo "##                   minimum dotclock selector                       ##"
+echo "##                                                                   ##"
+echo "##        If you don't know about it or if you want to let           ##"
+echo "##       batocera configure automatically your dotclock_min          ##"
+echo "##                        press 0 or enter                           ##"
+echo "##                                                                   ##"
+echo "#######################################################################" 
+declare -a dcm_selector=( "Low - 0" "Mild - 6" "Medium - 12" "High - 25 (superresolutions)" )
+for var in "${!dcm_selector[@]}" ; do echo "			$((var+1)) : ${dcm_selector[$var]}"; done
+echo "                        0 : Batocera default minimum dotclock         "
+echo "#######################################################################" 
+echo "##            Make your choice for minimum dotclock                  ##"
+echo "#######################################################################"
+
+read dcm
+if [ -z "$dcm" ] ; then 
+	echo "                    your choice is : Batocera default minimum dotclock"
+elif [ "x$dcm" != "x0" ] ; then
+	echo "                    your choice is :  ${dcm_selector[$dcm-1]}"
+	case $dcm in
+		1) dotclock_min=0;;
+		2) dotclock_min=6;;
+		3) dotclock_min=12;;
+		4) dotclock_min=25;;
+		*) ;;
+	esac
+else
+	echo "                    your choice is : Batocera default minimum dotclock"
+fi
+
+# Check if it was chosen to configurate a particular monitor for M.A.M.E.
+
+if [ "$monitor_MAME_CHOICE" = "YES" ] ; then
+	echo "#######################################################################"
+	echo "##               M.A.M.E. MONITOR Advanced configuration             ##"
+	echo "##           Tinker only if you know what you are doing              ##"
+	echo "##               or if you have problems launching                   ##"
+	echo "##                            M.A.M.E.                               ##"
+	echo "##                        (Black Screen)                             ##"
+	echo "##                                                                   ##"
+	echo "##                 M.A.M.E. minimum dotclock selector                ##"
+	echo "##                                                                   ##"
+	echo "##        If you don't know about it or if you want to let           ##"
+	echo "##                same dotclock_min as main monitor                  ##"
+	echo "##                        press 0 or enter                           ##"
+	echo "##                                                                   ##"
+	echo "#######################################################################" 
+	declare -a dcm_m_selector=( "Low - 0" "Mild - 6" "Medium - 12" "High - 25 (superresolutions)" )
+	for var in "${!dcm_m_selector[@]}" ; do echo "			$((var+1)) : ${dcm_m_selector[$var]}"; done
+	echo "                        0 : Same as main monitor                       "
+	echo "#######################################################################" 
+	echo "##            Make your choice for MAME minimum dotclock             ##"
+	echo "#######################################################################"
+
+	read dcm_m
+	if [ -z "$dcm_m" ] ; then 
+		echo "                    your choice is : Same as main monitor ($dotclock_min)"
+		dotclock_min_mame=$dotclock_min
+	elif [ "x$dcm_m" != "x0" ] ; then
+		echo "                    your choice is :  ${dcm_selector[$dcm_m-1]}"
+		case $dcm_m in
+			1) dotclock_min_mame=0;;
+			2) dotclock_min_mame=6;;
+			3) dotclock_min_mame=12;;
+			4) dotclock_min_mame=25;;
+			*) ;;
+		esac
+	else
+		echo "                    your choice is : Same as main monitor ($dotclock_min)"
+		dotclock_min_mame=$dotclock_min
+	fi
+fi
+
 #############################################################################
 ## Make the boot writable
 #############################################################################
