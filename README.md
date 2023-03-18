@@ -11,8 +11,11 @@ This script would not have been possible without the following people to name a 
  - D0023R Doozer's continued work at adding 15 KHz support to the Linux kernel.
  - dmanlcf's work on keeping up to date for the 15khz patches for Batocera.
 
+### Contributors 
+ - Sirmagb
+ - yavimaya
 
-### Tester's 
+### Testers 
  - GecKoTDF
  - Sirmagb
 
