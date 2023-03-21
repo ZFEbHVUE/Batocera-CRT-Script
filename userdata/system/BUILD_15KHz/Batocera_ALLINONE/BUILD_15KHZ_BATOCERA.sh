@@ -993,6 +993,289 @@ if [ "$CRT_Freq" == "31KHz" ]; then
 	dotclock_min=25.0
 	dotclock_min_mame=$dotclock_min
 fi
+#######################################################################
+###                 Start of ADVANCED CONFIGURATION                ####
+#######################################################################	
+echo " "
+clear 
+echo "#######################################################################" 
+echo "##                                                                   ##"
+echo "##                      ADVANCED CONFIGURATION                       ##"
+echo "##                                                                   ##"
+echo "##                     Experimental options for:                     ##"
+echo "##                        1)minimum dotclock                         ##"
+echo "##                        2)super-resolution                         ##" 
+echo "##                                                                   ##"
+echo "##       (If you don't know what this means, just press ENTER)       ##"
+echo "##                                                                   ##"
+echo "#######################################################################" 
+declare -a Default_DT_SR_choice=( "NO" "YES" ) 
+for var in "${!Default_DT_SR_choice[@]}" ; do echo "			$((var+1)) : ${Default_DT_SR_choice[$var]}"; done
+echo "#######################################################################"
+echo "##                 Go into advanced configuration ?                  ##"
+echo "#######################################################################"
+
+read choice_DT_SR
+while [[ ! ${choice_DT_SR} =~ ^[1-$((var+1))]$ ]] && [[ "$choice_DT_SR" != "" ]] ; do
+	echo "Select option 1 to $((var+1)) or ENTER to bypass this configuration":
+	read choice_DT_SR
+done
+if [[ "$choice_DT_SR" = "" || $choice_DT_SR = "1" ]]  ; then 
+	DT_SR_Choice="Don't mess with it, sorry ;)."
+else 
+	DT_SR_Choice=${Default_DT_SR_choice[$choice_DT_SR-1]}
+fi
+echo "                    your choice is : $DT_SR_Choice "
+
+if [ "$DT_SR_Choice" == "YES" ] ; then
+	clear
+	echo "#######################################################################"
+	echo "##                                                                   ##"
+	echo "##                      ADVANCED CONFIGURATION       1/2             ##"
+	echo "##                                                                   ##"
+	echo "##            Tinker only if you know what you are doing             ##"
+	echo "##                 or if you have problems launching                 ##"
+	echo "##                  some cores like nes or pcengine                  ##"
+	echo "##                          (Black Screen)                           ##"
+	echo "##                                                                   ##"
+	echo "##              ==     minimum dotclock selector     ==              ##"
+	echo "##                                                                   ##"
+	echo "##         If you don't know about it or if you want to let          ##"
+	echo "##        batocera configure automatically your dotclock_min         ##"
+	echo "##                            press ENTER                            ##"
+	echo "##                                                                   ##"
+	echo "#######################################################################"
+	declare -a dcm_selector=( "Low - 0" "Mild - 6" "Medium - 12" "High - 25" "CUSTOM")
+	for var in "${!dcm_selector[@]}" ; do echo "			$((var+1)) : ${dcm_selector[$var]}"; done
+	echo "#######################################################################" 
+	echo "##               Make your choice for minimum dotclock               ##"
+	echo "#######################################################################"
+
+	read dcm
+	
+	while [[ ! ${dcm} =~ ^[1-$((var+1))]$ ]] && [[ "$dcm" != "" ]] ; do
+		echo "Select option 1 to $((var+1)) or ENTER to bypass this configuration":
+		read dcm
+	done
+	if [ -z "$dcm" ] ; then 
+		echo "                    your choice is : Batocera default minimum dotclock"
+	else 
+		echo "                    your choice is :  ${dcm_selector[$dcm-1]}"
+		case $dcm in
+			1) 	dotclock_min=0;;
+			2) 	dotclock_min=6;;
+			3) 	dotclock_min=12;;
+			4) 	dotclock_min=25;;
+			5) 	echo "#######################################################################"
+				echo "##       Select your custom main dotclock_min: between 0 to 25       ##"
+				echo "#######################################################################"
+				read dotclock_min
+				while [[ ! $dotclock_min =~ ^[0-9]+$ || "$dotclock_min" -lt 0 || "$dotclock_min" -gt 25 ]]; do
+					echo "Enter number between 0 and 25 for dotclock_min"
+					read dotclock_min
+				done
+				echo "                    CUSTOM dotclock_min value = ${dotclock_min}"
+			;;
+		esac
+	fi
+	
+	# Check if it was chosen to configurate a particular monitor for M.A.M.E.
+	if [ "$monitor_MAME_CHOICE" = "YES" ] ; then
+		echo ""
+		echo "#######################################################################"
+		echo "##                                                                   ##"
+		echo "##                      ADVANCED CONFIGURATION       1b/2            ##"
+		echo "##                                                                   ##"
+		echo "##                         M.A.M.E. MONITOR                          ##"
+		echo "##            Tinker only if you know what you are doing             ##"
+		echo "##                 or if you have problems launching                 ##"
+		echo "##                           M.A.M.E.                                ##"
+		echo "##                        (Black Screen)                             ##"
+		echo "##                                                                   ##"
+		echo "##         ==     M.A.M.E. minimum dotclock selector     ==          ##"
+		echo "##                                                                   ##"
+		echo "##         If you don't know about it or if you want to let          ##"
+		echo "##                 same dotclock_min as main monitor                 ##"
+		echo "##                            press ENTER                            ##"
+		echo "##                                                                   ##"
+		echo "#######################################################################" 
+		declare -a dcm_m_selector=( "Low - 0" "Mild - 6" "Medium - 12" "High - 25" "CUSTOM")
+		for var in "${!dcm_m_selector[@]}" ; do echo "			$((var+1)) : ${dcm_m_selector[$var]}"; done
+		echo "#######################################################################" 
+		echo "##            Make your choice for MAME minimum dotclock             ##"
+		echo "#######################################################################"
+
+		read dcm_m
+		while [[ ! ${dcm_m} =~ ^[1-$((var+1))]$ ]] && [[ "$dcm_m" != "" ]] ; do
+			echo "Select option 1 to $((var+1)) or ENTER to bypass this configuration":
+			read dcm_m
+		done
+		if [ -z "$dcm_m" ] ; then 
+			echo "                    your choice is : Same as main monitor ($dotclock_min)"
+			dotclock_min_mame=$dotclock_min
+		else
+			echo "                    your choice is :  ${dcm_selector[$dcm_m-1]}"
+			case $dcm_m in
+				1)	dotclock_min_mame=0;;
+				2)	dotclock_min_mame=6;;
+				3)	dotclock_min_mame=12;;
+				4)	dotclock_min_mame=25;;
+				5) 	echo "#######################################################################"
+					echo "##       Select your MAME custom dotclock_min: between 0 to 25       ##"
+					echo "#######################################################################"
+					read dotclock_min_mame
+					while [[ ! $dotclock_min_mame =~ ^[0-9]+$ || "$dotclock_min_mame" -lt 0 || "$dotclock_min_mame" -gt 25 ]] ; do
+						echo "Enter number between 0 and 25 for dotclock_min_mame"
+						read dotclock_min_mame
+					done
+					echo "                    CUSTOM dotclock_min_mame value = ${dotclock_min_mame}"
+					;;
+			esac
+		fi
+	fi
+	
+	#########################################################################
+	##                    super-resolution CONFIG                          ##
+	#########################################################################
+	echo ""
+	echo "#######################################################################"
+	echo "##                                                                   ##"
+	echo "##                      ADVANCED CONFIGURATION       2/2             ##"
+	echo "##                                                                   ##"
+	echo "##                  ==     Super-resolution     ==                   ##"
+	echo "##                                                                   ##"
+	echo "##        This option sets the value for vertical resolution         ##"
+	echo "##             You can set a default maker tested value              ##"
+	echo "##        or you can test your own custom one (experimental)         ##"
+	echo "##                                                                   ##"
+	echo "##                  If you don't know about it or                    ##"
+	echo "##                 if you want to let the script                     ##"
+	echo "##        set default super-resolution for your graphics card        ##"
+	echo "##                            press ENTER                            ##"
+	echo "##                                                                   ##"
+	echo "#######################################################################"
+	declare -a sr_selector=( "1920 - Intel default" "2560 - amd/ati default" "3840 - nvidia default" "CUSTOM (experimental)")
+	for var in "${!sr_selector[@]}" ; do echo "			$((var+1)) : ${sr_selector[$var]}"; done
+	
+	echo "#######################################################################"
+	echo "##             Make your choice for super-resolution                 ##"
+	echo "#######################################################################"
+	read sr_choice
+	while [[ ! ${sr_choice} =~ ^[1-$((var+1))]$ ]] && [[ "$sr_choice" != "" ]] ; do
+		echo "Select option 1 to $((var+1)) or ENTER to bypass this configuration":
+		read sr_choice
+	done
+	if [ -z "$sr_choice" ] ; then 
+		echo "                    your choice is : default super-resolution"
+	else
+		echo "                    your choice is :  ${sr_selector[$sr_choice-1]}"
+		case $sr_choice in
+			1)	super_width=1920;;
+			2)	super_width=2560;;
+			3)	super_width=3840;;
+			4)	echo "#######################################################################"
+				echo "##                Select your custom super_resolution                ##"
+				echo "#######################################################################"
+				read super_width
+				while [[ ! $super_width =~ ^[0-9]+$ || "$super_width" -lt 0 ]] ; do
+					echo "Enter valid number greater than 0 for custom super-resolution"
+					read super_width
+				done
+				echo "                    CUSTOM super-resolution value = ${super_width}"
+				;;
+		esac
+	fi
+	if [ "$monitor_MAME_CHOICE" = "YES" ] ; then
+		echo ""
+		echo "#######################################################################"
+		echo "##                                                                   ##"
+		echo "##                      ADVANCED CONFIGURATION       2b/2            ##"
+		echo "##                                                                   ##"
+		echo "##                ==     MAME Super-resolution     ==                ##"
+		echo "##                                                                   ##"
+		echo "##        This option sets the value for vertical resolution         ##"
+		echo "##             You can set a default maker tested value              ##"
+		echo "##        or you can test your own custom one (experimental)         ##"
+		echo "##                                                                   ##"
+		echo "##                 If you don't know about it or                     ##"
+		echo "##                 if you want to let the script                     ##"
+		echo "##     set default MAME super-resolution for your graphics card      ##"
+		echo "##                            press ENTER                            ##"
+		echo "##                                                                   ##"
+		echo "#######################################################################"
+		declare -a sr_m_selector=( "1920 - Intel default" "2560 - amd/ati default" "3840 - nvidia default" "Same as main monitor" "CUSTOM (experimental)")
+		for var in "${!sr_m_selector[@]}" ; do echo "			$((var+1)) : ${sr_m_selector[$var]}"; done
+		
+		echo "#######################################################################"
+		echo "##          Make your choice for MAME super-resolution               ##"
+		echo "#######################################################################"
+		read sr_m_choice
+		while [[ ! ${sr_m_choice} =~ ^[1-$((var+1))]$ ]] && [[ "$sr_m_choice" != "" ]] ; do
+			echo "Select option 1 to $((var+1)) or ENTER to bypass this configuration":
+			read sr_m_choice
+		done
+		if [ -z "$sr_m_choice" ] ; then 
+			echo "                    your choice is : MAME default super-resolution"
+		else
+			echo "                    your choice is :  ${sr_m_selector[$sr_m_choice-1]}"
+			case $sr_m_choice in
+				1)	super_width_mame=1920;;
+				2)	super_width_mame=2560;;
+				3)	super_width_mame=3840;;
+				4)	super_width_mame=$super_width;;
+				5)	echo "#######################################################################"
+					echo "##             Select your custom MAME super_resolution              ##"
+					echo "#######################################################################"
+					read super_width_mame
+					while [[ ! $super_width_mame =~ ^[0-9]+$ || "$super_width_mame" -lt 0 ]] ; do
+						echo "Enter valid number greater than 0 for custom super-resolution"
+						read super_width_mame
+					done
+					echo "                    CUSTOM MAME super-resolution value = ${super_width_mame}"
+					;;
+			esac
+		fi
+	fi
+fi
+#######################################################################
+###                 Start of usb polling rate config               ####
+#######################################################################	
+
+echo "#######################################################################"
+echo "##                      Advanced configuration                       ##"
+echo "##            Tinker only if you know what you are doing.            ##"
+echo "##              This configuration can reduce input lag              ##"
+echo "##                                                                   ##"
+echo "##                    USB POLLING RATE OVERCLOCK                     ##"
+echo "##                                                                   ##"
+echo "##         If you don't know about it or if you want to let          ##"
+echo "##      batocera configure automatically your USB POLLING RATE       ##"
+echo "##                         press 0 or enter                          ##"
+echo "##                                                                   ##"
+echo "#######################################################################" 
+declare -a usb_selector=( "Overclock polling rate (reduce input lag)" )
+for var in "${!usb_selector[@]}" ; do echo "			$((var+1)) : ${usb_selector[$var]}"; done
+echo "                        0 : Batocera default usb polling rate         "
+echo "#######################################################################" 
+echo "##               Make your choice for USB POLLING RATE               ##"
+echo "#######################################################################"
+
+read p_rate
+if [ -z "$p_rate" ] ; then 
+	echo "                    your choice is : Batocera default usb polling rate"
+	polling_rate="usbhid.jspoll=0 xpad.cpoll=0"
+elif [ "x$p_rate" != "x0" ] ; then
+	echo "                    your choice is :  ${usb_selector[$p_rate-1]}"
+	case $p_rate in
+		1) polling_rate="usbhid.jspoll=1 xpad.cpoll=1";;
+		*) polling_rate="usbhid.jspoll=0 xpad.cpoll=0";;
+	esac
+else
+	echo "                    your choice is : Batocera default usb polling rate"
+	polling_rate="usbhid.jspoll=0 xpad.cpoll=0"
+fi
+
+
 
 #############################################################################
 ## Make the boot writable
@@ -1054,6 +1337,7 @@ fi
 
 sed -e "s/\[amdgpu_drivers\]/$drivers_amd/g" -e "s/\[card_output\]/$video_output/g" \
     -e "s/\[monitor\]/$monitor_firmware/g" -e "s/\[card_display\]/$video_display/g" \
+    -e "s/\[usb_polling\]/$polling_rate/g" \
     -e "s/\[boot_resolution\]/$boot_resolution/g"  /userdata/system/BUILD_15KHz/Boot_configs/syslinux.cfg-generic-Batocera \
      >  /boot/EFI/syslinux.cfg
 
