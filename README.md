@@ -70,6 +70,6 @@ Nvidia Cards that are supported right now.
     Display port (DP) works for all cards but it is only for Super-resolution 240p (no interlace here).
     Turing works poorly only in 240p (tested on GTX 1650 HDMI/DP).
     
-    Conclusion with Nvidia cards, we recommand to use Maxwell (Nvidia driver) Which has full support for 15KHz with DVI-I 
+    Conclusion with Nvidia cards, we recommand to use Maxwell 2.0 (Nvidia driver) Which has full support for 15KHz with DVI-I 
                and and with very good performance for GTX 970/980/980ti.
   
