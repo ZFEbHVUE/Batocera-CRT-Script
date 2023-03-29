@@ -252,8 +252,8 @@ echo "#######################################################################"
 echo "##                       Detected card outputs                       ##"
 echo "#######################################################################"
 echo ""
-j=0; declare -a OutputVideo; for i in `ls /sys/class/drm |egrep -i "^card.-.*" |sed -e 's/card.-//'`; do OutputVideo[$j]="$i"; j=`expr $j + 1`; done
-valid_card=$(basename $(dirname $(egrep -l "^connected" /sys/class/drm/*/status))|sed -e "s,card0-,,")
+j=0; declare -a OutputVideo; for i in `ls /sys/class/drm |grep -E -i "^card.-.*" |sed -e 's/card.-//'`; do OutputVideo[$j]="$i"; j=`expr $j + 1`; done
+valid_card=$(basename $(dirname $(grep -E -l "^connected" /sys/class/drm/*/status))|sed -e "s,card0-,,")
 for var in "${!OutputVideo[@]}" ; do echo "			$((var+1)) : ${OutputVideo[$var]}"; done
 echo ""
 echo "#######################################################################"
