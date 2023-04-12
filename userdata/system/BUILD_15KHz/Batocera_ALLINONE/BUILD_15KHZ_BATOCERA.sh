@@ -439,7 +439,11 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 		if [[ "$video_output" == *"VGA"* ]]; then
 			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
 		elif [[ "$video_output" == *"DP"* ]]; then
-			declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
+			if [[ $monitor_name == "ntsc" ]]; then
+				declare -a boot_resolution=( "720x480ieS" "640x480ieS" )
+			else
+				declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
+			fi
 		elif [[ "$video_output" == *"HDMI"* ]]; then
 			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
 		fi
@@ -454,7 +458,11 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 			declare -a boot_resolution=( "1280x480ieS" "1280x240ieS" )
 		fi
 	else
-		declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
+		if [[ $monitor_name == "ntsc" ]]; then
+			declare -a boot_resolution=( "720x480ieS" "640x480ieS" )
+		else
+			declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
+		fi
 	fi
 	for var in "${!boot_resolution[@]}" ; do echo "			$((var+1)) : ${boot_resolution[$var]}"; done
 	echo ""
@@ -490,29 +498,59 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 				declare -a ES_resolution=( "1280x576_50iHz" "1280x480_60iHz" )
 				declare -a ES_resolution_V33=( "1280x576_50" "1280x480_60" )
 			elif [[ "$video_output" == *"DP"* ]]; then	
-				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
-				declare -a ES_resolution_V33=( "768x576" "640x480" )
+				if [[ $monitor_name == "ntsc" ]]; then
+					declare -a ES_resolution=( "720x480_60iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "720x480" "640x480" )
+				else
+					declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "768x576" "640x480" )
+				fi
 			elif [[ "$video_output" == *"HDMI"* ]]; then
-				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
-				declare -a ES_resolution_V33=( "768x576" "640x480" )
+				if [[ $monitor_name == "ntsc" ]]; then
+					declare -a ES_resolution=( "720x480_60iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "720x480" "640x480" )
+				else
+					declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "768x576" "640x480" )
+				fi
 			fi
 		elif [ "$TYPE_OF_CARD" == "NVIDIA" ] ; then
 			if [[ "$video_output" == *"DVI"* ]]; then
-				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
-				declare -a ES_resolution_V33=( "768x576" "640x480" )
+				if [[ $monitor_name == "ntsc" ]]; then
+					declare -a ES_resolution=( "720x480_60iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "720x480" "640x480" )
+				else
+					declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "768x576" "640x480" )
+				fi
 			elif [[ "$video_output" == *"VGA"* ]]; then
-				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
-				declare -a ES_resolution_V33=( "768x576" "640x480" )
+				if [[ $monitor_name == "ntsc" ]]; then
+					declare -a ES_resolution=( "720x480_60iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "720x480" "640x480" )
+				else
+					declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
+					declare -a ES_resolution_V33=( "768x576" "640x480" )
+				fi
 			elif [[ "$video_output" == *"DP"* ]]; then
 				declare -a ES_resolution=( "1280x240_60iHz" )
 				declare -a ES_resolution_V33=( "1280x240" )	
 			elif [[ "$video_output" == *"HDMI"* ]]; then
-				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" "1280x576_50iHz" "1280x480_60iHz" "1280x240_60iHz") 
-				declare -a ES_resolution_V33=( "768x576" "640x480" "1280x576_50" "1280x480_60" "1280x240_60")
+				if [[ $monitor_name == "ntsc" ]]; then
+					declare -a ES_resolution=( "720x480_60iHz" "640x480_60iHz" "1280x576_50iHz" "1280x480_60iHz" "1280x240_60iHz") 
+					declare -a ES_resolution_V33=( "720x480" "640x480" "1280x576_50" "1280x480_60" "1280x240_60")
+				else
+					declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" "1280x576_50iHz" "1280x480_60iHz" "1280x240_60iHz") 
+					declare -a ES_resolution_V33=( "768x576" "640x480" "1280x576_50" "1280x480_60" "1280x240_60")
+				fi
 			fi
 		else
-			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
-			declare -a ES_resolution_V33=( "768x576" "640x480" )
+			if [[ $monitor_name == "ntsc" ]]; then
+				declare -a ES_resolution=( "720x480_60iHz" "640x480_60iHz" )	
+				declare -a ES_resolution_V33=( "720x480" "640x480" )
+			else
+				declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz" )
+				declare -a ES_resolution_V33=( "768x576" "640x480" )
+			fi
 		fi
 		for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"; done
 		echo ""
@@ -1681,6 +1719,20 @@ else
 			es_customsargs="es.customsargs=--screensize 480 640 --screenoffset 00 00"
 			es_arg="--screensize 480 640 --screenoffset 00 00"
 		fi
+	elif [ "$ES_resolution" == "720x480_60iHz" ]; then
+		es_res_60iHz="#"
+        	es_res_50iHz="#"
+		es_res_60_iHz=""
+		es_SR_res_60iHz="#"
+        	es_SR_res_50iHz="#"
+		es_SR_res_60Hz="#"
+ 		if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
+        		es_customsargs="es.customsargs=--screensize 720 480 --screenoffset 00 00"
+			es_arg="--screensize 720 480 --screenoffset 00 00"
+		else
+			es_customsargs="es.customsargs=--screensize 480 720 --screenoffset 00 00"
+			es_arg="--screensize 480 720 --screenoffset 00 00"
+		fi
 	elif [ "$ES_resolution" == "768x576_50iHz" ]; then
 		es_res_60iHz="#"
 		es_res_50iHz=""
@@ -1816,10 +1868,10 @@ else
 		ms929)
 		;;
 		ntsc)
-			sed -e "s/\[card_display\]/$video_modeline/g" -e "s/\[640x480\]/$es_res_60iHz/g" -e "s/\[768x576\]/$es_res_50iHz/g" /userdata/system/BUILD_15KHz/System_configs/Custom-es-config_v34/custom-es-config-ntsc > /userdata/system/custom-es-config
+			sed -e "s/\[card_display\]/$video_modeline/g" -e "s/\[640x480\]/$es_res_60iHz/g" -e "s/\[720x480\]/$es_res_60_iHz/g" -e "s/\[1280x480\]/$es_SR_res_60iHz/g" -e "s/\[1280x576\]/$es_SR_res_50iHz/g" -e "s/\[1280x240\]/$es_SR_res_60Hz/g" /userdata/system/BUILD_15KHz/System_configs/Custom-es-config_v34/custom-es-config-ntsc > /userdata/system/custom-es-config
 		;;
 		pal)
-			sed -e "s/\[card_display\]/$video_modeline/g" -e "s/\[640x480\]/$es_res_60iHz/g" -e "s/\[768x576\]/$es_res_50iHz/g" /userdata/system/BUILD_15KHz/System_configs/Custom-es-config_v34/custom-es-config-pal > /userdata/system/custom-es-config
+			sed -e "s/\[card_display\]/$video_modeline/g" -e "s/\[640x480\]/$es_res_60iHz/g" -e "s/\[768x576\]/$es_res_50iHz/g" -e "s/\[1280x480\]/$es_SR_res_60iHz/g" -e "s/\[1280x576\]/$es_SR_res_50iHz/g" -e "s/\[1280x240\]/$es_SR_res_60Hz/g" /userdata/system/BUILD_15KHz/System_configs/Custom-es-config_v34/custom-es-config-pal > /userdata/system/custom-es-config
 		;;
 		pc_31_120)
 		;;
