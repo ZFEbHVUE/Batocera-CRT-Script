@@ -1528,6 +1528,8 @@ case $Version_of_batocera in
 	;;
 esac
 
+cp /etc/switchres.ini /etc/switchres.ini.bak
+
 #######################################################################################
 ## Remove Beta name from splash screen if using a beta.
 #######################################################################################
@@ -1897,6 +1899,8 @@ else
 	chmod 755 /userdata/system/custom-es-config
 fi
 
+cp /userdata/system/custom-es-config /userdata/system/custom-es-config.bak
+
 #######################################################################################
 # Create a first_script.sh for exiting of Emulationstation
 #######################################################################################
@@ -1918,6 +1922,15 @@ if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; the
 	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/ports/GunCon2_Calibration.sh
 	chmod 755 /userdata/roms/ports/GunCon2_Calibration.sh
 fi
+
+#######################################################################################
+# Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres
+#######################################################################################
+
+cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.sh 	/userdata/roms/ports/CRT.sh
+
+chmod 755 /userdata/roms/ports/CRT.sh
+
 #######################################################################################
 ## Copy of batocera.conf for Libretro cores for use with Switchres
 #######################################################################################
@@ -2099,6 +2112,8 @@ case $Version_of_batocera in
 		echo "Problem of version"
 	;;
 esac
+
+cp /etc/switchres.ini /etc/switchres.ini.bak
 
 #######################################################################################
 ## UPGRADE Mame  Batocera  create an folder for new binary of MAME (GroovyMame)
