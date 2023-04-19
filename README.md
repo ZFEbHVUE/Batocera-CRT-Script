@@ -12,8 +12,8 @@ This script would not have been possible without the following people to name a 
  - dmanlcf's work on keeping up to date for the 15khz patches for Batocera.
 
 ### Contributors 
- - Sirmagb  (Thx for your CRT.sh geomtry tool)    
- - yavimaya (Thx for contribution)
+ - Sirmagb  (Thx for your CRT.sh geomtry tool idea)    
+ - yavimaya (Thx for your code contribution)
 
 ### Testers 
  - GecKoTDF
