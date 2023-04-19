@@ -2,7 +2,7 @@
 
 This script would not have been possible without the following people to name a few:
  - ZFEbHVUE, main coder and tester
- - Rion
+ - Rion, 15KHz CRT Guru-Meditation
  - myzar's Nvidia knowledge
  - jfroco's work to output Batocera on a CRTs.
  - rtissera's knowledge, enthusiasm and willingness to add 15 KHz patches.
@@ -12,8 +12,8 @@ This script would not have been possible without the following people to name a 
  - dmanlcf's work on keeping up to date for the 15khz patches for Batocera.
 
 ### Contributors 
- - Sirmagb
- - yavimaya
+ - Sirmagb  (Thx for your CRT.sh modeline's geometry tool idea)    
+ - Yavimaya (Thx for your code contribution)
 
 ### Testers 
  - GecKoTDF
