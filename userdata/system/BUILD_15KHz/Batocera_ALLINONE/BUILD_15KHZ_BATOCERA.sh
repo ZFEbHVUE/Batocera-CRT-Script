@@ -1516,11 +1516,6 @@ case $Version_of_batocera in
 		#sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
 		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
-		if [ ! -f "/etc/init.d/S31emulationstation.bak" ];then
-			cp /etc/init.d/S31emulationstation  /etc/init.d/S31emulationstation.bak  
-		fi
-		cp /userdata/system/BUILD_15KHz/etc_configs/S31emulationstation-generic /etc/init.d/S31emulationstation 
-		chmod 755 /etc/init.d/S31emulationstation 
 		;;
 	*)
 		echo "PROBLEM OF VERSION"
