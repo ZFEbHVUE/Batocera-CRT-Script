@@ -1,11 +1,14 @@
 #!/bin/bash
-#
-#
-#
+####################################################################################
+# Script to create a custom monitor with a set of modelines using geometry utility #
+#              With this utility you have to manually center a grid.               #
+# This centering is used to create that custom monitor so then all modelines used  #
+#                 by switchress will be centered to your screen.                   #
+####################################################################################
 
-cp /etc/switchres.ini.bak 			                  /etc/switchres.ini
-cp /userdata/system/configs/mame/mame.ini.bak 	  /userdata/system/configs/mame/mame.ini
-cp /userdata/system/custom-es-config.bak	        /userdata/system/custom-es-config
+cp /etc/switchres.ini.bak /etc/switchres.ini
+cp /userdata/system/configs/mame/mame.ini.bak /userdata/system/configs/mame/mame.ini
+cp /userdata/system/custom-es-config.bak /userdata/system/custom-es-config
 
 MONITOR=$(grep -m 1 "monitor     " /etc/switchres.ini | awk '{print $NF}')
 
@@ -14,7 +17,7 @@ if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
 	# AMD/ATI INTEL and Nvidia(NOUVEAU)
 	TYPE_OF_CARD="AMD_INTEL_NVIDIA_NOUV"
 
-	if [[ "$MONITOR" == "arcade_15" ]]; then
+	if [[ "$MONITOR" == "arcade_15.bin" ]]; then
 
 		RES_GEOM=("648x478 60")
 	    	RESOLUTIONS=(	  "640x480 60" "768x576 50" "1280x480 60" "1280x576 50" "1280x240 60" "240x240 60" "256x192 60" \
@@ -25,7 +28,7 @@ if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
 			       	          "480x240 60" "480x270 60" "480x272 50" "512x288 50" "512x480 60" "528x288 50" "640x240 60" \
 				                "854x480 60" "864x486 60")
 
-	elif [[ "$MONITOR" == "arcade_15ex" ]]; then
+	elif [[ "$MONITOR" == "arcade_15ex.bin" ]]; then
 
 		RES_GEOM=("648x478 60")
 		RESOLUTIONS=(	  "640x480 60" "768x576 50" "1280x480 60" "1280x576 50" "1280x240 60" "240x240 60" "256x192 60" \
@@ -36,7 +39,7 @@ if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
 		       		      "480x240 60" "480x270 56" "480x272 56" "512x288 50" "512x480 60" "528x288 50" "640x240 60" \
 		       		      "854x480 60" "864x486 60")
 
-	elif [[ "$MONITOR" == "arcade_15_25" ]]; then
+	elif [[ "$MONITOR" == "arcade_15_25.bin" ]]; then
 	
 		RES_GEOM=("648x478 60")
 		RESOLUTIONS=( 	"640x480 60" "768x576 50" "1280x480" "1280x576 50" "1280x240" "240x240" "256x192" \
@@ -47,7 +50,7 @@ if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
 				            "480x240 60" "480x270 50" "480x272 50" "512x288 50" "512x480 60" "528x288 50" "640x240 60" \
 				            "854x480 60" "864x486 60")
 
-	elif [[ "$MONITOR" == "arcade_15_25_31" ]]; then
+	elif [[ "$MONITOR" == "arcade_15_25_31.bin" ]]; then
 	
 		RES_GEOM=("648x478 60")
 
@@ -59,7 +62,7 @@ if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
   				          "480x240 60" "480x270 55" "480x272 55" "512x288 60" "512x480 60" "528x288 50" "640x240 60" \
 				            "854x480 60" "864x486 60" )
 
-	elif [[ "$MONITOR" == "generic_15" ]]; then
+	elif [[ "$MONITOR" == "generic_15.bin" ]]; then
 
 		RES_GEOM=("648x478 60")
 		RESOLUTIONS=(	  "640x480 60" "768x576 50" "1280x480 60" "1280x576 50" "1280x240 60" "240x240 60" "256x192 60" \
@@ -70,12 +73,12 @@ if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
 			       	      "480x240 60" "480x270 60" "480x272 50" "512x288 50" "512x480 60" "528x288 50" "640x240 60" \
 				            "854x480 60" "864x486 60")
 
-	elif [[ "$MONITOR" == "arcade_25" ]]; then
+	elif [[ "$MONITOR" == "arcade_25.bin" ]]; then
 
 		RES_GEOM=("648x478 60")
 		RESOLUTIONS=( 	"1024x768 60" "496x384 60" "512x384 60" "960x768 60"  "1280x768 60"  "1368x768 60"  )
 
-	elif [[ "$MONITOR" == "arcade_31" ]]; then
+	elif [[ "$MONITOR" == "arcade_31.bin" ]]; then
 
 		RES_GEOM=("648x478 60")
 		RESOLUTIONS=( 	"640x480 60" "854x480 60" "864x486 60" )
@@ -114,14 +117,14 @@ sed -i "s/.*dotclock_min        .*/        dotclock_min              $DOTCLOCK_M
 #
 #
 RES_TOT_GEOM=$(echo $RES_GEOM | sed 's/x/ /')
-DISPLAY=:0 geometry  $RES_TOT_GEOM	>/userdata/roms/ports/crt.txt
+DISPLAY=:0 geometry $RES_TOT_GEOM >/userdata/roms/ports/crt.txt
 sed -i 's/Final crt_range:/crt_range0               /g' 	/userdata/roms/ports/crt.txt
 sed -i '1,2d' /userdata/roms/ports/crt.txt
 sed -i 's/.*monitor         .*/monitor                   custom/'  	 /userdata/system/configs/mame/mame.ini
 sed -i '/Final geometry/d' /userdata/roms/ports/crt.txt
 CRT_0="$(cat /userdata/roms/ports/crt.txt)"
 sed -i "s/^crt_range0.*/$CRT_0/"  /userdata/system/configs/mame/mame.ini
-sed -i 's/.*monitor         .*/        monitor                   custom/' 	/etc/switchres.ini
+sed -i 's/.*monitor         .*/	monitor                   custom/' 	/etc/switchres.ini
 sed -i '/Final geometry/d' /userdata/roms/ports/crt.txt
 sed -i 's/crt_range0/        crt_range0/g' 					/userdata/roms/ports/crt.txt
 sed -i "s/.*crt_range0   .*/        $CRT_0/"  					/etc/switchres.ini
@@ -131,31 +134,31 @@ for RES in "${RESOLUTIONS[@]}"
 do
 	RESOLUTION_TOT=$(echo $RES | sed 's/x/ /')
 	RESOLUTION=$(echo $RES | cut -d' ' -f1)
-    	FREQUENCY=$(echo $RES | cut -d' ' -f2)
+	FREQUENCY=$(echo $RES | cut -d' ' -f2)
 	FORCED_RESOLUTION="$RESOLUTION@$FREQUENCY"
 
-    	switchres $RESOLUTION_TOT -f $FORCED_RESOLUTION -m custom -c >/userdata/roms/ports/mode.txt
-	sed -i '/Calculating best video mode/d' /userdata/roms/ports/mode.txt	
-    	sed -i 's/^.*"//' /userdata/roms/ports/mode.txt
+	switchres $RESOLUTION_TOT -f $FORCED_RESOLUTION -m custom -c >/userdata/roms/ports/mode.txt
+	sed -i '/Calculating best video mode/d' /userdata/roms/ports/mode.txt
+	sed -i 's/^.*"//' /userdata/roms/ports/mode.txt
 	if [[ "$TYPE_OF_CARD" == "AMD_INTEL_NVIDIA_NOUV" ]]; then
 		sed -i 's|^|xrandr -display :0.0 --newmode "'"$RESOLUTION"'" |' /userdata/roms/ports/mode.txt
 	else
 		sed -i 's|^|"'"$RESOLUTION"'" |' /userdata/roms/ports/mode.txt
 	fi
-  	TERM="$RESOLUTION"
-  	MODE_CONTENT="$(cat /userdata/roms/ports/mode.txt)"
+	TERM="$RESOLUTION"
+	MODE_CONTENT="$(cat /userdata/roms/ports/mode.txt)"
 	if [[ "$TYPE_OF_CARD" == "AMD_INTEL_NVIDIA_NOUV" ]]; then
 		sed -i '/^#/!s/xrandr -display :0\.0 --newmode "'"$TERM"'" .*/'"$MODE_CONTENT"'/' /userdata/system/custom-es-config
 	else
 		sed -i "/\"$TERM\"/c\\       Modeline $MODE_CONTENT" /userdata/system/99-nvidia.conf
 	fi
-    	sed -i '1d' /userdata/roms/ports/mode.txt
+	sed -i '1d' /userdata/roms/ports/mode.txt
 done
 mv /userdata/roms/ports/crt.txt /userdata/roms/ports/crt_range_0_mod.log
 rm /userdata/roms/ports/mode.txt
 
 ### PUT THE GOOD DOTCLOCK_MIN IN SWITCHRES.INI
-sed -i "s/.*dotclock_min        .*/        dotclock_min              $DOTCLOCK_MIN/"  /etc/switchres.ini
+sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/"  /etc/switchres.ini
 
 batocera-save-overlay
-#reboot
+reboot
