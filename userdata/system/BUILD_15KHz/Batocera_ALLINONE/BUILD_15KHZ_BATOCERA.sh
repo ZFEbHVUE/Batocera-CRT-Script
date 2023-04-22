@@ -421,7 +421,6 @@ elif [ "$CRT_Freq" == "25KHz" ]; then
 else
 	monitor_name_MAME="arcade_31"
 fi
-monitor_firmware_MAME+=".bin"
 
 ########################################################################################
 #####################              BOOT RESOLUTION        ##############################
