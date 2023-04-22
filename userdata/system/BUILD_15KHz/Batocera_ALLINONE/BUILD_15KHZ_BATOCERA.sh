@@ -2108,7 +2108,7 @@ case $Version_of_batocera in
 	;;
 esac
 
-cp /etc/switchres.ini /etc/switchres.ini.bak
+cp /userdata/system/configs/mame/mame.ini       /userdata/system/configs/mame/mame.ini.bak 
 
 #######################################################################################
 ## UPGRADE Mame  Batocera  create an folder for new binary of MAME (GroovyMame)
