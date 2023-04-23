@@ -161,7 +161,9 @@ RES_GEOM=("648x478 60")
 echo "[$(date +"%H:%M:%S")]: Look at your CRT in order to center grid" | tee -a /userdata/system/logs/custom_crt_monitor.log
 RES_TOT_GEOM=$(echo $RES_GEOM | sed 's/x/ /')
 DISPLAY=:0 geometry $RES_TOT_GEOM | tee /userdata/roms/ports/temp_crt.txt >> /userdata/system/logs/custom_crt_monitor.log
-if [[ escape=$(grep -c "Aborted!" /userdata/roms/ports/temp_crt.txt) ]]; then
+
+escape=$(grep -c "Aborted!" /userdata/roms/ports/temp_crt.txt)
+if [[ "$escape" -ge 1 ]]; then
 	echo "[$(date +"%H:%M:%S")]: Aborted geometry utility." | tee -a /userdata/system/logs/custom_crt_monitor.log
 	rollback 3
 	exit
