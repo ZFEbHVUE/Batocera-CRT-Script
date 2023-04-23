@@ -6,6 +6,29 @@
 #                 by switchress will be centered to your screen.                   #
 ####################################################################################
 
+##rollback function
+rollback(){
+	case $1 in
+		1)#only switchres.ini
+			cp /etc/switchres.crt /etc/switchres.ini
+			echo "[$(date +"%H:%M:%S")]: Rollbacking switchres.ini " | tee -a /userdata/system/logs/custom_crt_monitor.log
+		;;
+		2)#switchres.ini and mame.ini
+			cp /etc/switchres.crt /etc/switchres.ini
+			cp /userdata/system/configs/mame/mame.crt /userdata/system/configs/mame/mame.ini
+			echo "[$(date +"%H:%M:%S")]: Rollbacking switchres.ini and mame.ini" | tee -a /userdata/system/logs/custom_crt_monitor.log
+		;;
+		3)#switchres.ini, mame.ini and custom-es-config
+			cp /etc/switchres.crt /etc/switchres.ini
+			cp /userdata/system/configs/mame/mame.crt /userdata/system/configs/mame/mame.ini
+			cp /userdata/system/custom-es-config.crt /userdata/system/custom-es-config
+			echo "[$(date +"%H:%M:%S")]: Rollbacking switchres.ini, mame.ini and custom-es-config" | tee -a /userdata/system/logs/custom_crt_monitor.log
+		;;
+		*)
+			echo "[$(date +"%H:%M:%S")]: Error rollbacking " | tee -a /userdata/system/logs/custom_crt_monitor.log
+	esac
+}
+
 ####################################################################################
 #                                                                                  #
 #          Use original backup files from BUILD_15KHz-BATOCERA.sh script           #
@@ -26,18 +49,24 @@ else
 	else
 		echo "[$(date +"%H:%M:%S")]: Booted monitor = $MONITOR" | tee -a /userdata/system/logs/custom_crt_monitor.log
 	fi
+	cp /etc/switchres.ini /etc/switchres.crt
 	cp /etc/switchres.ini.bak /etc/switchres.ini
+	
 fi
 if [ ! -f "/userdata/system/configs/mame/mame.ini.bak" ] ; then
 	echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/configs/mame/mame.ini.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
+	rollback 1
 	exit
 else
+	cp /userdata/system/configs/mame/mame.ini /userdata/system/configs/mame/mame.crt
 	cp /userdata/system/configs/mame/mame.ini.bak /userdata/system/configs/mame/mame.ini
 fi
 if [ ! -f "/userdata/system/custom-es-config.bak" ] ; then
 	echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/custom-es-config.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
+	rollback 2
 	exit
 else
+	cp /userdata/system/custom-es-config /userdata/system/custom-es-config.crt
 	cp /userdata/system/custom-es-config.bak /userdata/system/custom-es-config
 fi
 
@@ -97,6 +126,7 @@ if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
 		RESOLUTIONS=(	"640x480 60" "854x480 60" "864x486 60" )
 	else
 		echo "[$(date +"%H:%M:%S")]: There are problems in your monitor definition" | tee -a /userdata/system/logs/custom_crt_monitor.log
+		rollback 3
 		exit
 	fi
 else
@@ -112,6 +142,7 @@ else
 						"1024x600 50" "768x576 50"  "854x480 60" "864x486 60"  "800x600 50" "720x480 60" "640x480 60")
 	else
 		echo "[$(date +"%H:%M:%S")]: There are problems in your NVIDIA monitor definition" | tee -a /userdata/system/logs/custom_crt_monitor.log
+		rollback 3
 		exit
 	fi
 fi
@@ -130,6 +161,11 @@ RES_GEOM=("648x478 60")
 echo "[$(date +"%H:%M:%S")]: Look at your CRT in order to center grid" | tee -a /userdata/system/logs/custom_crt_monitor.log
 RES_TOT_GEOM=$(echo $RES_GEOM | sed 's/x/ /')
 DISPLAY=:0 geometry $RES_TOT_GEOM | tee /userdata/roms/ports/temp_crt.txt >> /userdata/system/logs/custom_crt_monitor.log
+if [[ escape=$(grep -c "Aborted!" /userdata/roms/ports/temp_crt.txt) ]]; then
+	echo "[$(date +"%H:%M:%S")]: Aborted geometry utility." | tee -a /userdata/system/logs/custom_crt_monitor.log
+	rollback 3
+	exit
+fi
 echo "[$(date +"%H:%M:%S")]: Parse results and write crt_range0 and custom monitor to /etc/switchres.ini. Custom monitor also to /userdata/system/configs/mame/mame.ini"
 
 sed -i 's/Final crt_range:/crt_range0               /g' /userdata/roms/ports/temp_crt.txt
