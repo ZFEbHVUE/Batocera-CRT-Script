@@ -1482,6 +1482,15 @@ case $Version_of_batocera in
 			cp /userdata/system/BUILD_15KHz/etc_configs/Nvidia/S05nvidia.patch  /etc/init.d/S05nvidia
 			chmod 755 /etc/init.d/S05nvidia
 		fi
+		#for JammaSD from V37
+		cp /userdata/system/BUILD_15KHz/etc_configs/98-keyboards-exotics.rules  /etc/udev/rules.d/98-keyboards-exotics.rules  
+		chmod 644  /etc/udev/rules.d/98-keyboards-exotics.rules 
+		cp /userdata/system/BUILD_15KHz/etc_configs/99-jammasd.rules  /etc/udev/rules.d/99-jammasd.rules  
+		chmod 644  /etc/udev/rules.d/98-keyboards-exotics.rules 
+		cp /userdata/system/BUILD_15KHz/etc_configs/99-joysticks-exotics.rules  /etc/udev/rules.d/99-joysticks-exotics.rules  
+		chmod 644  /etc/udev/rules.d/99-joysticks-exotics.rules  	
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/jammASDSplit /usr/bin/jammASDSplit 
+		chmod 755 /usr/bin/jammASDSplit 
 	;;
 	v36)
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/batocera-resolution-v36 /usr/bin/batocera-resolution
@@ -1501,6 +1510,16 @@ case $Version_of_batocera in
 		fi
 		cp /userdata/system/BUILD_15KHz/etc_configs/S31emulationstation-generic /etc/init.d/S31emulationstation 
 		chmod 755 /etc/init.d/S31emulationstation 
+		
+		#for JammaSD from V37
+		cp /userdata/system/BUILD_15KHz/etc_configs/98-keyboards-exotics.rules  /etc/udev/rules.d/98-keyboards-exotics.rules  
+		chmod 644  /etc/udev/rules.d/98-keyboards-exotics.rules 
+		cp /userdata/system/BUILD_15KHz/etc_configs/99-jammasd.rules  /etc/udev/rules.d/99-jammasd.rules  
+		chmod 644  /etc/udev/rules.d/98-keyboards-exotics.rules 
+		cp /userdata/system/BUILD_15KHz/etc_configs/99-joysticks-exotics.rules  /etc/udev/rules.d/99-joysticks-exotics.rules  
+		chmod 644  /etc/udev/rules.d/99-joysticks-exotics.rules  	
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/jammASDSplit /usr/bin/jammASDSplit 
+		chmod 755 /usr/bin/jammASDSplit 
 		;;
 	v37)
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/batocera-resolution-v36 /usr/bin/batocera-resolution
@@ -1568,9 +1587,10 @@ echo "##  for several encoders put virgule or space between your choices   ##"
 echo "##                                                                   ##"
 echo "##  If you don't have an Arcade Encoder(s) or if you want to let     ##"
 echo "##       batocera configure automatically your Arcade Encoder(s)     ##"
-echo "##                        press 0 or ENTER                           ##"
+echo "##                                                                   ##"	
+echo "##               IT IS RECOMMANDED TO PRESS 0 OR ENTER               ##"
 echo "##                                                                   ##"
-echo "#######################################################################"
+echo "######################################################################
 echo -n "                                  "
 read Encoder_choice
 
