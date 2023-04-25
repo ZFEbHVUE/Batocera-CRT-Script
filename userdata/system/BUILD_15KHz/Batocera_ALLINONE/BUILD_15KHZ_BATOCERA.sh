@@ -65,6 +65,7 @@ read
 clear
 
 version_Batocera=$(batocera-es-swissknife  --version)
+echo "Version batocera = $version_Batocera" > /userdata/system/logs/BUILD_15KHz_Batocera.log
 case $version_Batocera in
 	30*)
 		echo "Version 30"
@@ -241,6 +242,7 @@ case $temp in
 		exit 1
 	;;
 esac
+echo "Card type = $temp" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 #Type_card="unknown"
 #for search_card in amd ati nvidia intel ; do echo "$temp" | egrep -iq "$search_card" && Type_card="$search_card"; done
@@ -249,12 +251,12 @@ esac
 #####################################################################################################################################################
 #####################################################################################################################################################
 echo "#######################################################################"
-echo "##                       Detected card outputs                       ##"
+echo "##                       Detected card outputs                       ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "#######################################################################"
 echo ""
 j=0; declare -a OutputVideo; for i in `ls /sys/class/drm |grep -E -i "^card.-.*" |sed -e 's/card.-//'`; do OutputVideo[$j]="$i"; j=`expr $j + 1`; done
 valid_card=$(basename $(dirname $(grep -E -l "^connected" /sys/class/drm/*/status))|sed -e "s,card0-,,")
-for var in "${!OutputVideo[@]}" ; do echo "			$((var+1)) : ${OutputVideo[$var]}"; done
+for var in "${!OutputVideo[@]}" ; do echo "			$((var+1)) : ${OutputVideo[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 echo ""
 echo "#######################################################################"
 echo "##                                                                   ##"
@@ -267,11 +269,11 @@ echo "#######################################################################"
 echo -n "                                  "
 read video_output_choice
 while [[ ! ${video_output_choice} =~ ^[1-$((var+1))]$ ]] && [[ "$video_output_choice" != "" ]] ; do
-	echo -n "Select option 1 to $((var+1)):"
+	echo -n "Select option 1 to $((var+1)):" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	read video_output_choice
 done
 video_output=${OutputVideo[$video_output_choice-1]}
-echo -e "                    your choice is :${GREEN}  $video_output${NOCOLOR}"
+echo -e "                    your choice is :${GREEN}  $video_output${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 
 ########################################################################################
@@ -282,11 +284,11 @@ read
 clear
 echo ""
 echo "#######################################################################"
-echo "##            15KHz, 25KHz OR 31KHz CRT screen selection             ##"
+echo "##            15KHz, 25KHz OR 31KHz CRT screen selection             ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "#######################################################################"
 echo ""
 declare -a CRT_Frequency=( "15KHz" "25KHz" "31KHz" )
-for var in "${!CRT_Frequency[@]}" ; do echo "			$((var+1)) : ${CRT_Frequency[$var]}"; done
+for var in "${!CRT_Frequency[@]}" ; do echo "			$((var+1)) : ${CRT_Frequency[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 echo ""
 echo "#######################################################################"
 echo "##               Make your choice the frequency screen               ##"
@@ -294,7 +296,7 @@ echo "#######################################################################"
 echo -n "                                  "
 read CRT_Frequency_choice
 while [[ ! ${CRT_Frequency_choice} =~ ^[1-$((var+1))]$ ]] ; do
-	echo -n "Select option 1 to $((var+1)):"
+	echo -n "Select option 1 to $((var+1)):" 
 	read CRT_Frequency_choice
 done
 CRT_Freq=${CRT_Frequency[$CRT_Frequency_choice-1]}
@@ -305,7 +307,7 @@ echo -e "                    your choice is :${GREEN}  $CRT_Freq${NOCOLOR}"
 ########################################################################################
 echo ""
 echo "#######################################################################"
-echo "##                     Monitor type selector                         ##"
+echo "##                     Monitor type selector                         ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "#######################################################################"
 echo ""
 if [ "$CRT_Freq" == "15KHz" ]; then
@@ -332,7 +334,7 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 	elif [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 		declare -a type_of_monitor=( "arcade_15" "arcade_15_25_31" "arcade_15ex" "generic_15" "ntsc" "pal") 
 	fi
-	for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
+	for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 	echo ""
 	echo "#######################################################################"
 	echo "##                 Make your choice for monitor type                 ##"
@@ -351,7 +353,8 @@ else
 	monitor_firmware="arcade_31"
 fi
 monitor_name=$monitor_firmware
-monitor_firmware+=".bin"
+ echo "monitor firmware = $monitor_firmware" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+#monitor_firmware+=".bin"
 
 
 ########################################################################################
@@ -363,11 +366,11 @@ clear
 if [ "$CRT_Freq" == "15KHz" ]; then
 	echo ""
 	echo "#######################################################################"
-	echo "##             Configure a specific monitor for M.A.M.E              ##"
+	echo "##             Configure a specific monitor for M.A.M.E              ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	echo "#######################################################################"
 	echo ""
 	declare -a Mame_monitor_choice=( "YES" "NO" ) 
-	for var in "${!Mame_monitor_choice[@]}" ; do echo "			$((var+1)) : ${Mame_monitor_choice[$var]}"; done
+	for var in "${!Mame_monitor_choice[@]}" ; do echo "			$((var+1)) : ${Mame_monitor_choice[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 	echo ""
 	echo "#######################################################################"
 	echo "##                         Make your choice                          ##"
@@ -379,15 +382,15 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 		read choice_MAME_monitor
 	done
 	if [ -z "$choice_MAME_monitor" ] ; then 
-		echo -e "                    your choice is :${GREEN} Bypass this configuration${NOCOLOR}"
+		echo -e "                    your choice is :${GREEN} Bypass this configuration${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		monitor_name_MAME=$monitor_firmware
 	else
 		monitor_MAME_CHOICE=${Mame_monitor_choice[$choice_MAME_monitor-1]}
-		echo -e "                    your choice is :${GREEN}  $monitor_MAME_CHOICE${NOCOLOR}"
+		echo -e "                    your choice is :${GREEN}  $monitor_MAME_CHOICE${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		if [ "$monitor_MAME_CHOICE" == "YES" ]; then
 			echo ""
 			echo "#######################################################################"
-			echo "##                       M.A.M.E monitor type                        ##"
+			echo "##                       M.A.M.E monitor type                        ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 			echo "#######################################################################"
 			echo ""
 			if [ "$TYPE_OF_CARD" == "INTEL" ] ||  [ "$TYPE_OF_CARD" == "NVIDIA" ]; then 
@@ -397,10 +400,10 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 				declare -a type_of_monitor=( "arcade_15" "arcade_15_25_31" \
 												 "arcade_15ex" "generic_15" "ntsc" "pal" )
 			fi
-			for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"; done
+			for var in "${!type_of_monitor[@]}" ; do echo "			$((var+1)) : ${type_of_monitor[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 			echo ""
 			echo "#######################################################################"
-			echo "##   Make your choice for your monitor for playing Groovy M.A.M.E.   ##"
+			echo "##   Make your choice for your monitor for playing Groovy M.A.M.E.   ##" 
 			echo "#######################################################################"
 			echo -n "                                  "
 			read monitor_choice_MAME
@@ -421,6 +424,7 @@ elif [ "$CRT_Freq" == "25KHz" ]; then
 else
 	monitor_name_MAME="arcade_31"
 fi
+echo "monitor mame = $monitor_name_MAME"  >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 ########################################################################################
 #####################              BOOT RESOLUTION        ##############################
@@ -430,7 +434,7 @@ read
 clear
 echo ""
 echo "#######################################################################"
-echo "##                      Boot Resolution                              ##"
+echo "##                      Boot Resolution                              ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "#######################################################################"
 echo ""
 if [ "$CRT_Freq" == "15KHz" ]; then
@@ -463,7 +467,7 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 			declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
 		fi
 	fi
-	for var in "${!boot_resolution[@]}" ; do echo "			$((var+1)) : ${boot_resolution[$var]}"; done
+	for var in "${!boot_resolution[@]}" ; do echo "			$((var+1)) : ${boot_resolution[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 	echo ""
 	echo "#######################################################################"
 	echo "##             Make your choice for the boot resolution              ##"
@@ -481,6 +485,9 @@ elif [ "$CRT_Freq" == "25KHz" ]; then
 else
 	boot_resolution="e"
 fi
+
+echo "Boot resolution = $boot_resolution" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+
 ################################################################################################################################
 #####################              ES RESOLUTION          ######################################################################
 ################################################################################################################################
@@ -489,7 +496,7 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 	if ([ "$Drivers_Nvidia_CHOICE" == "NONE" ] || [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]); then
 		echo ""
 		echo "#######################################################################"
-		echo "##                    EmulationStation Resolution                    ##"
+		echo "##                    EmulationStation Resolution                    ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		echo "#######################################################################"
 		echo ""
 		if [ "$TYPE_OF_CARD" == "INTEL" ]; then
@@ -551,7 +558,7 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 				declare -a ES_resolution_V33=( "768x576" "640x480" )
 			fi
 		fi
-		for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"; done
+		for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 		echo ""
 		echo "#######################################################################"
 		echo "##       Make your choice for the EmulationStation Resolution        ##"
@@ -568,8 +575,8 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 	else
 		echo ""
 		echo "#######################################################################"
-		echo "##                    EmulationStation Resolution                    ##"
-		echo "##                      NVIDIA (Nvidia Drivers)                      ##"
+		echo "##                    EmulationStation Resolution                    ##" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+		echo "##                      NVIDIA (Nvidia Drivers)                      ##" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		echo "#######################################################################"
 		echo ""
 		if [[ "$video_output" == *"DVI"* ]]; then
@@ -585,7 +592,7 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 			declare -a ES_resolution=( "768x576_50iHz" "640x480_60iHz"  "1280x480_60iHz" "1280x240_60iHz")
 			declare -a ES_resolution_V33=( "768x576" "640x480" "1280x480_60" "1280x240_60")
 		fi
-		for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}"; done
+		for var in "${!ES_resolution[@]}" ; do echo "			$((var+1)) : ${ES_resolution[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 		echo ""
 		echo "#######################################################################"
 		echo "##       Make your choice for the EmulationStation Resolution        ##"
@@ -609,6 +616,7 @@ else
 	ES_resolution="640x480_60iHz"
 	ES_resolution_V33="640x480"
 fi
+echo "ES_resolution = $ES_resolution" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 ################################################################################################################################
 #######################################                  ROTATION                   ############################################
@@ -661,10 +669,10 @@ echo "##                                                                   ##"
 echo "#######################################################################"
 echo ""
 declare -a Screen_rotating=( "None" "Clockwise" "Counter-Clockwise" )
-for var in "${!Screen_rotating[@]}" ; do echo "			$((var+1)) : ${Screen_rotating[$var]}"; done
+for var in "${!Screen_rotating[@]}" ; do echo "			$((var+1)) : ${Screen_rotating[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 echo ""
 echo "#######################################################################"
-echo "##       Make your choice for the sens of your rotation screen       ##"
+echo "##       Make your choice for the sens of your rotation screen       ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "#######################################################################"
 echo -n "                                  "
 read Screen_rotating_choice
@@ -674,7 +682,7 @@ read Screen_rotating_choice
 	done
 Rotating_screen=${Screen_rotating[$Screen_rotating_choice-1]}
 
-echo -e "                    Your choice is : ${GREEN} $Rotating_screen${NOCOLOR}"
+echo -e "                    Your choice is : ${GREEN} $Rotating_screen${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo ""
 echo "#######################################################################"
 echo "##                  EmulationStation ORIENTATION                     ##"
@@ -737,7 +745,7 @@ else
 		;;
 	esac
 fi
-for var in "${!ES_orientation[@]}" ; do echo "			$((var+1)) : ${ES_orientation[$var]}"; done
+for var in "${!ES_orientation[@]}" ; do echo "			$((var+1)) : ${ES_orientation[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 echo ""
 echo "#######################################################################"
 echo "##       Make your choice for the EmulationStation ORIENTATION       ##"
@@ -755,7 +763,7 @@ display_libretro_rotate=${display_libretro_rotation[$es_rotation_choice-1]}
 display_standalone_rotate=${display_standalone_rotation[$es_rotation_choice-1]}
 display_fbneo_rotate=${display_fbneo_rotation[$es_rotation_choice-1]}
 
-echo -e "                    Your choice is :  ${GREEN}$ES_rotation${NOCOLOR}"
+echo -e "                    Your choice is :  ${GREEN}$ES_rotation${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 ################################################################################################################################
 ##########################################      Super-resolutions       ########################################################
@@ -772,7 +780,8 @@ dotclock_min_horizont=25
 if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "
 	read
-	clear	echo "#######################################################################"
+	clear
+	echo "#######################################################################"
 	echo "##                                                                   ##"
 	echo "##          Which graphig card drivers you want to use ?             ##"
 	echo "##                                                                   ##"
@@ -787,10 +796,10 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	echo "#######################################################################"
 	echo ""
 	declare -a driver_ATI=( "AMDGPU" "RADEON" )
-	for var in "${!driver_ATI[@]}" ; do echo "			$((var+1)) : ${driver_ATI[$var]}"; done
+	for var in "${!driver_ATI[@]}" ; do echo "			$((var+1)) : ${driver_ATI[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 	echo ""
 	echo "#######################################################################"
-	echo "##               Make your choice for your video card                ##"
+	echo "##               Make your choice for your video card                ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	echo "#######################################################################"
 	echo -n "                                  "
 	read type_of_drivers
@@ -799,7 +808,7 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 		read type_of_drivers
 	done
 	drivers_type=${driver_ATI[$type_of_drivers-1]}
-	echo -e "                    Your choice is :   ${GREEN}$drivers_type${NOCOLOR}"
+	echo -e "                    Your choice is :   ${GREEN}$drivers_type${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	echo ""
 
 	dotclock_min=0	
@@ -1001,10 +1010,10 @@ echo "##                                                                   ##"
 echo "#######################################################################" 
 echo ""
 declare -a Default_DT_SR_choice=( "YES" "NO" ) 
-for var in "${!Default_DT_SR_choice[@]}" ; do echo "			$((var+1)) : ${Default_DT_SR_choice[$var]}"; done
+for var in "${!Default_DT_SR_choice[@]}" ; do echo "			$((var+1)) : ${Default_DT_SR_choice[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 echo ""
 echo "#######################################################################"
-echo "##                 Go into advanced configuration ?                  ##"
+echo "##                 Go into advanced configuration ?                  ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "#######################################################################"
 echo -n "                                  "
 read choice_DT_SR
@@ -1013,10 +1022,10 @@ while [[ ! ${choice_DT_SR} =~ ^[1-$((var+1))]$ ]] && [[ "$choice_DT_SR" != "" ]]
 	read choice_DT_SR
 done
 if [[ -z "$choice_DT_SR" || $choice_DT_SR = "2" ]] ; then 
-	echo "                    your choice is : Don't mess with it, sorry ;)."
+	echo "                    your choice is : Don't mess with it, sorry ;)."  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 else 
 	DT_SR_Choice=${Default_DT_SR_choice[$choice_DT_SR-1]}
-echo -e "                    your choice is :${GREEN} $DT_SR_Choice ${NOCOLOR}"
+echo -e "                    your choice is :${GREEN} $DT_SR_Choice ${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 fi
 
 if [ "$DT_SR_Choice" == "YES" ] ; then
@@ -1026,7 +1035,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 	echo ""
 	echo "#######################################################################"
 	echo "##                                                                   ##"
-	echo "##                      ADVANCED CONFIGURATION       1/3             ##"
+	echo "##                      ADVANCED CONFIGURATION       1/3             ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	echo "##                                                                   ##"
 	echo "##            Tinker only if you know what you are doing             ##"
 	echo "##                 or if you have problems launching                 ##"
@@ -1042,7 +1051,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 	echo "#######################################################################"
 	echo ""
 	declare -a dcm_selector=( "Low - 0" "Mild - 6" "Medium - 12" "High - 25" "CUSTOM")
-	for var in "${!dcm_selector[@]}" ; do echo "			$((var+1)) : ${dcm_selector[$var]}"; done
+	for var in "${!dcm_selector[@]}" ; do echo "			$((var+1)) : ${dcm_selector[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 	echo ""
 	echo "#######################################################################" 
 	echo "##               Make your choice for minimum dotclock               ##"
@@ -1054,9 +1063,9 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		read dcm
 	done
 	if [ -z "$dcm" ] ; then 
-		echo -e "                    your choice is :${GREEN} Batocera default minimum dotclock${NOCOLOR}"
+		echo -e "                    your choice is :${GREEN} Batocera default minimum dotclock${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	else 
-		echo -e "                    your choice is :${GREEN}  ${dcm_selector[$dcm-1]}${NOCOLOR}"
+		echo -e "                    your choice is :${GREEN}  ${dcm_selector[$dcm-1]}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		case $dcm in
 			1) 	dotclock_min=0;;
 			2) 	dotclock_min=6;;
@@ -1071,7 +1080,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 					echo -n "Enter number between 0 and 25 for dotclock_min: "
 					read dotclock_min
 				done
-				echo -e "                    CUSTOM dotclock_min value = ${GREEN}${dotclock_min}${NOCOLOR}"
+				echo -e "                    CUSTOM dotclock_min value = ${GREEN}${dotclock_min}${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 			;;
 		esac
 	fi
@@ -1080,7 +1089,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		echo ""
 		echo "#######################################################################"
 		echo "##                                                                   ##"
-		echo "##                      ADVANCED CONFIGURATION       1b/3            ##"
+		echo "##                      ADVANCED CONFIGURATION       1b/3            ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		echo "##                                                                   ##"
 		echo "##                         M.A.M.E. MONITOR                          ##"
 		echo "##            Tinker only if you know what you are doing             ##"
@@ -1097,7 +1106,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		echo "#######################################################################" 
 		echo ""
 		declare -a dcm_m_selector=( "Low - 0" "Mild - 6" "Medium - 12" "High - 25" "CUSTOM")
-		for var in "${!dcm_m_selector[@]}" ; do echo "			$((var+1)) : ${dcm_m_selector[$var]}"; done
+		for var in "${!dcm_m_selector[@]}" ; do echo "			$((var+1)) : ${dcm_m_selector[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 		echo""
 		echo "#######################################################################" 
 		echo "##            Make your choice for MAME minimum dotclock             ##"
@@ -1109,17 +1118,17 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 			read dcm_m
 		done
 		if [ -z "$dcm_m" ] ; then 
-			echo -e "                    your choice is :${GREEN} Same as main monitor ($dotclock_min)${NOCOLOR}"
+			echo -e "                    your choice is :${GREEN} Same as main monitor ($dotclock_min)${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 			dotclock_min_mame=$dotclock_min
 		else
-			echo -e "                    your choice is :${GREEN}  ${dcm_selector[$dcm_m-1]}${NOCOLOR}"
+			echo -e "                    your choice is :${GREEN}  ${dcm_selector[$dcm_m-1]}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 			case $dcm_m in
 				1)	dotclock_min_mame=0;;
 				2)	dotclock_min_mame=6;;
 				3)	dotclock_min_mame=12;;
 				4)	dotclock_min_mame=25;;
 				5) 	echo "#######################################################################"
-					echo "##       Select your MAME custom dotclock_min: between 0 to 25       ##"
+					echo "##       Select your MAME custom dotclock_min: between 0 to 25       ##" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 					echo "#######################################################################"
 					echo -n "                                  "
 					read dotclock_min_mame
@@ -1127,7 +1136,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 						echo -n "Enter number between 0 and 25 for dotclock_min_mame: "
 						read dotclock_min_mame
 					done
-					echo -e "                    CUSTOM dotclock_min_mame value = ${GREEN}${dotclock_min_mame}${NOCOLOR}"
+					echo -e "                    CUSTOM dotclock_min_mame value = ${GREEN}${dotclock_min_mame}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 					;;
 			esac
 		fi
@@ -1138,7 +1147,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 	echo ""
 	echo "#######################################################################"
 	echo "##                                                                   ##"
-	echo "##                      ADVANCED CONFIGURATION       2/3             ##"
+	echo "##                      ADVANCED CONFIGURATION       2/3             ##" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	echo "##                                                                   ##"
 	echo "##                  ==     Super-resolution     ==                   ##"
 	echo "##                                                                   ##"
@@ -1154,7 +1163,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 	echo "#######################################################################"
 	echo ""
 	declare -a sr_selector=( "1920 - Intel default" "2560 - amd/ati default" "3840 - nvidia default" "CUSTOM (experimental)")
-	for var in "${!sr_selector[@]}" ; do echo "			$((var+1)) : ${sr_selector[$var]}"; done
+	for var in "${!sr_selector[@]}" ; do echo "			$((var+1)) : ${sr_selector[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 	echo ""
 	echo "#######################################################################"
 	echo "##             Make your choice for super-resolution                 ##"
@@ -1166,9 +1175,9 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		read sr_choice
 	done
 	if [ -z "$sr_choice" ] ; then 
-		echo -e "                    your choice is :${GREEN} default super-resolution${NOCOLOR}"
+		echo -e "                    your choice is :${GREEN} default super-resolution${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	else
-		echo -e "                    your choice is :${GREEN}  ${sr_selector[$sr_choice-1]}${NOCOLOR}"
+		echo -e "                    your choice is :${GREEN}  ${sr_selector[$sr_choice-1]}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		case $sr_choice in
 			1)	super_width=1920;;
 			2)	super_width=2560;;
@@ -1182,7 +1191,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 					echo -n "Enter valid number greater than 0 for custom super-resolution:"
 					read super_width
 				done
-				echo -e "                    CUSTOM super-resolution value = ${GREEN}${super_width}${NOCOLOR}"
+				echo -e "                    CUSTOM super-resolution value = ${GREEN}${super_width}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 				;;
 		esac
 	fi
@@ -1190,7 +1199,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		echo ""
 		echo "#######################################################################"
 		echo "##                                                                   ##"
-		echo "##                      ADVANCED CONFIGURATION       2b/3            ##"
+		echo "##                      ADVANCED CONFIGURATION       2b/3            ##" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		echo "##                                                                   ##"
 		echo "##                ==     MAME Super-resolution     ==                ##"
 		echo "##                                                                   ##"
@@ -1206,7 +1215,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		echo "#######################################################################"
 		echo ""
 		declare -a sr_m_selector=( "1920 - Intel default" "2560 - amd/ati default" "3840 - nvidia default" "Same as main monitor" "CUSTOM (experimental)")
-		for var in "${!sr_m_selector[@]}" ; do echo "			$((var+1)) : ${sr_m_selector[$var]}"; done
+		for var in "${!sr_m_selector[@]}" ; do echo "			$((var+1)) : ${sr_m_selector[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 		echo ""
 		echo "#######################################################################"
 		echo "##          Make your choice for MAME super-resolution               ##"
@@ -1218,9 +1227,9 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 			read sr_m_choice
 		done
 		if [ -z "$sr_m_choice" ] ; then 
-			echo -e "                    your choice is :${GREEN} MAME default super-resolution${NOCOLOR}"
+			echo -e "                    your choice is :${GREEN} MAME default super-resolution${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 		else
-			echo -e "                    your choice is :${GREEN}  ${sr_m_selector[$sr_m_choice-1]}${NOCOLOR}"
+			echo -e "                    your choice is :${GREEN}  ${sr_m_selector[$sr_m_choice-1]}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 			case $sr_m_choice in
 				1)	super_width_mame=1920;;
 				2)	super_width_mame=2560;;
@@ -1235,7 +1244,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 						echo -n "Enter valid number greater than 0 for custom super-resolution"
 						read super_width_mame
 					done
-					echo -e "                    CUSTOM MAME super-resolution value = ${GREEN}${super_width_mame}${NOCOLOR}"
+					echo -e "                    CUSTOM MAME super-resolution value = ${GREEN}${super_width_mame}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 					;;
 			esac
 		fi
@@ -1247,7 +1256,7 @@ fi
 echo ""
 echo "#######################################################################"
 echo "##                                                                   ##"
-echo "##                      ADVANCED CONFIGURATION       3/3             ##"
+echo "##                      ADVANCED CONFIGURATION       3/3             ##" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "##                                                                   ##"
 echo "##            Tinker only if you know what you are doing.            ##"
 echo "##              This configuration can reduce input lag              ##"
@@ -1261,7 +1270,7 @@ echo "##                                                                   ##"
 echo "#######################################################################" 
 echo ""
 declare -a usb_selector=( "Activate(reduce input lag)" "Keep default" )
-for var in "${!usb_selector[@]}" ; do echo "			$((var+1)) : ${usb_selector[$var]}"; done
+for var in "${!usb_selector[@]}" ; do echo "			$((var+1)) : ${usb_selector[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 echo ""
 echo "#######################################################################" 
 echo "##               Make your choice for USB POLLING RATE               ##"
@@ -1273,10 +1282,10 @@ read p_rate
 		read p_rate
 	done
 if [ -z "$p_rate" ] ; then 
-	echo -e "                    your choice is :${GREEN} Batocera default usb polling rate${NOCOLOR}"
+	echo -e "                    your choice is :${GREEN} Batocera default usb polling rate${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	polling_rate="usbhid.jspoll=0 xpad.cpoll=0"
 elif [ "x$p_rate" != "x0" ] ; then
-	echo -e "                    your choice is :${GREEN}  ${usb_selector[$p_rate-1]}${NOCOLOR}"
+	echo -e "                    your choice is :${GREEN}  ${usb_selector[$p_rate-1]}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	case $p_rate in
 		1) polling_rate="usbhid.jspoll=1 xpad.cpoll=1";;
 		*) polling_rate="usbhid.jspoll=0 xpad.cpoll=0";;
@@ -1286,7 +1295,7 @@ fi
 #############################################################################
 ## Make the boot writable
 #############################################################################
-
+echo "mount -o remount, rw /boot" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 mount -o remount, rw /boot
 
 #############################################################################
@@ -1339,7 +1348,7 @@ fi
 ###  Condition to be reviewed
 
 sed -e "s/\[amdgpu_drivers\]/$drivers_amd/g" -e "s/\[card_output\]/$video_output/g" \
-	-e "s/\[monitor\]/$monitor_firmware/g" -e "s/\[card_display\]/$video_display/g" \
+	-e "s/\[monitor\]/$monitor_firmware.bin/g" -e "s/\[card_display\]/$video_display/g" \
 	-e "s/\[usb_polling\]/$polling_rate/g" \
 	-e "s/\[boot_resolution\]/$boot_resolution/g"  /userdata/system/BUILD_15KHz/Boot_configs/syslinux.cfg-generic-Batocera \
 	>  /boot/EFI/syslinux.cfg
@@ -1618,6 +1627,20 @@ echo "#######################################################################"
 echo ""
 echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO FINISH "
 read 
+
+
+#######################################################################################
+# Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres
+#######################################################################################
+echo "Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+cp -a /userdata/system/BUILD_15KHz/Geometry_modeline/crt/ /userdata/roms/
+cp /userdata/system/BUILD_15KHz/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
+cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png
+cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg
+cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.sh.keys /usr/share/evmapy/
+chmod 755 /userdata/roms/crt/CRT.sh
+chmod 755 /usr/share/evmapy/CRT.sh.keys
+
 
 #######################################################################################
 ## Save in compilation in batocera image
@@ -1933,17 +1956,9 @@ chmod 755 /userdata/system/scripts/first_script.sh
 if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
 	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
 	chmod 755 /userdata/system/scripts/1_GunCon2.sh
-	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/ports/GunCon2_Calibration.sh
-	chmod 755 /userdata/roms/ports/GunCon2_Calibration.sh
+	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
+	chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
 fi
-
-#######################################################################################
-# Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres
-#######################################################################################
-
-cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.sh 	/userdata/roms/ports/CRT.sh
-
-chmod 755 /userdata/roms/ports/CRT.sh
 
 #######################################################################################
 ## Copy of batocera.conf for Libretro cores for use with Switchres
@@ -2136,7 +2151,11 @@ if [ ! -d "/userdata/system//mame" ];then
 	mkdir /userdata/system/mame
 fi
 ####################################################################################### 
-
+echo "###################################################" >> /userdata/system/batocera.conf
+echo "##  CRT SYSTEM SETTINGS" >> /userdata/system/batocera.conf
+echo "###################################################" >> /userdata/system/batocera.conf
+echo "CRT.emulator=sh" >> /userdata/system/batocera.conf
+echo "CRT.core=sh" >> /userdata/system/batocera.conf
 echo "###################################################" >> /userdata/system/batocera.conf
 echo "##  GROOVYMAME EMULATOR SETTINGS" >> /userdata/system/batocera.conf
 echo "###################################################" >> /userdata/system/batocera.conf
