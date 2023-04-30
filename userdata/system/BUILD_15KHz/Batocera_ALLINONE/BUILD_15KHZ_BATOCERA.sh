@@ -1426,10 +1426,6 @@ if [ ! -f "/usr/bin/emulationstation-standalone.bak" ];then
 	cp /usr/bin/emulationstation-standalone /usr/bin/emulationstation-standalone.bak
 fi
 
-if [ ! -f "/usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py.bak" ];then
-	cp /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py.bak
-fi
-
 if [ ! -f "/usr/bin/retroarch.bak" ];then
 	cp /usr/bin/retroarch /usr/bin/retroarch.bak
 fi 
