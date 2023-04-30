@@ -4,7 +4,7 @@ GREEN='\033[0;32m'
 BLUE='\033[1;34m'
 NOCOLOR='\033[0m'
 clear
-
+echo "[$(date +"%H:%M:%S")]: BUILD_15KHz_Batocera START" > /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "#######################################################################"
 echo "##                                                                   ##"
 echo "##                15KHz BATOCERA V32-V36 CONFIGURATION               ##"
@@ -65,7 +65,8 @@ read
 clear
 
 version_Batocera=$(batocera-es-swissknife  --version)
-echo "Version batocera = $version_Batocera" > /userdata/system/logs/BUILD_15KHz_Batocera.log
+
+echo "Version batocera = $version_Batocera" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 case $version_Batocera in
 	30*)
 		echo "Version 30"
@@ -120,19 +121,35 @@ j=0
 for p in /sys/class/drm/card? ; do
 	id=$(basename `readlink -f $p/device`)
 	temp=$(lspci -mms $id | cut -d '"' -f4,6)
-	#temp=$(lspci -mms $id | cut -d '"' -f4,6 --output-delimiter=" ")
 	name_card[$j]="$temp"
 	j=`expr $j + 1`
 done
 echo ""
-for var in "${!name_card[@]}" ; do echo "	$((var+1)) : ${name_card[$var]}"; done
+for var in "${!name_card[@]}" ; do echo "	$((var+1)) : ${name_card[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
+if [[ "$var" -gt 0 ]] ; then
+	echo ""
+	echo "#######################################################################"
+	echo "##                                                                   ##"
+	echo "##                Make your choice for graphic card                  ##" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+	echo "##                                                                   ##"
+	echo "#######################################################################"
+	echo -n "                                  "
+	read card_choice
+	while [[ ! ${card_choice} =~ ^[1-$((var+1))]$ ]] && [[ "$card_choice" != "" ]] ; do
+		echo -n "Select option 1 to $((var+1)):" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+		read card_choice
+	done
+	selected_card=${name_card[$card_choice-1]}
+else
+	selected_card=${temp}
+fi
 
 ###############################################################
 ##    TYPE OF GRAPHIC CARD
 ###############################################################
 Drivers_Nvidia_CHOICE="NONE"
 
-case $temp in
+case $selected_card in
 	*[Nn][Vv][Ii][Dd][Ii][Aa]*)
 		TYPE_OF_CARD="NVIDIA"
 		echo ""
@@ -189,7 +206,7 @@ case $temp in
 		echo "#######################################################################"
 		echo -e "##                    YOUR VIDEO CARD IS ${GREEN}AMD/ATI${NOCOLOR}                     ##"
 		echo "#######################################################################"
-		if [[ "$temp" =~ "R9" ]] && [[ "$temp" =~ "380" ]]; then
+		if [[ "$selected_card" =~ "R9" ]] && [[ "$selected_card" =~ "380" ]]; then
 			R9_380="YES"
 			echo ""
 			echo "#######################################################################"
@@ -242,11 +259,7 @@ case $temp in
 		exit 1
 	;;
 esac
-echo "Card type = $temp" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-
-#Type_card="unknown"
-#for search_card in amd ati nvidia intel ; do echo "$temp" | egrep -iq "$search_card" && Type_card="$search_card"; done
-#echo "You card is : " $Type_card
+echo "	Selected card = $selected_card" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 #####################################################################################################################################################
 #####################################################################################################################################################
