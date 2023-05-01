@@ -1544,8 +1544,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v36 /usr/bin/emulationstation-standalone
 		chmod 755 /usr/bin/emulationstation-standalone
-		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch
-		chmod 755 /usr/bin/retroarch
+#		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch
+#		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 		#cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v36 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
