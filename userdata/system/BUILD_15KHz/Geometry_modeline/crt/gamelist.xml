@@ -10,7 +10,7 @@ It will reboot with the new custom monitor calculated.
 You might need to adjust Emulationstation centering also (see wiki).
 		</desc>
 		<image>./images/geometry-image.png</image>
-		<manual>./manuals/CRT-manual.pdf</manual>
+		<manual>./manuals/CRT.sh-manual.pdf</manual>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
 		<lang>en</lang>
