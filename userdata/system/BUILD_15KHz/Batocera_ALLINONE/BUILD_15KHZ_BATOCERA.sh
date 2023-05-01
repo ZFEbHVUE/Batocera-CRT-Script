@@ -30,7 +30,9 @@ echo "##                                                                   ##"
 echo "##         YOU NEED TO HAVE RIGHT CONNECTION FOR 15KHz CRT           ##"
 echo "##   AND SOME PROTECTIONS FOR YOUR MONITOR AGAINST BAD FREQUENCIES   ##"
 echo "##                                                                   ##"
-echo "##                   THE SCRIPT IS OPEN SOURCE                       ##"
+echo "##                   THE SCRIPT IS OPEN SOURCE                       ##"cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch
+		chmod 755 /usr/bin/retroarch
+
 echo "##           YOU CAN MODIFY IT / IMPROVE IT / REPORT BUGS            ##"
 echo "##                                                                   ##"
 echo "##          IF YOU ARE OK WITH THESE CONDITIONS TYPE ENTER           ##"
@@ -50,7 +52,9 @@ echo "##                                                                   ##"
 echo "##   Intel: display-port and VGA (Optiplex 790/7010                  ##"
 echo "##        (VGA works somewhat on)                                    ##"
 echo "##                                                                   ##"
-echo "##  Nvidia:                                                          ##"
+echo "##  Nvidia:                                                          ##"cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch
+		chmod 755 /usr/bin/retroarch
+
 echo "##  8400GS(Tesla)  DVI-I/HDMI/VGA (NOUVEAU)                          ##"
 echo "##  Quadro K600(Kelper) DVI-I/(Diplay-Port)  (Nvidia-Driver/Nouveau) ##"
 echo "##  GTX980(Maxwell) DVI-I/HDMI/(Diplay-Port) (Nvidia-Driver/Nouveau) ##"
@@ -1544,8 +1548,6 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v36 /usr/bin/emulationstation-standalone
 		chmod 755 /usr/bin/emulationstation-standalone
-		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch
-		chmod 755 /usr/bin/retroarch
 		###############################################################################################################################################
 		#cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v36 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
 		###############################################################################################################################################
