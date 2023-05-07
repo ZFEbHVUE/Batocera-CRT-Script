@@ -1977,10 +1977,10 @@ if [ ! -d "/usr/share/batocera/shaders/configs/lightgun-shader" ];then
 	mkdir /usr/share/batocera/shaders/configs/lightgun-shader
 fi
 if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
-	cp userdata/system/BUILD_15KHz/GunCon2/shader/lightgun-shader/rendering-defaults.yml /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
+	cp /userdata/system/BUILD_15KHz/GunCon2/shader/lightgun-shader/rendering-defaults.yml /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
 	chmod 644 /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
-	cp userdata/system/BUILD_15KHz/GunCon2/shader/misc/image-adjustment_lgun.slangp /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
-	cp userdata/system/BUILD_15KHz/GunCon2/shader/misc/shaders/image-adjustment_lgun.slang /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
+	cp /userdata/system/BUILD_15KHz/GunCon2/shader/misc/image-adjustment_lgun.slangp /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
+	cp /userdata/system/BUILD_15KHz/GunCon2/shader/misc/shaders/image-adjustment_lgun.slang /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
 	chmod 644 /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
 	chmod 644 /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
 fi
