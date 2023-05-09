@@ -1,4 +1,5 @@
 #!/bin/bash
+#test
 ####################################################################################
 # Script to create a custom monitor with a set of modelines using geometry utility #
 #              With this utility you have to manually center a grid.               #
