@@ -20,7 +20,7 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
     See official guide on how to do so here: 
      https://wiki.batocera.org/access_the_batocera_via_ssh
     
-6) Via SSH type
+6) Via SSH type (Without the Grave Accent Symbols) **`**
 
 `cd /userdata/system/BUILD_15KHz/Batocera_ALLINONE`
 
