@@ -21,8 +21,11 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
      https://wiki.batocera.org/access_the_batocera_via_ssh
     
 6) Via SSH type
+
 `cd /userdata/system/BUILD_15KHz/Batocera_ALLINONE`
+
 `chmod 755 BUILD_15KHZ_BATOCERA.sh`
+
 `./BUILD_15KHZ_BATOCERA.sh`
 
 Here you will be greeted with some information to read. 
