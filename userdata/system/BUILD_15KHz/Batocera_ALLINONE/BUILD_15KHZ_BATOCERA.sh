@@ -191,6 +191,11 @@ case $selected_card in
 			done
 			Drivers_Name_Nvidia_CHOICE=${Name_Nvidia_drivers_version[$choice_Name_Drivers_Nvidia-1]}
 			echo -e "                    your choice is :  ${GREEN}$Drivers_Name_Nvidia_CHOICE${NOCOLOR}"
+			
+			if [ "$Drivers_Name_Nvidia_CHOICE" == "true" ]&&[ "$Version_of_batocera" == "v37" ]; then
+				Drivers_Name_Nvidia_CHOICE="legacy"
+			fi
+
 		fi
 	;;
 	*[Ii][Nn][Tt][Ee][Ll]*)
@@ -1326,23 +1331,33 @@ cp /boot/batocera-boot.conf  /boot/batocera-boot.conf.tmp
 #############################################################################
 if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 	if   [ "$Drivers_Name_Nvidia_CHOICE" == "true" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=true/'	-e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		sed -e 's/.*nvidia-driver=.*/nvidia-driver=true/' -e 's/.*amdgpu=.*/#amdgpu=true/' -e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	elif [ "$Drivers_Name_Nvidia_CHOICE" == "legacy" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy/'  	-e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy/'  -e 's/.*amdgpu=.*/#amdgpu=true/' -e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	elif [ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy390/' 	-e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy390/' -e 's/.*amdgpu=.*/#amdgpu=true/' -e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
         elif [ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy340/' 	-e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy340/' -e 's/.*amdgpu=.*/#amdgpu=true/' -e 's/.*splash.screen.enabled=.*/splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	else
 		echo "problems of Nvidia driver name"
 	fi	
 else
 	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]&&([ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]); then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=false/' -e  's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'	 	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		sed -e 's/.*nvidia-driver=.*/nvidia-driver=false/' -e 's/.*amdgpu=.*/#amdgpu=true/' -e  's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'	 	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	else
-		sed -e 's/.*nvidia-driver=.*/#nvidia-driver=true/' -e 's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		if [ "$TYPE_OF_CARD" == "AMD/ATI" ]&&[ "$Version_of_batocera" == "v37" ]; then
+			if [ "$drivers_type" == "AMDGPU" ]; then
+				sed -e 's/.*nvidia-driver=.*/#nvidia-driver=true/' -e 's/.*amdgpu=.*/amdgpu=true/' -e 's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+			else
+				sed -e 's/.*nvidia-driver=.*/#nvidia-driver=true/' -e 's/.*amdgpu=.*/amdgpu=false/' -e 's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+			fi
+		else
+			sed -e 's/.*nvidia-driver=.*/#nvidia-driver=true/' -e 's/.*amdgpu=.*/#amdgpu=true/' -e 's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'		/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		fi
 	fi
 fi
+
+
 
 cp /boot/batocera-boot.conf.tmp  /boot/batocera-boot.conf
 rm /boot/batocera-boot.conf.tmp 
