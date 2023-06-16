@@ -1985,6 +1985,26 @@ if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; the
 fi
 
 #######################################################################################
+# Create GunCon2 LUA plugin for GroovyMame for V36, V37 and V38
+#######################################################################################
+## if the folder doesn't exist, it will be created now
+if [ ! -d "/usr/bin/mame/plugins/gunlight" ];then
+	mkdir /usr/bin/mame/plugins/gunlight
+fi
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]; then
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/gunlight_menu.lua /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/gunlight_save.lua /usr/bin/mame/plugins/gunlight/gunlight_save.lua
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/init.lua /usr/bin/mame/plugins/gunlight/init.lua
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.json /usr/bin/mame/plugins/gunlight/plugin.json
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
+	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
+	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_save.lua
+	chmod 644 /usr/bin/mame/plugins/gunlight/init.lua
+	chmod 644 /usr/bin/mame/plugins/gunlight/plugin.json
+	chmod 644 /userdata/system/configs/mame/plugin.ini
+fi
+
+#######################################################################################
 # Create GunCon2 shader for V36 and V37
 #######################################################################################
 ## if the folder doesn't exist, it will be created now
