@@ -2020,6 +2020,8 @@ if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; the
 	chmod 644 /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
 fi
 
+batocera-save-overlay
+
 #######################################################################################
 ## Copy of batocera.conf for Libretro cores for use with Switchres
 #######################################################################################
