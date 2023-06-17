@@ -1652,7 +1652,6 @@ echo ""
 echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO FINISH "
 read 
 
-
 #######################################################################################
 # Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres
 #######################################################################################
@@ -1664,6 +1663,53 @@ cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.svg /usr/share/emulationst
 cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.sh.keys /usr/share/evmapy/
 chmod 755 /userdata/roms/crt/CRT.sh
 chmod 755 /usr/share/evmapy/CRT.sh.keys
+
+#######################################################################################
+# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36 and V37
+#######################################################################################
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
+	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
+	chmod 755 /userdata/system/scripts/1_GunCon2.sh
+	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
+	chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
+fi
+
+#######################################################################################
+# Create GunCon2 LUA plugin for GroovyMame for V36, V37 and V38
+#######################################################################################
+## if the folder doesn't exist, it will be created now
+if [ ! -d "/usr/bin/mame/plugins/gunlight" ];then
+	mkdir /usr/bin/mame/plugins/gunlight
+fi
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]; then
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/gunlight_menu.lua /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/gunlight_save.lua /usr/bin/mame/plugins/gunlight/gunlight_save.lua
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/init.lua /usr/bin/mame/plugins/gunlight/init.lua
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.json /usr/bin/mame/plugins/gunlight/plugin.json
+	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
+	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
+	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_save.lua
+	chmod 644 /usr/bin/mame/plugins/gunlight/init.lua
+	chmod 644 /usr/bin/mame/plugins/gunlight/plugin.json
+	chmod 644 /userdata/system/configs/mame/plugin.ini
+fi
+
+#######################################################################################
+# Create GunCon2 shader for V36 and V37
+#######################################################################################
+## if the folder doesn't exist, it will be created now
+if [ ! -d "/usr/share/batocera/shaders/configs/lightgun-shader" ];then
+	mkdir /usr/share/batocera/shaders/configs/lightgun-shader
+fi
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
+	cp /userdata/system/BUILD_15KHz/GunCon2/shader/lightgun-shader/rendering-defaults.yml /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
+	chmod 644 /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
+	cp /userdata/system/BUILD_15KHz/GunCon2/shader/misc/image-adjustment_lgun.slangp /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
+	cp /userdata/system/BUILD_15KHz/GunCon2/shader/misc/shaders/image-adjustment_lgun.slang /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
+	chmod 644 /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
+	chmod 644 /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
+fi
+
 
 
 #######################################################################################
@@ -1973,54 +2019,6 @@ sed -e "s/\[display_mame_rotation\]/$display_mame_rotate/g" -e "s/\[display_fbne
 	-e "s/\[display_standalone_rotation\]/$display_standalone_rotate/g" -e "s/\[display_ES_rotation\]/$display_rotate/g" \
 	-e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$ES_resolution_V33/g" /userdata/system/BUILD_15KHz/System_configs/First_script/first_script.sh-generic-v33 > /userdata/system/scripts/first_script.sh
 chmod 755 /userdata/system/scripts/first_script.sh
-
-#######################################################################################
-# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36 and V37
-#######################################################################################
-if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
-	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
-	chmod 755 /userdata/system/scripts/1_GunCon2.sh
-	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
-	chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
-fi
-
-#######################################################################################
-# Create GunCon2 LUA plugin for GroovyMame for V36, V37 and V38
-#######################################################################################
-## if the folder doesn't exist, it will be created now
-if [ ! -d "/usr/bin/mame/plugins/gunlight" ];then
-	mkdir /usr/bin/mame/plugins/gunlight
-fi
-if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]; then
-	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/gunlight_menu.lua /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
-	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/gunlight_save.lua /usr/bin/mame/plugins/gunlight/gunlight_save.lua
-	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/init.lua /usr/bin/mame/plugins/gunlight/init.lua
-	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.json /usr/bin/mame/plugins/gunlight/plugin.json
-	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
-	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
-	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_save.lua
-	chmod 644 /usr/bin/mame/plugins/gunlight/init.lua
-	chmod 644 /usr/bin/mame/plugins/gunlight/plugin.json
-	chmod 644 /userdata/system/configs/mame/plugin.ini
-fi
-
-#######################################################################################
-# Create GunCon2 shader for V36 and V37
-#######################################################################################
-## if the folder doesn't exist, it will be created now
-if [ ! -d "/usr/share/batocera/shaders/configs/lightgun-shader" ];then
-	mkdir /usr/share/batocera/shaders/configs/lightgun-shader
-fi
-if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
-	cp /userdata/system/BUILD_15KHz/GunCon2/shader/lightgun-shader/rendering-defaults.yml /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
-	chmod 644 /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
-	cp /userdata/system/BUILD_15KHz/GunCon2/shader/misc/image-adjustment_lgun.slangp /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
-	cp /userdata/system/BUILD_15KHz/GunCon2/shader/misc/shaders/image-adjustment_lgun.slang /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
-	chmod 644 /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
-	chmod 644 /usr/share/batocera/shaders/misc/shaders/image-adjustment_lgun.slang
-fi
-
-batocera-save-overlay
 
 #######################################################################################
 ## Copy of batocera.conf for Libretro cores for use with Switchres
