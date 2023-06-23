@@ -104,9 +104,14 @@ case $version_Batocera in
 		verion=6
 		;;
 	37*)
-		echo "Version 37 dev"
+		echo "Version 37"
 		Version_of_batocera="v37"
 		verion=7
+		;;
+  	38*)
+		echo "Version 38 dev"
+		Version_of_batocera="v38"
+		verion=8
 		;;
 	*)
 		echo "unknown version"
@@ -1338,10 +1343,10 @@ if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 		echo "problems of Nvidia driver name"
 	fi	
 else
-	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]&&([ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]); then
+	if [ "$Drivers_Nvidia_CHOICE" == "NOUVEAU" ]&&([ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]); then
 		sed -e 's/.*nvidia-driver=.*/nvidia-driver=false/' -e 's/.*amdgpu=.*/#amdgpu=true/' -e  's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'	 	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	else
-		if [ "$TYPE_OF_CARD" == "AMD/ATI" ]&&[ "$Version_of_batocera" == "v37" ]; then
+		if [ "$TYPE_OF_CARD" == "AMD/ATI" ]&&([ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]); then
 			if [ "$drivers_type" == "AMDGPU" ]; then
 				sed -e 's/.*nvidia-driver=.*/#nvidia-driver=true/' -e 's/.*amdgpu=.*/amdgpu=true/' -e 's/.*splash.screen.enabled=.*/#splash.screen.enabled=0/'	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 			else
@@ -1564,6 +1569,20 @@ case $Version_of_batocera in
 		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
 		chmod 755 /etc/switchres.ini
 	;;
+ 	v38)
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/batocera-resolution-v36 /usr/bin/batocera-resolution
+		chmod 755 /usr/bin/batocera-resolution 
+		cp /userdata/system/BUILD_15KHz/UsrBin_configs/emulationstation-standalone-v36 /usr/bin/emulationstation-standalone
+		chmod 755 /usr/bin/emulationstation-standalone
+#		cp /userdata/system/BUILD_15KHz/UsrBin_configs/retroarch-generic /usr/bin/retroarch
+#		chmod 755 /usr/bin/retroarch
+		###############################################################################################################################################
+		#cp /userdata/system/BUILD_15KHz/Mame_configs/mameGenerator.py-v36 /usr/lib/python3.10/site-packages/configgen/generators/mame/mameGenerator.py
+		###############################################################################################################################################
+		#sed -e "s/\[monitor-name\]/$monitor_name/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/BUILD_15KHz/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
+		chmod 755 /etc/switchres.ini
+	;;
 	*)
 		echo "PROBLEM OF VERSION"
 		exit 1;
@@ -1661,9 +1680,9 @@ chmod 755 /userdata/roms/crt/CRT.sh
 chmod 755 /usr/share/evmapy/CRT.sh.keys
 
 #######################################################################################
-# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36 and V37
+# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36, V37 and v38
 #######################################################################################
-if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]; then
 	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
 	chmod 755 /userdata/system/scripts/1_GunCon2.sh
 	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
@@ -1691,13 +1710,13 @@ if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "
 fi
 
 #######################################################################################
-# Create GunCon2 shader for V36 and V37
+# Create GunCon2 shader for V36, V37 and v38
 #######################################################################################
 ## if the folder doesn't exist, it will be created now
 if [ ! -d "/usr/share/batocera/shaders/configs/lightgun-shader" ];then
 	mkdir /usr/share/batocera/shaders/configs/lightgun-shader
 fi
-if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]; then
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]; then
 	cp /userdata/system/BUILD_15KHz/GunCon2/shader/lightgun-shader/rendering-defaults.yml /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
 	chmod 644 /usr/share/batocera/shaders/configs/lightgun-shader/rendering-defaults.yml
 	cp /userdata/system/BUILD_15KHz/GunCon2/shader/misc/image-adjustment_lgun.slangp /usr/share/batocera/shaders/misc/image-adjustment_lgun.slangp
@@ -2180,6 +2199,20 @@ case $Version_of_batocera in
 		chmod 644 /userdata/system/configs/mame/ui.ini
 	;;
 	v37)
+		if [ ! -d "/userdata/system/configs/mame" ];then
+			mkdir /userdata/system/configs/mame
+			mkdir /userdata/system/configs/mame/ini
+		elif [ ! -d "/userdata/system/configs/mame/ini" ];then
+			mkdir /userdata/system/configs/mame/ini
+		fi
+		mv /usr/bin/mame/*.ini /userdata/system/configs/mame/
+		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width_mame\]/$super_width_mame/g" -e "s/\[dotclock_min_mame\]/$dotclock_min_mame/g" \
+			/userdata/system/BUILD_15KHz//Mame_configs/mame.ini-switchres-generic-v36 > /userdata/system/configs/mame/mame.ini
+		chmod 644 /userdata/system/configs/mame/mame.ini
+		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres /userdata/system/configs/mame/ui.ini
+		chmod 644 /userdata/system/configs/mame/ui.ini
+	;;
+ 	v38)
 		if [ ! -d "/userdata/system/configs/mame" ];then
 			mkdir /userdata/system/configs/mame
 			mkdir /userdata/system/configs/mame/ini
