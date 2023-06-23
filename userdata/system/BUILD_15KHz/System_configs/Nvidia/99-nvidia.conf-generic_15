@@ -37,7 +37,7 @@ EndSection
 Section "Device"
   Identifier	"GRPX"
     Option "RenderAccel"   "1"  
-    Option "ModeValidation" "NoVertRefreshCheck, NoHorizSyncCheck, NoMaxSizeCheck, NoMaxPClkCheck , NoVesaModes,NoXServerModes,NoEDIDModes, NoPredefinedModes ,NoExtendedGpuCapabilitiesCheck , AllowDpInterlaced,AllowNonEdidModes,NoDisplayPortBandwidthCheck ,NoEdidDFPMaxSizeCheck,NoDualLinkDVICheck"
+    Option "ModeValidation" "NoVertRefreshCheck, NoHorizSyncCheck, NoMaxSizeCheck, NoMaxPClkCheck , NoVesaModes,NoXServerModes,NoEDIDModes, NoPredefinedModes , AllowDpInterlaced,AllowNonEdidModes,NoDisplayPortBandwidthCheck ,NoEdidDFPMaxSizeCheck,NoDualLinkDVICheck"
     Option "UseEDID" "False"
     Option "NoEDIDModes" "true"
     Option "monitor-DVI-0" "CRT"
