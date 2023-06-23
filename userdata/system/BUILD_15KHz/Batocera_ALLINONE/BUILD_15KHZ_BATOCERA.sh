@@ -191,11 +191,7 @@ case $selected_card in
 			done
 			Drivers_Name_Nvidia_CHOICE=${Name_Nvidia_drivers_version[$choice_Name_Drivers_Nvidia-1]}
 			echo -e "                    your choice is :  ${GREEN}$Drivers_Name_Nvidia_CHOICE${NOCOLOR}"
-			
-			if [ "$Drivers_Name_Nvidia_CHOICE" == "true" ]&&[ "$Version_of_batocera" == "v37" ]; then
-				Drivers_Name_Nvidia_CHOICE="legacy"
-			fi
-
+	
 		fi
 	;;
 	*[Ii][Nn][Tt][Ee][Ll]*)
