@@ -22,7 +22,7 @@ This script would not have been possible without the following people to name a 
 ### Special Thanks
 - krahsdevil (Emulation Station assets) 
 
-## :video_game::penguin: Build-CRT-15KHz-Batocera-V35 :video_game::penguin:
+## :video_game::penguin: Build-CRT-15KHz-Batocera :video_game::penguin:
 Build-CRT-15KHz-Batocera V32 to V37 & V38 dev
 
 First public release
