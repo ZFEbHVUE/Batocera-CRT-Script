@@ -1692,12 +1692,10 @@ if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "
 	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/gunlight_save.lua /usr/bin/mame/plugins/gunlight/gunlight_save.lua
 	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/init.lua /usr/bin/mame/plugins/gunlight/init.lua
 	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.json /usr/bin/mame/plugins/gunlight/plugin.json
-	cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
 	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
 	chmod 644 /usr/bin/mame/plugins/gunlight/gunlight_save.lua
 	chmod 644 /usr/bin/mame/plugins/gunlight/init.lua
 	chmod 644 /usr/bin/mame/plugins/gunlight/plugin.json
-	chmod 644 /userdata/system/configs/mame/plugin.ini
 fi
 
 #######################################################################################
@@ -2199,6 +2197,9 @@ case $Version_of_batocera in
 		chmod 644 /userdata/system/configs/mame/mame.ini
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres /userdata/system/configs/mame/ui.ini
 		chmod 644 /userdata/system/configs/mame/ui.ini
+
+  		cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
+		chmod 644 /userdata/system/configs/mame/plugin.ini  
 	;;
 	v37)
 		if [ ! -d "/userdata/system/configs/mame" ];then
@@ -2213,6 +2214,9 @@ case $Version_of_batocera in
 		chmod 644 /userdata/system/configs/mame/mame.ini
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres /userdata/system/configs/mame/ui.ini
 		chmod 644 /userdata/system/configs/mame/ui.ini
+
+  		cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
+		chmod 644 /userdata/system/configs/mame/plugin.ini  
 	;;
  	v38)
 		if [ ! -d "/userdata/system/configs/mame" ];then
@@ -2227,6 +2231,9 @@ case $Version_of_batocera in
 		chmod 644 /userdata/system/configs/mame/mame.ini
 		cp /userdata/system/BUILD_15KHz/Mame_configs/ui.ini-switchres /userdata/system/configs/mame/ui.ini
 		chmod 644 /userdata/system/configs/mame/ui.ini
+  
+ 		cp /userdata/system/BUILD_15KHz/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
+		chmod 644 /userdata/system/configs/mame/plugin.ini
 	;;
 	*)
 		echo "Problem of version"
