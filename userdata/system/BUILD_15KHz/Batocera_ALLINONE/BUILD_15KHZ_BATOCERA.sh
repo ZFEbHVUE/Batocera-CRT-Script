@@ -1679,15 +1679,6 @@ cp /userdata/system/BUILD_15KHz/Geometry_modeline/CRT.sh.keys /usr/share/evmapy/
 chmod 755 /userdata/roms/crt/CRT.sh
 chmod 755 /usr/share/evmapy/CRT.sh.keys
 
-#######################################################################################
-# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36, V37 and v38
-#######################################################################################
-if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]; then
-	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
-	chmod 755 /userdata/system/scripts/1_GunCon2.sh
-	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
-	chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
-fi
 
 #######################################################################################
 # Create GunCon2 LUA plugin for GroovyMame for V36, V37 and V38
@@ -2034,6 +2025,17 @@ sed -e "s/\[display_mame_rotation\]/$display_mame_rotate/g" -e "s/\[display_fbne
 	-e "s/\[display_standalone_rotation\]/$display_standalone_rotate/g" -e "s/\[display_ES_rotation\]/$display_rotate/g" \
 	-e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$ES_resolution_V33/g" /userdata/system/BUILD_15KHz/System_configs/First_script/first_script.sh-generic-v33 > /userdata/system/scripts/first_script.sh
 chmod 755 /userdata/system/scripts/first_script.sh
+
+#######################################################################################
+# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36, V37 and v38
+#######################################################################################
+if [ "$Version_of_batocera" == "v36" ]||[ "$Version_of_batocera" == "v37" ]||[ "$Version_of_batocera" == "v38" ]; then
+	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
+	chmod 755 /userdata/system/scripts/1_GunCon2.sh
+	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/BUILD_15KHz/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
+	chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
+fi
+
 
 #######################################################################################
 ## Copy of batocera.conf for Libretro cores for use with Switchres
