@@ -140,6 +140,9 @@ else
 	elif [[ "$MONITOR" == "arcade_15" ]]; then
 		RESOLUTIONS=(	"3600x480 60" "1920x240 60" "1920x256 50" "1920x480 60" "2560x256 60" "2560x448 60" "1280x480 60" \
 						"1024x600 50" "768x576 50"  "854x480 60" "864x486 60"  "800x600 50" "720x480 60" "640x480 60")
+      	elif [[ "$MONITOR" == "generic_15" ]]; then
+		RESOLUTIONS=(	"3600x480 60" "1920x240 60" "1920x256 50" "1920x480 60" "2560x256 60" "2560x448 60" "1280x480 60" \
+						"1024x600 50" "768x576 50"  "854x480 60" "864x486 60"  "800x600 50" "720x480 60" "640x480 60")
 	else
 		echo "[$(date +"%H:%M:%S")]: There are problems in your NVIDIA monitor definition" | tee -a /userdata/system/logs/custom_crt_monitor.log
 		rollback 3
