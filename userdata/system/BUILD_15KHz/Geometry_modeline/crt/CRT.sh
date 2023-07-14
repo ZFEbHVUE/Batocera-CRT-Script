@@ -18,10 +18,14 @@ rollback(){
 			cp /userdata/system/configs/mame/mame.crt /userdata/system/configs/mame/mame.ini
 			echo "[$(date +"%H:%M:%S")]: Rollbacking switchres.ini and mame.ini" | tee -a /userdata/system/logs/custom_crt_monitor.log
 		;;
-		3)#switchres.ini, mame.ini and custom-es-config
+	3)#switchres.ini, mame.ini and (custom-es-config or 99-nvidia)
 			cp /etc/switchres.crt /etc/switchres.ini
 			cp /userdata/system/configs/mame/mame.crt /userdata/system/configs/mame/mame.ini
-			cp /userdata/system/custom-es-config.crt /userdata/system/custom-es-config
+			if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
+				cp /userdata/system/custom-es-config.crt /userdata/system/custom-es-config
+			else
+				cp /userdata/system/99-nvidia.conf.crt /userdata/system/99-nvidia.conf
+			fi
 			echo "[$(date +"%H:%M:%S")]: Rollbacking switchres.ini, mame.ini and custom-es-config" | tee -a /userdata/system/logs/custom_crt_monitor.log
 		;;
 		*)
@@ -61,13 +65,22 @@ else
 	cp /userdata/system/configs/mame/mame.ini /userdata/system/configs/mame/mame.crt
 	cp /userdata/system/configs/mame/mame.ini.bak /userdata/system/configs/mame/mame.ini
 fi
-if [ ! -f "/userdata/system/custom-es-config.bak" ] ; then
-	echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/custom-es-config.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
+if [ ! -f "/userdata/system/custom-es-config.bak" ]||[ ! -f "/userdata/system/99-nvidia.conf.bak" ]; then
+	if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
+		echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/custom-es-config.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
+	else
+		echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/99-nvidia.conf.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
+	fi
 	rollback 2
 	exit
 else
-	cp /userdata/system/custom-es-config /userdata/system/custom-es-config.crt
-	cp /userdata/system/custom-es-config.bak /userdata/system/custom-es-config
+	if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
+		cp /userdata/system/custom-es-config /userdata/system/custom-es-config.crt
+		cp /userdata/system/custom-es-config.bak /userdata/system/custom-es-config
+	else
+		cp /userdata/system/99-nvidia.conf /userdata/system/99-nvidia.conf.crt
+		cp /userdata/system/99-nvidia.conf.bak /userdata/system/99-nvidia.conf 
+	fi
 fi
 
 ####################################################################################
@@ -139,10 +152,10 @@ else
 
 	elif [[ "$MONITOR" == "arcade_15" ]]; then
 		RESOLUTIONS=(	"3600x480 60" "1920x240 60" "1920x256 50" "1920x480 60" "2560x256 60" "2560x448 60" "1280x480 60" \
-						"1024x600 50" "768x576 50"  "854x480 60" "864x486 60"  "800x600 50" "720x480 60" "640x480 60")
-      	elif [[ "$MONITOR" == "generic_15" ]]; then
+						"1024x576 50" "768x576 50"  "854x480 60" "864x486 60"  "800x576 50" "720x480 60" "640x480 60")
+	elif [[ "$MONITOR" == "generic_15" ]]; then
 		RESOLUTIONS=(	"3600x480 60" "1920x240 60" "1920x256 50" "1920x480 60" "2560x256 60" "2560x448 60" "1280x480 60" \
-						"1024x600 50" "768x576 50"  "854x480 60" "864x486 60"  "800x600 50" "720x480 60" "640x480 60")
+						"1024x576 50" "768x576 50"  "854x480 60" "864x486 60"  "800x576 50" "720x480 60" "640x480 60")
 	else
 		echo "[$(date +"%H:%M:%S")]: There are problems in your NVIDIA monitor definition" | tee -a /userdata/system/logs/custom_crt_monitor.log
 		rollback 3
@@ -160,11 +173,17 @@ sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWIT
 #                             Geometry utility start                               #
 #                                                                                  #
 ####################################################################################
-RES_GEOM=("648x480 60")
+RES_GEOM=("[Resolution_calibration]")
+if [[ "$TYPE_OF_CARD" == "AMD_INTEL_NVIDIA_NOUV" ]]; then
+	xrandr -display :0.0 --delmode  [card_display] "[Resolution_avoid]"
+fi
 echo "[$(date +"%H:%M:%S")]: Look at your CRT in order to center grid" | tee -a /userdata/system/logs/custom_crt_monitor.log
 RES_TOT_GEOM=$(echo $RES_GEOM | sed 's/x/ /')
 DISPLAY=:0 geometry $RES_TOT_GEOM | tee /userdata/system/logs/temp_crt.txt >> /userdata/system/logs/custom_crt_monitor.log
-
+if [[ "$TYPE_OF_CARD" == "AMD_INTEL_NVIDIA_NOUV" ]]; then
+	~/custom-es-config
+#	DISPLAY=:0 batocera-resolution setMode [Resolution_avoid]
+fi
 escape=$(grep -c "Aborted!" /userdata/system/logs/temp_crt.txt)
 if [[ "$escape" -ge 1 ]]; then
 	echo "[$(date +"%H:%M:%S")]: Aborted geometry utility." | tee -a /userdata/system/logs/custom_crt_monitor.log
