@@ -21,11 +21,11 @@ Section	"Monitor"
 		Modeline "2560x448" 52.22 2560 2664 2912 3328 448 467 473 523 interlace -hsync -vsync
 		
 		Modeline "1280x480" 26.181840 1280 1362 1429 1639 480 490 496 533 -hsync -vsync interlace	
-		Modeline "1024x600" 20.161 1024 1032 1127 1264 600 601 607 638 interlace -hsync -vsync
+		Modeline "1024x576" 20.161 1024 1032 1127 1264 600 601 607 638 interlace -hsync -vsync
 		Modeline "768x576" 15.627975 768 799 872 997 576 583 589 627 interlace  -hsync -vsync
    		Modeline "854x480" 17.415900 854 889 971 1110 480 483 489 523 interlace  -hsync -vsync
 		Modeline "864x486" 17.802060 864 900 984 1126 486 488 494 527 interlace  -hsync -vsync
-		Modeline "800x600" 15.823 800 808 883 992 600 601 607 638 interlace -hsync -vsync
+		Modeline "800x576" 15.823 800 808 883 992 600 601 607 638 interlace -hsync -vsync
 		Modeline "720x480" 13.959 720 728 794 888 480 483 489 524 interlace -hsync -vsync
 		Modeline "640x480" 12.324 640 648 706 784 480 483 489 524 interlace -hsync -vsync
 		
