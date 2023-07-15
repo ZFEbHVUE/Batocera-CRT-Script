@@ -57,6 +57,7 @@ else
 	cp /etc/switchres.ini.bak /etc/switchres.ini
 	
 fi
+
 if [ ! -f "/userdata/system/configs/mame/mame.ini.bak" ] ; then
 	echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/configs/mame/mame.ini.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
 	rollback 1
@@ -65,23 +66,27 @@ else
 	cp /userdata/system/configs/mame/mame.ini /userdata/system/configs/mame/mame.crt
 	cp /userdata/system/configs/mame/mame.ini.bak /userdata/system/configs/mame/mame.ini
 fi
-if [ ! -f "/userdata/system/custom-es-config.bak" ]||[ ! -f "/userdata/system/99-nvidia.conf.bak" ]; then
-	if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
-		echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/custom-es-config.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
-	else
+
+if [ -f /userdata/system/99-nvidia.conf ]; then
+	if  [ ! -f "/userdata/system/99-nvidia.conf.bak" ]; then
 		echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/99-nvidia.conf.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
-	fi
-	rollback 2
-	exit
-else
-	if [[ ! -f /userdata/system/99-nvidia.conf ]]; then
-		cp /userdata/system/custom-es-config /userdata/system/custom-es-config.crt
-		cp /userdata/system/custom-es-config.bak /userdata/system/custom-es-config
+		rollback 2
+		exit
 	else
 		cp /userdata/system/99-nvidia.conf /userdata/system/99-nvidia.conf.crt
 		cp /userdata/system/99-nvidia.conf.bak /userdata/system/99-nvidia.conf 
 	fi
+else
+	if [ ! -f "/userdata/system/custom-es-config.bak" ]; then
+		echo "[$(date +"%H:%M:%S")]: Not found /userdata/system/custom-es-config.bak. Run first BUILD_15KHz-BATOCERA script." | tee -a /userdata/system/logs/custom_crt_monitor.log
+		rollback 2
+		exit
+	else
+		cp /userdata/system/custom-es-config /userdata/system/custom-es-config.crt
+		cp /userdata/system/custom-es-config.bak /userdata/system/custom-es-config
+	fi
 fi
+
 
 ####################################################################################
 #                                                                                  #
