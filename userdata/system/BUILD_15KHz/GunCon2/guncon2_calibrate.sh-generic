@@ -37,6 +37,14 @@ if [ ! -f "/etc/udev/rules.d/99-guncon.rules.bak" ];then
 	cp /etc/udev/rules.d/99-guncon.rules /etc/udev/rules.d/99-guncon.rules.bak                       
 fi
 
+#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
+DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+DOTCLOCK_MIN_SWITCHRES=0
+sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+
 calibration_and_setup
+
+### PUT THE GOOD DOTCLOCK_MIN IN SWITCHRES.INI
+sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
 
 batocera-save-overlay
