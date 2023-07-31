@@ -481,9 +481,9 @@ if [ "$CRT_Freq" == "15KHz" ]; then
 		fi
 	else
 		if [[ $monitor_name == "ntsc" ]]; then
-			declare -a boot_resolution=( "720x480ieS" "640x480ieS" )
+			declare -a boot_resolution=( "720x480ieS" "640x480ieS" "648x478ieS")
 		else
-			declare -a boot_resolution=( "768x576ieS" "640x480ieS" )
+			declare -a boot_resolution=( "768x576ieS" "640x480ieS" "648x478ieS" )
 		fi
 	fi
 	for var in "${!boot_resolution[@]}" ; do echo "			$((var+1)) : ${boot_resolution[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
