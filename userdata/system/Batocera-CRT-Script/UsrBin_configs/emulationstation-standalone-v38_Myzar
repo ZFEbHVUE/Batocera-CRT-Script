@@ -1,0 +1,187 @@
+#!/bin/bash
+
+BOOTCONF="/boot/batocera-boot.conf"
+REBOOT_FLAG=/var/run/emulationstation-standalone
+log="/userdata/system/logs/display.log"
+
+mount -o remount,rw /boot
+
+if test "$1" = "--stop-rebooting"
+then
+    rm -f "${REBOOT_FLAG}"
+    exit 0
+fi
+
+# flag to reboot at each stop
+# es is stopped : in case of crash, in case of some options are changed (language, video mode)
+touch "${REBOOT_FLAG}" || exit 1
+
+# environment
+export HOME=/userdata/system
+
+### lang settings
+settings_lang="$(batocera-settings-get system.language)"
+[ -z "${settings_lang}" ] && settings_lang=en_US
+export LC_ALL="${settings_lang}.UTF-8"
+export LANG=${LC_ALL}
+###################
+
+
+### keyboard (specific to xorg) ###
+map_name="$(batocera-settings-get system.kblayout)"
+variant_type="$(batocera-settings-get system.kbvariant)"
+   if test -n "${map_name}"
+    then
+       if test -n "${variant_type}"
+        then
+           setxkbmap "${map_name}" -variant "${variant_type}"
+        else
+           setxkbmap "${map_name}"
+        fi
+    else
+     map_name=$(echo $settings_lang | cut -c 1-2)
+        if map_name="en"
+        then
+             map_name=$(echo $settings_lang | cut -c 4- | tr '[:upper:]' '[:lower:]')
+        fi
+    setxkbmap "${map_name}"
+   fi
+
+###################
+
+### rotation ###
+
+display_rotate=
+
+display_rotate="$(batocera-settings-get display.rotate)"
+
+if test -n "${display_rotate}" 
+then
+    EXTRA_OPTS="--screenrotate ${display_rotate}"
+fi
+
+##### ES RESOLUTION
+
+bootresolution="$(batocera-settings-get  es.resolution)"
+H=$(echo "$bootresolution" | sed "s/\([0-9]*\)x.*/\1/")
+V=$(echo "$bootresolution" | sed "s/.*x\([0-9]*\).*/\1/")
+R=$(echo "$bootresolution" | cut -d'.' -f2-)
+es_res=($H"x"$V)
+ratio=$"$H / $V"
+ratio="$(expr $ratio)"
+
+if [ $V -lt 480 ]; then
+	size="320 240"
+	scaler="320x240"
+else
+	size="640 480"
+	scaler="640x480"
+fi
+
+OUTPUT="$(/boot/get_video_output)"
+sed -i "s/.*display            .*/	display            $OUTPUT/"  /etc/switchres.ini
+
+batocera-resolution setMode "${bootresolution}"
+
+
+### JammaASD ###
+
+/usr/retroasd/bin/xarcade2jstick -s -d >/dev/null 2>&1 &
+/usr/retroasd/bin/pyJammASD/main.py -c /usr/retroasd/bin/pyJammASD/batocera.ini >/dev/null 2>&1
+
+#####
+
+
+############## MAIN CRT ##############
+
+GPU=$(lspci | grep VGA | cut -d ":" -f3);
+
+for word in $GPU
+do
+    
+	if /usr/bin/grep -s -i -F $word /etc/ati0dot.txt > /dev/null ; then
+
+		GPU="AMD15"
+		break
+		
+	fi 
+
+done
+
+
+RACONF="/userdata/system/configs/retroarch/retroarchcustom.cfg"
+BACONF="/userdata/system/batocera.conf"
+
+sed -i '/crt_switch_resolution/d' ${RACONF}
+sed -i '/crt_switch_resolution_super/d' ${RACONF}
+sed -i '/aspect_ratio_index/d' ${RACONF}
+sed -i '/video_fullscreen_x/d' ${RACONF}
+sed -i '/video_fullscreen_y/d' ${RACONF}
+sed -i '/custom_viewport_width/d' ${RACONF}
+sed -i '/custom_viewport_height/d' ${RACONF}
+sed -i '/global.videomode=/d' ${BACONF}
+
+case $GPU in
+
+		  *"GM10"* | *"GM20"* | *"GK10"* | *"GK20"* | *"AMD15"* )
+		
+				echo 'global.videomode=640x480.60.00' >> ${BACONF}
+				echo 'crt_switch_resolution = "4"' >> ${RACONF}
+				echo 'crt_switch_resolution_super = "Native"' >> ${RACONF}
+				
+				sed -i 's/.*dotclock_min            .*/dotclock_min              0/'  /etc/switchres.ini
+				sed -i 's/.*dotclock_min            .*/dotclock_min              0/'  /userdata/system/configs/mame/mame.ini
+			
+		    ;;
+    
+			*)
+
+				echo 'input_overlay_enable="false"' >> ${RACONF}
+				echo 'menu_enable_widgets=false' >> ${RACONF}
+				echo 'menu_show_advanced_settings=true' >> ${RACONF}
+				echo 'video_fullscreen_x=1920' >> ${RACONF}
+				echo 'video_fullscreen_y=240' >> ${RACONF}
+				echo 'custom_viewport_width=1920' >> ${RACONF}
+				echo 'custom_viewport_height=240' >> ${RACONF}
+				echo 'custom_viewport_x=0' >> ${RACONF}
+				echo 'custom_viewport_y=0' >> ${RACONF}
+				echo 'crt_switch_resolution = "4"' >> ${RACONF}
+				echo 'crt_switch_resolution_super = "1920"' >> ${RACONF}
+				echo 'aspect_ratio_index = "0"' >> ${RACONF}
+				echo 'video_aspect_ratio = "-1.000000"' >> ${RACONF}
+				echo 'video_force_aspect = "true"' >> ${RACONF}
+				
+				sed -i 's/.*dotclock_min            .*/dotclock_min            25/'  /etc/switchres.ini
+				sed -i 's/.*dotclock_min            .*/dotclock_min            25/'  /userdata/system/configs/mame/mame.ini
+		
+				;;
+		
+			esac
+
+# launch automatically a game only the first time
+if test ${GAMELAUNCH} = 1
+ then
+  GAMELAUNCHOPT=
+ else
+   GAMELAUNCHOPT="--no-startup-game"
+fi
+
+# dbus launch is required for the gio/gvfs/trash:///...
+eval "$(dbus-launch --sh-syntax --exit-with-session)"
+			
+cd /userdata # es needs a PWD
+			
+if [ $ratio -ge 2 ]; then
+				
+		xrandr --output $(/boot/get_video_output) --mode $es_res --scale-from $scaler
+		emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed --screensize $size ${EXTRA_OPTS}
+					
+	else
+				
+		xrandr --output $(/boot/get_video_output) --mode $es_res
+		emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed  --screensize $H $V ${EXTRA_OPTS}
+ 				
+fi			
+
+exit 0
+
