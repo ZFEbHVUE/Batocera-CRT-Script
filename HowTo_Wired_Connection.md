@@ -5,7 +5,7 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 
 1) Press the code icon on GitHub and choose **Download Zip**
     
-2) Extract the zipfile `Build-CRT-15KHz-Batocera-V35-main.zip` into a temporary folder on your PC.
+2) Extract the zipfile `Batocera-CRT-Script-main.zip` into a temporary folder on your PC.
 
 3) Access your Batocera installation over the network. 
      See official guide here on how to do so here.
@@ -22,11 +22,11 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
     
 6) Via SSH type (Without the Grave Accent Symbols) **`**
 
-`cd /userdata/system/BUILD_15KHz/Batocera_ALLINONE`
+`cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE`
 
-`chmod 755 BUILD_15KHZ_BATOCERA.sh`
+`chmod 755 Batocera-CRT-Script.sh`
 
-`./BUILD_15KHZ_BATOCERA.sh`
+`./Batocera-CRT-Script.sh`
 
 Here you will be greeted with some information to read. 
 Press Enter and follow the onscreen instructions. 
