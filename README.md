@@ -21,39 +21,57 @@ This script would not have been possible without the following people to name a 
 
 ### Special Thanks
 - krahsdevil (Emulation Station assets) 
-
-## :video_game::penguin: Build-CRT-15KHz-Batocera :video_game::penguin:
-Build-CRT-15KHz-Batocera V32 to V37 & V38 dev
-
-First public release
+ 
+## :video_game::penguin: Batocera-CRT-Script :video_game::penguin:
 
 This bash script will help you setup Batocera on a Crt in 15-25-31kHz
+ 
+ - Complete integration of the [Switchres](https://github.com/antonioginer/switchres/blob/master/README.md) tool (not the api) for switching modelines. (resolutions)
+ - Detection of AMD APUs up to 5700 XT if used with the Cabledeconn DP2VGA listed on the [Wiki](https://wiki.batocera.org/batocera-and-crt#displayport_to_vga_dac) page.
+ - Creation of custom EDID during setup for the monitor profile chosen.
+ - It will read resolutions from videomodes.conf but switchres will handle the resolution switching not xrandr. 
+ - You are free to add your own resolution by editing the file as you choose but keep in mind you need to test if it works for your monitor profile first. 
+  - The CRT geometry script is not working as of now. This will be fixed in the final release. 
+  - Nvidia needs more testing so the more reports we can get as issues on Github or Discord the better. Preferably both for easy tracking.
+  - Known freezing issue with AMD R9 cards in Emulation Station. 
+  Set Game Launch Transition to Instant
+  Main Menu->User Interface Settings->Game Launch Transition-> Instant
+  
+  - We have avoided using 640x480i & 320x240p for boot as we need those resolution for the geometry tool.
+Instead we have opted for 641x480i & 321x240p for boot. 
+It is 1 pixel off and nothing the user will ever notice during boot.
+Keep in mind 321x240 (320x240p) as a boot resolution is not officially supported since there are no Emulation Station Theme support as of now.
 
-It comes pre-configured with the 7 most common Monitor Profiles generated with Switchres.
+It comes pre-configured with all 28 Monitor Profiles Switchres supports.
 
-These pre-configured Monitor Profiles have 30+ resolutions added that should only be used with
+These pre-configured Monitor Profiles have 50+ resolutions added that should only be used with
 
-    Standalone Emulators
-    Native Linux Games
-    Non libretro Ports
-    Wine, Flatpak & Steam
-    For GroovyMame and Retroarch use video mode set to auto.
+ - Standalone Emulators
+ - Native Linux Games
+ - Non libretro Ports
+ - Wine, Flatpak & Steam
+ - GroovyMame & Retroarch is preconfigured to use the switchres api.
 
-Monitor Profile info
+## Monitor Profile info
 
-    generic_15 - Good all around profile for generic Crt's with a range between - 15625-15750 kHz
-    arcade_15 - Works well on normal consumer sets and has a wider range between - 15625-16200 kHz
-    arcade_15ex - Same as arcade_15 with a slightly higher range between - 15625-16500 kHz
-    arcade_15_25 - 15/25kHz Dual-sync arcade monitor - 15625-16200/24960-24960 kHz
-    arcade_15_25_31 - 15.7/25.0/31.5 kHz - Tri-sync arcade monitor - 15625-16200/24960-24960/31400-31500 Khz
-    ntsc - Consumer sets only capable of displaying 60Hz/525 - 15734.26-15734.26 Khz
-    pal - Consumer sets only capable of displaying 50Hz/625 - 15625.00-15625.00 Khz
+ - Generic CRT standards 15 KHz - generic_15, ntsc, pal
+ - Arcade fixed frequency 15 KHz - arcade_15, arcade_15ex
+ - Arcade fixed frequency 25/31KHz - arcade_25, arcade_31
+ - Arcade multisync 15/25/31 KHz - arcade_15_25, arcade_15_25_31
+ - VESA GTF - vesa_480, vesa_600, vesa_768, vesa_1024
+ - PC monitor 120 Hz - pc_31_120, pc_70_120
+ - Hantarex - h9110, polo, pstar
+ - Wells Gardner - k7000, k7131, d9200, d9400, d9800
+ - Makvision - m2929
+ - Wei-Ya - m3129
+ - Nanao - ms2930, ms929
+ - Rodotron - r666b 
 
 AMD Cards are preferred.
 
     Anything up to R9 380X will work. R5-R7-R9 Cards are highly recommended.
 
-Intel have beentested and works somewhat.
+Intel have been tested and works somewhat.
     
     Tested on Optilex 790 and 7010
     It works with good on DisplayPort and somewhat on VGA (dotclock_min 25.0).
@@ -63,13 +81,12 @@ Nvidia Cards that are supported right now.
     It works for Kelper / Maxwell / Pascal with Nvidia driver (best performances) and Nouveau
     Tested on :
     8400GS        DVI-I / HDMI / VGA     Only Nouveau with dotclock_min 0 
-    Quadro K600   DVI-I             Nvidia driver : dotclock_min 25.0  (Good performances)     Nouveau : dotclock_min 0.0 (not so good perfomrance)
+    Quadro K600   DVI-I             Nvidia driver : dotclock_min 25.0  (Good performance)      Nouveau : dotclock_min 0.0 (not so good perfomrance)
     GTX 980       DVI-I / HMDI      DVI-I : dotclock_min 0.0        HDMI : dotclock_min 25.0   Nouveau :
     GTX 1050ti    HDMI              dotclock_min 25.0 (very good performances)   
     
-    Display port (DP) works for all cards but it is only for Super-resolution 240p (no interlace here).
     Turing works poorly only in 240p (tested on GTX 1650 HDMI/DP).
     
-    Conclusion with Nvidia cards, we recommand to use Maxwell 2.0 (Nvidia driver) Which has full support for 15KHz with DVI-I 
-               and and with very good performance for GTX 970/980/980ti.
+    Conclusion with Nvidia cards, we recommand to use Maxwell 1.0-2.0 arechitecture (Nvidia driver) 
+    Which has full support for 15KHz with DVI-I and and with very good performance for GTX 970/980/980ti.
   
