@@ -302,6 +302,7 @@ case $selected_card in
 				cp /boot/EFI/syslinux.cfg /boot/EFI/BOOT/
 				cp /boot/EFI/syslinux.cfg /boot/boot
 				cp /boot/EFI/syslinux.cfg /boot/boot/syslinux
+				cp /boot/EFI/syslinux.cfg /boot/EFI/batocera/syslinux.cfg
 				echo "#######################################################################"
 				echo "##           ENTER to reboot and make you card 15KHz ready           ##"
 				echo "#######################################################################"
@@ -1386,11 +1387,13 @@ chmod 755 /boot/EFI/syslinux.cfg
 cp /boot/EFI/syslinux.cfg		/boot/EFI/BOOT/
 cp /boot/EFI/syslinux.cfg 		/boot/boot/
 cp /boot/EFI/syslinux.cfg 		/boot/boot/syslinux/
+cp /boot/EFI/syslinux.cfg 		/boot/EFI/batocera/
 
 cp /boot/EFI/syslinux.cfg 		/boot/EFI/syslinux.cfg.bak
 cp /boot/EFI/BOOT/syslinux.cfg 		/boot/EFI/BOOT/syslinux.cfg.bak
 cp /boot/boot/syslinux.cfg 		/boot/boot/syslinux.cfg.bak
 cp /boot/boot/syslinux/syslinux.cfg 	/boot/boot/syslinux/syslinux.cfg.bak
+cp /boot/EFI/batocera/syslinux.cfg 	/boot/EFI/batocera/syslinux.cfg.bak
 
 #######################################################################################
 
@@ -1469,7 +1472,7 @@ case $Version_of_batocera in
 		if [ "$ZFEbHVUE" == "1" ]; then
 
 			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Configgen/emulatorlauncher.py_ZFEbHVUE	"${new_path1}emulatorlauncher.py"
-			chmod 755  "${new_path2}videoMode.py"
+			chmod 755  "${new_path1}emulatorlauncher.py"
 			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Configgen/VideoMode.py_ZFEbHVUE 		"${new_path2}videoMode.py"
 			chmod 755 "${new_path2}videoMode.py"
 
@@ -1482,7 +1485,7 @@ case $Version_of_batocera in
 
 		else
 			cp "${new_path1}emulatorlauncher.py.bak" 	"${new_path1}emulatorlauncher.py"
-			cp "${new_path2}vvideoMode.py.bak" 		"${new_path2}vvideoMode.py"
+			cp "${new_path2}videoMode.py.bak" 		"${new_path2}videoMode.py"
 
 			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v38_Myzar	 	/usr/bin/batocera-resolution
 			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/emulationstation-standalone-v38		/usr/bin/emulationstation-standalone
@@ -1516,9 +1519,8 @@ if [ ! -f "/usr/bin/stop" ];then
 fi
 #start ES
 if [ ! -f "/usr/bin/start" ];then
-	rm /usr/bin/start
 	touch /usr/bin/start
-	echo "#!/bin/bash" 				>> /usr/#bin/start
+	echo "#!/bin/bash" 				>> /usr/bin/start
 	echo  "/etc/init.d/S31emulationstation start" 	>> /usr/bin/start
 	chmod 755 /usr/bin/start
 fi
