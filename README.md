@@ -40,7 +40,7 @@ This bash script will help you setup Batocera on a Crt in 15-25-31kHz
   - We have avoided using 640x480i & 320x240p for boot as we need those resolution for the geometry tool.
 Instead we have opted for 641x480i & 321x240p for boot. 
 It is 1 pixel off and nothing the user will ever notice during boot.
-Keep in mind 321x240 (320x240p) as a boot resolution is not officially supported since there is no Emulation Station Theme support as of now in Batocera.
+**Keep in mind 321x240 (320x240p) as a boot resolution is not officially supported since there is no Emulation Station Theme support as of now in Batocera.**
 
 It comes pre-configured with all 28 Monitor Profiles Switchres supports.
 
