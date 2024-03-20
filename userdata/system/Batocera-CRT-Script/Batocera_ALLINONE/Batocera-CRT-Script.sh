@@ -487,9 +487,9 @@ if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Dri
     Amd_NvidiaND_IntelDP=1
 else
     # Original matrix strings
-    matrix=("arcade_15 1281x240@60 1281x480@30 1025x576@25" "arcade_15_25 1281x240@60 1281x480@30" "arcade_15_25_31 1281x240@60 1281x480@30"
-            "arcade_15ex 1281x240@60 1281x480@30 1025x576@25" "arcade_25 1281x768@30 1281x800@25" "arcade_31 1281x480@60" "d9200 1281x240@60 1281x480@60" "d9400 1281x240@60 1281x480@60"
-            "d9800 1281x240@60 1281x480@60" "generic_15 1281x240@60 1281x480@30 1025x576@25" "h9110 1281x240@60 1281x480@30" "k7000 1281x240@60 1281x480@30" "k7131 1281x240@60 1281x480@30"
+     matrix=("arcade_15 1281x240@60 1281x480@30 1281x576@25" "arcade_15_25 1281x240@60 1281x480@30" "arcade_15_25_31 1281x240@60 1281x480@30"
+            "arcade_15ex 1281x240@60 1281x480@30 1281281281281281281281281x576@25" "arcade_25 1281x768@30 1281x800@25" "arcade_31 1281x480@60" "d9200 1281x240@60 1281x480@60" "d9400 1281x240@60 1281x480@60"
+            "d9800 1281x240@60 1281x480@60" "generic_15 1281x240@60 1281x480@30 1281x576@25" "h9110 1281x240@60 1281x480@30" "k7000 1281x240@60 1281x480@30" "k7131 1281x240@60 1281x480@30"
             "m2929 1281x480@60" "m3129 1281x240@60 1281x480@60" "ms2930 1281x240@60 1281x480@60" "ms929 1281x240@60 1281x480@60" "ntsc 1281x240@60 1281x480@60" "pal 1281x240@60 1281x480@60"
             "pc_31_120 1281x240@60 1281x480@60" "pc_70_120 1281x240@60 1281x480@60"  "polo 1281x240@60 1281x480@60" "pstar 1281x240@60 1281x480@60" "r666b 1281x240@60 1281x480@60"
             "vesa_480 1281x480@60" "vesa_600 1281x480@60" "vesa_768 1281x480@60" "vesa_1024 1281x480@60")
@@ -578,7 +578,7 @@ fi
 patch_edid=$(pwd)
 cp $patch_edid/$Name_monitor_EDID  /lib/firmware/edid/
 chmod 644  /lib/firmware/edid/$Name_monitor_EDID 
-rm /$patch_edid/$Name_monitor_EDID   
+rm $patch_edid/$Name_monitor_EDID   
 
 #if [ "$TYPE_OF_CARD" == "NVIDIA" ]&&[ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then 
 MODE=$(switchres $H_RES_EDID $V_RES_EDID $FREQ_EDID -f $FORCED_EDID -i switchres.ini -c ) > /dev/null 2>/dev/null
@@ -981,7 +981,7 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		else
 			video_modeline=$term_VGA-$((nbr))
 			dotclock_min=0.0
-5			dotclock_min_mame=$dotclock_min
+			dotclock_min_mame=$dotclock_min
 			super_width=3840
 			super_width_mame=$super_width
 		fi
