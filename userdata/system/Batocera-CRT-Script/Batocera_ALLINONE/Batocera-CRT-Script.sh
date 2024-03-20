@@ -542,7 +542,10 @@ else
 fi
 
 # Log the resolution choice
-echo "$(date +"%Y-%m-%d %H:%M:%S") - Monitor Type: $monitor_firmware, Resolution: $EDID_resolution" >> "$log_file"
+{
+    echo "Monitor Type: $monitor_firmware"
+    echo "Resolution: $EDID_resolution"
+} > "$log_file"
 
 IFS="x@ " read -r H_RES_EDID V_RES_EDID FREQ_EDID <<< "$EDID_resolution"
 ################################################################################################################################
