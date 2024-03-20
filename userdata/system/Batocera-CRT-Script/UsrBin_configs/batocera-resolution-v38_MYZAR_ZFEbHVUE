@@ -7,6 +7,7 @@ BOOTCONF="/boot/batocera-boot.conf"
 f_usage() {
     echo "${0} listModes" >&2
     echo "${0} setMode <horizontal>x<vertical>.<refresh>" >&2
+    echo "${0} defineMode <MODE>" >&2
     echo "${0} setMode_CVT <MODE>" >&2
     echo "${0} currentMode" >&2
     echo "${0} currentResolution" >&2
@@ -131,16 +132,27 @@ case "${ACTION}" in
 	xrandr --listModes | sed -e s+'\*$'++ | sed -e s+'^\([^ ]*\) \(.*\)$'+'\1:\2'+ | sed -e "/\b\(SR\)\b/d"
 	;;
     "setMode")
-    MODE=$1
-    read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
-    switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -s -k
-
+   	MODE=$1
+	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
+	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+	DOTCLOCK_MIN_SWITCHRES=0
+        sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
+	switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} 
+	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
 	;;
     "defineMode")   
 	MODE=$1
 	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
 	RES_MODE="${WIDTH}x${HEIGHT}"
-	MODE_switchres=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ}) #> /dev/null 2>/dev/null
+	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
+	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+	DOTCLOCK_MIN_SWITCHRES=0
+	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	MODE_xrandr=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -i switchres.ini -c) #> /dev/null 2>/dev/null
+	#MODE_xrandr=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ}) #> /dev/null 2>/dev/null
+	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+
 	MODELINE_CUSTOM=$(echo "$MODE_xrandr" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')
 	OUTPUT=$(xrandr --listConnectedOutputs | grep -E '\*$' | sed -e s+'*$'++ | head -1)
        	xrandr -display :0.0 --newmode ${RES_MODE} ${MODELINE_CUSTOM}
