@@ -562,7 +562,8 @@ fi
 FORCED_EDID="${H_RES_EDID}x${V_RES_EDID}@${FREQ_EDID}"
 Name_monitor_EDID=$monitor_firmware
 sed -i "s/.*monitor         .*/        monitor                   $Name_monitor_EDID/" /etc/switchres.ini
-#sed -i "s/.*dotclock_min         .*/        dotclock_min              $DTCLCKM/" /etc/switchres.ini
+DOTCLOCK_MIN_SWITCHRES=0
+sed -i "s/.*dotclock_min        .*/    dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
 sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
 
 #switchres $H_RES_EDID $V_RES_EDID $FREQ_EDID -f $FORCED_EDID -m $Name_monitor_EDID  -e  #> /dev/null 2>/dev/null
