@@ -57,8 +57,8 @@ case $1 in
     	gameStop)
 
 		#Delete/flush out switchres generated resolution on game exit. 
-		xrandr --listModes | grep 'SR-1_' | awk '{print $2}' | while read -r mode; do
-		xrandr --delmode [card_display] "$mode"		
+		#xrandr --listModes | grep 'SR-1_' | awk '{print $2}' | while read -r mode; do
+		#xrandr --delmode [card_display] "$mode"		
 
 		xrandr -display :0.0 -o [display_ES_rotation]
 		xrandr -display :0.0 --output [card_display] --set TearFree OFF
