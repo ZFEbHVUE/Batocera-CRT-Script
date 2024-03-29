@@ -2034,6 +2034,23 @@ echo "neogeo.hud=none" >> /userdata/system/batocera.conf
 echo "neogeo.switchres=1" >> /userdata/system/batocera.conf
 
 echo "###################################################" >> /userdata/system/batocera.conf
+echo "##  MAME EMULATOR SETTINGS " >> /userdata/system/batocera.conf
+echo "##  APPLE2  ACORN BBC/ELECTRON/ARCHIMEDE " >> /userdata/system/batocera.conf
+echo "###################################################" >> /userdata/system/batocera.conf
+echo "apple2.core=mame" >> /userdata/system/batocera.conf
+echo "apple2.emulator=mame" >> /userdata/system/batocera.conf
+echo "apple2.switchres=1" >> /userdata/system/batocera.conf
+echo "bbc.core=mame" >> /userdata/system/batocera.conf
+echo "bbc.emulator=mame" >> /userdata/system/batocera.conf
+echo "bbc.switchres=1" >> /userdata/system/batocera.conf
+echo "electron.core=mame" >> /userdata/system/batocera.conf
+echo "electron.emulator=mame" >> /userdata/system/batocera.conf
+echo "electron.switchres=1" >> /userdata/system/batocera.conf
+echo "archimedes.core=mame" >> /userdata/system/batocera.conf
+echo "archimedes.emulator=mame" >> /userdata/system/batocera.conf
+echo "archimedes.switchres=1" >> /userdata/system/batocera.conf
+
+echo "###################################################" >> /userdata/system/batocera.conf
 echo "##  GROOVYMAME TATE SETTINGS" >> /userdata/system/batocera.conf
 echo "###################################################" >> /userdata/system/batocera.conf
  
