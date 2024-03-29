@@ -778,59 +778,20 @@ interlace_horizont=0
 dotclock_min_horizont=25n
 
 if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
-	echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "
-	read
-	clear
-	echo "#######################################################################"
-	echo "##                                                                   ##"
-	echo "##          Which graphig card drivers you want to use ?             ##"
-	echo "##                                                                   ##"
-	echo "##              If you get a black screen after reboot               ##"
-	echo "##                    then choose another driver                     ##"
-	echo "##                                                                   ##"
-	echo "##         Please note, RX and R cards older than the R7 240         ##"
-	echo "##        just do not support the amdgpu drivers, period, and        ##"
-	echo "##           doing this while using them will result in a            ##"
-	echo "##                     black screen after reboot                     ##"
-	echo "##                                                                   ##"
-	echo "#######################################################################"
-	echo ""
-	declare -a driver_ATI=( "AMDGPU" "RADEON" )
-	for var in "${!driver_ATI[@]}" ; do echo "			$((var+1)) : ${driver_ATI[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
-	echo ""
-	echo "#######################################################################"
-	echo "##               Make your choice for your video card                ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-	echo "#######################################################################"
-	echo -n "                                  "
-	read type_of_drivers
-	while [[ ! ${type_of_drivers} =~ ^[1-$((var+1))]$ ]] ; do
-		echo -n "Select option 1 to $((var+1)):"
-		read type_of_drivers
-	done
-	drivers_type=${driver_ATI[$type_of_drivers-1]}
-	echo -e "                    Your choice is :   ${GREEN}$drivers_type${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-	echo ""
-
+	
 	dotclock_min=0	
 	dotclock_min_mame=$dotclock_min
 	super_width=2560
 	super_width_mame=2560 
-
-	if [ "$drivers_type" == "AMDGPU" ]; then
-		if [ "$R9_380" == "YES" ]; then
-			drivers_amd="amdgpu.dc=0"
-		else
-			drivers_amd="radeon.si_support=0 amdgpu.si_support=1 radeon.cik_support=0 amdgpu.cik_support=1"
-		fi
-		echo "AMDGPU" >> 	/userdata/system/logs/TYPE_OF_CARD_DRIVERS.info
+	drivers_type=AMDGPU
+	
+	if [ "$R9_380" == "YES" ]; then
+		drivers_amd="amdgpu.dc=0"
 	else
-		if [ "$R9_380" == "YES" ]; then
-			drivers_amd="radeon.si_support=1 amdgpu.si_support=0 radeon.cik_support=1 amdgpu.cik_support=0"
-		else
-			drivers_amd=""
-		fi
-		echo "RADEON" >> 	/userdata/system/logs/TYPE_OF_CARD_DRIVERS.info
+		drivers_amd=""
 	fi
+	echo "AMDGPU" >> 	/userdata/system/logs/TYPE_OF_CARD_DRIVERS.info
+	
 	if [[ "$video_output" == *"DP"* ]]; then
 		term_dp="DP"
 		term_displayport="DisplayPort"
@@ -840,28 +801,21 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	elif [[ $video_output == *"DVI"* ]]; then
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
-	if [ "$drivers_type" == "AMDGPU" ]; then
-		term_DVI=DVI-I
+	
+  		term_DVI=DVI-I
 		if [ "$R9_380" == "YES" ]; then
 			video_modeline=$term_DVI-$((nbr))
 		else
 			video_modeline=$term_DVI-$((nbr-1))
-		fi
-else
-	term_DVI=DVI
-	if [ "$R9_380" == "YES" ]; then
-		video_modeline=$term_DVI-$((nbr))
-	else
-		video_modeline=$term_DVI-$((nbr-1))
-	fi
-fi
-elif [[ "$video_output" == *"VGA"* ]]; then
-	term_VGA=VGA
-	nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-	video_display=$video_output
-	video_modeline=$term_VGA-$((nbr-1))
-fi
-elif [ "$TYPE_OF_CARD" == "INTEL" ]; then
+		fi	
+  
+	elif [[ "$video_output" == *"VGA"* ]]; then
+		term_VGA=VGA
+		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
+		video_display=$video_output
+		video_modeline=$term_VGA-$((nbr-1))
+	fi 
+ elif [ "$TYPE_OF_CARD" == "INTEL" ]; then
 	drivers_amd=""
 	if [[ "$video_output" == *"DP"* ]]; then
 		term_dp="DP"
