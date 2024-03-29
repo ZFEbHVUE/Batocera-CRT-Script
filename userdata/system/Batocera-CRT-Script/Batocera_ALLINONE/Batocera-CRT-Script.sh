@@ -1765,6 +1765,12 @@ cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.sh.keys /usr/share
 chmod 755 /userdata/roms/crt/CRT.sh
 chmod 755 /usr/share/evmapy/CRT.sh.keys
 
+#######################################################################################
+# Create VNC Server Install for V39
+#######################################################################################
+cp /userdata/system/Batocera-CRT-Script/vnc/crt/Install_vnc_server.sh /userdata/roms/crt/
+chmod 755 /userdata/roms/crt/Install_vnc_server.sh
+chmod 755 /userdata/system/Batocera-CRT-Script/vnc/vnc_server_install.sh
 
 #######################################################################################
 # Create GunCon2 LUA plugin for GroovyMame for V36, V37 and V38
