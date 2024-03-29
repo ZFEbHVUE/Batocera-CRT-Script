@@ -930,7 +930,7 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 			fi
 		else
 			video_modeline=$term_DVI-$((nbr))
-			dotclock_min=0
+			dotclock_min=25
 			dotclock_min_mame=$dotclock_min
 			super_width=3840
 			super_width_mame=$super_width
