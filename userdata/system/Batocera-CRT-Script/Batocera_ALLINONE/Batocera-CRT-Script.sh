@@ -775,7 +775,7 @@ dotclock_min_vertical=25
 
 super_width_horizont=1920
 interlace_horizont=0
-dotclock_min_horizont=25n
+dotclock_min_horizont=25
 
 if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	
