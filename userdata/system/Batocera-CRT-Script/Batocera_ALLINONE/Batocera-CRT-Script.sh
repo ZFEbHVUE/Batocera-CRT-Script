@@ -775,42 +775,12 @@ dotclock_min_vertical=25
 
 super_width_horizont=1920
 interlace_horizont=0
-dotclock_min_horizont=25n
+dotclock_min_horizont=25
 
 if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
-	echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "
-	read
-	clear
-	echo "#######################################################################"
-	echo "##                                                                   ##"
-	echo "##          Which graphig card drivers you want to use ?             ##"
-	echo "##                                                                   ##"
-	echo "##              If you get a black screen after reboot               ##"
-	echo "##                    then choose another driver                     ##"
-	echo "##                                                                   ##"
-	echo "##         Please note, RX and R cards older than the R7 240         ##"
-	echo "##        just do not support the amdgpu drivers, period, and        ##"
-	echo "##           doing this while using them will result in a            ##"
-	echo "##                     black screen after reboot                     ##"
-	echo "##                                                                   ##"
-	echo "#######################################################################"
-	echo ""
-	declare -a driver_ATI=( "AMDGPU" "RADEON" )
-	for var in "${!driver_ATI[@]}" ; do echo "			$((var+1)) : ${driver_ATI[$var]}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
-	echo ""
-	echo "#######################################################################"
-	echo "##               Make your choice for your video card                ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-	echo "#######################################################################"
-	echo -n "                                  "
-	read type_of_drivers
-	while [[ ! ${type_of_drivers} =~ ^[1-$((var+1))]$ ]] ; do
-		echo -n "Select option 1 to $((var+1)):"
-		read type_of_drivers
-	done
-	drivers_type=${driver_ATI[$type_of_drivers-1]}
-	echo -e "                    Your choice is :   ${GREEN}$drivers_type${NOCOLOR}"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-	echo ""
-
+	
+	drivers_type=AMDGPU
+ 
 	dotclock_min=0	
 	dotclock_min_mame=$dotclock_min
 	super_width=2560
