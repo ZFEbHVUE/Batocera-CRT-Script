@@ -133,19 +133,31 @@ case "${ACTION}" in
     "setMode")
 	MODE=$1
 	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
-	switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}:${PARTHZ} 
 
-	;;
+	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
+	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+	DOTCLOCK_MIN_SWITCHRES=0
+
+        sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} 
+	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+     ;;
     "defineMode")   
 	MODE=$1
 	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
+
 	RES_MODE="${WIDTH}x${HEIGHT}"
-	MODE_switchres=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}:${PARTHZ}) #> /dev/null 2>/dev/null
+	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
+	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+	DOTCLOCK_MIN_SWITCHRES=0
+
+        sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	MODE_switchres=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ}) #> /dev/null 2>/dev/null
+	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+
 	MODELINE_CUSTOM="\"${RES_MODE}\" $(echo "$MODE_switchres" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
 	sed -i  "s/.*Modeline.*/    Modeline            $MODELINE_CUSTOM/" 	/userdata/system/99-nvidia.conf
     ;;
-
-
     "setMode_CVT")
         MODE=$1
         if echo "${MODE}" | grep -qE 'max-' # special max-widthxheight
