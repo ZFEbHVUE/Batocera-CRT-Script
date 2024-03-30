@@ -81,9 +81,9 @@ do
 	     sed -i "s/--mode \".*\"/--mode \"$RES\"/"    /userdata/system/scripts/first_script.sh
 
 	    if ([ "$display_rotate" == "1" ] || [ "$display_rotate" == "3" ]); then
-		es_arg="#es.customsargs=--screensize "$HEIGHT" "$WIDTH" --screenoffset 00 00"
+		es_arg="es.customsargs=--screensize "$HEIGHT" "$WIDTH" --screenoffset 00 00"
 	    else
-		es_arg="#es.customsargs=--screensize "$WIDTH" "$HEIGHT" --screenoffset 00 00"
+		es_arg="es.customsargs=--screensize "$WIDTH" "$HEIGHT" --screenoffset 00 00"
 	    fi
 	    sed -i "s/.*es.customsargs=.*/$es_arg/" 		/userdata/system/batocera.conf
 
