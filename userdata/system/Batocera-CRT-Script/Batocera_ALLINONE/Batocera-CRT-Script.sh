@@ -1900,6 +1900,30 @@ else
 fi
 
 #######################################################################################
+## how create a file /userdatat/system/es.arg.override
+#######################################################################################
+file="/userdata/system/es.arg.override"
+
+#screensize_x_new=$H_RES_EDID
+#screensize_y_new=$V_RES_EDID
+screensizeoffset_x_new=00
+screensizeoffset_y_new=00
+screenoffset_x_new=00
+screenoffset_y_new=00
+
+if [ -f "$file" ]; then
+	rm $file
+fi
+touch $file
+#echo "screensize_x $screensize_x_new" > "$file"
+#echo "screensize_y $screensize_y_new" >> "$file"
+echo "screensizeoffset_x $screensizeoffset_x_new" > "$file"
+echo "screensizeoffset_y $screensizeoffset_y_new" >> "$file"
+echo "screenoffset_x $screenoffset_x_new" >> "$file"
+echo "screenoffset_y $screenoffset_y_new" >> "$file"
+chmod 644 $file
+
+#######################################################################################
 ## how to center EmulationStation
 #######################################################################################
 if [ "$BOOT_RESOLUTION_ES" == "1" ]; then
