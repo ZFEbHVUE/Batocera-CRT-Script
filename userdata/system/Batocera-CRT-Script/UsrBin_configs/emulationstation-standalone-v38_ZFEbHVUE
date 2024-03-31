@@ -81,13 +81,30 @@ do
 	    display_rotate="$(/usr/bin/batocera-settings-get-master display.rotate)"
 	    read WIDTH HEIGHT PARTHZ <<< $(echo ${bootresolution} | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
 	    RES="${WIDTH}x${HEIGHT}"
-	     sed -i "s/--mode \".*\"/--mode \"$RES\"/"    /userdata/system/scripts/first_script.sh
+
+	    file="/userdata/system/es.arg.override"
+	    if [ -f "$file" ]; then
+    		#screensize_x=$(grep -w screensize_x "$file" | awk '{print $2}')
+    		#screensize_y=$(grep -w screensize_y "$file" | awk '{print $2}')
+		screensizeoffset_x=$(grep -w screensizeoffset_x "$file" | awk '{print $2}')
+    		screensizeoffset_y=$(grep -w screensizeoffset_y "$file" | awk '{print $2}')
+		screensize_x=$((WIDTH  + screensizeoffset_x))
+		screensize_y=$((HEIGHT + screensizeoffset_y))
+    		screenoffset_x=$(grep -w screenoffset_x "$file" | awk '{print $2}')
+    		screenoffset_y=$(grep -w screenoffset_y "$file" | awk '{print $2}')
+	    else
+		screensize_x=$WIDTH
+		screensize_y=$HEIGHT
+	    fi
+
+	    sed -i "s/--mode \".*\"/--mode \"$RES\"/"    /userdata/system/scripts/first_script.sh
 
 	    if ([ "$display_rotate" == "1" ] || [ "$display_rotate" == "3" ]); then
-		es_arg="es.customsargs=--screensize "$HEIGHT" "$WIDTH" --screenoffset "$screenoffset_x" "$screenoffset_y""
+		es_arg="es.customsargs=--screensize "$screensize_y" "$screensize_x" --screenoffset "$screenoffset_y" "$screenoffset_x""
 	    else
-		es_arg="es.customsargs=--screensize "$WIDTH" "$HEIGHT" --screenoffset "$screenoffset_y" "$screenoffset_x""
+		es_arg="es.customsargs=--screensize "$screensize_x" "$screensize_y" --screenoffset "$screenoffset_x" "$screenoffset_y""
 	    fi
+
 	    sed -i "s/.*es.customsargs=.*/$es_arg/" 		/userdata/system/batocera.conf
 
 	    batocera-resolution defineMode "${bootresolution}"
