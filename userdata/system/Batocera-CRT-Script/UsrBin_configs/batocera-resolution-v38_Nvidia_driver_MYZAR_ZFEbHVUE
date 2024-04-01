@@ -152,7 +152,7 @@ case "${ACTION}" in
 	DOTCLOCK_MIN_SWITCHRES=0
 
         sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
-	MODE_switchres=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ}) #> /dev/null 2>/dev/null
+	MODE_switchres=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -i switchres.ini -c) #> /dev/null 2>/dev/null
 	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
 
 	MODELINE_CUSTOM="\"${RES_MODE}\" $(echo "$MODE_switchres" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
