@@ -2025,11 +2025,12 @@ fi
 echo "global.retroarch.crt_switch_hires_menu = \"true\""  >> /userdata/system/batocera.conf
 echo "###################################################" >> /userdata/system/batocera.conf
 
-echo "#	DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR"  >> /userdata/system/batocera.conf
+echo "#	DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR & AUTO FRAME DELAY"  >> /userdata/system/batocera.conf
 echo "###################################################" >> /userdata/system/batocera.conf
 echo "global.shaderset=none" >> /userdata/system/batocera.conf
 echo "global.smooth=0" >> /userdata/system/batocera.conf
 echo "global.retroarch.vrr_runloop_enable=0" >> /userdata/system/batocera.conf
+echo "global.retroarch.video_frame_delay_auto= false" >> /userdata/system/batocera.conf
 echo "###################################################" >> /userdata/system/batocera.conf
 echo "#	DISABLE GLOBAL NOTIFICATIONS IN RETROARCH" >> /userdata/system/batocera.conf
 echo "###################################################" >> /userdata/system/batocera.conf
