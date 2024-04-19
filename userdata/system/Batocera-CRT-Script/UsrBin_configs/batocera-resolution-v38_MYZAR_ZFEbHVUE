@@ -133,25 +133,32 @@ case "${ACTION}" in
 	;;
     "setMode")
    	MODE=$1
+
 	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
-	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
-	DOTCLOCK_MIN_SWITCHRES=0
-        sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	#DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+	#DOTCLOCK_MIN_SWITCHRES=0
+        #sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+
 	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
 	switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} 
-	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+
+	#sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+
 	;;
     "defineMode")   
 	MODE=$1
 	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
 	RES_MODE="${WIDTH}x${HEIGHT}"
+
 	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
-	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
-	DOTCLOCK_MIN_SWITCHRES=0
-	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	#DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+	#DOTCLOCK_MIN_SWITCHRES=0
+	#sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+
 	MODE_xrandr=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -i switchres.ini -c) #> /dev/null 2>/dev/null
+
 	#MODE_xrandr=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ}) #> /dev/null 2>/dev/null
-	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+	#sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
 
 	MODELINE_CUSTOM=$(echo "$MODE_xrandr" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')
 	OUTPUT=$(xrandr --listConnectedOutputs | grep -E '\*$' | sed -e s+'*$'++ | head -1)
