@@ -1873,6 +1873,7 @@ cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libvncserver
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libsasl2.so.2 /usr/lib/libsasl2.so.2
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/vnc /usr/bin/vnc
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/x11vnc /usr/bin/x11vnc
+cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/vnc-scaled /usr/bin/vnc-scaled
 
 chmod 0755 /lib/libcrypt.so.1
 chmod 0644 /usr/lib/libcrypt.so.1
@@ -1881,6 +1882,7 @@ chmod 0644 /usr/lib/libvncserver.so.1
 chmod 0644 /usr/lib/libsasl2.so.2
 chmod +x /usr/bin/vnc
 chmod +x /usr/bin/x11vnc
+chmod +x /usr/bin/vnc-scaled
 
 #######################################################################################
 ## Save in compilation in batocera image
