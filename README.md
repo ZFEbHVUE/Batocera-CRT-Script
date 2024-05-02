@@ -14,6 +14,7 @@ This script would not have been possible without the following people to name a 
 ### Contributors 
  - Sirmagb  (Thx for your CRT.sh modeline's geometry tool idea)    
  - Yavimaya (Thx for your code contribution)
+ - [fishcu](https://github.com/fishcu) - shader: pixel_aa_xform.slangp
 
 ### Testers 
  - GecKoTDF
