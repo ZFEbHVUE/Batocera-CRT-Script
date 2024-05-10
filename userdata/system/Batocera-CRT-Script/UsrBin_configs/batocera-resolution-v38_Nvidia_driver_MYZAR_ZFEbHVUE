@@ -130,18 +130,64 @@ case "${ACTION}" in
   echo "$(</userdata/system/videomodes.conf)"
 	xrandr --listModes | sed -e s+'\*$'++ | sed -e s+'^\([^ ]*\) \(.*\)$'+'\1:\2'+ | sed -e "/\b\(SR\)\b/d"
 	;;
+
     "setMode")
-	MODE=$1
+	MODE_Search=$1
+	MODE=$(echo $MODE_Search | sed 's/.\{3\}$//')
+
+	source /usr/bin/get_monitorRange
+	file="/userdata/system/videomodes.conf"
+	log_file_monitor="/userdata/system/logs/BootRes.log"
+	Switchres_file="/etc/switchres.ini"
+        info_game="/userdata/system/logs/info_game"
+
 	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
+	line=$(grep -F "$MODE_Search" "$file")
 
-	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
+	IFS=' :'
+	read Active_res Resolution H_size H_shift V_shift Hfreq Vfreq <<< "$line"
+	Vfreq=$(echo "$Vfreq" | tr -d '\r\n')
+	unset IFS
+
+	Monitor_name=$(awk '/Monitor Type:/{print $3}' "$log_file_monitor")
+	crt_range_setmode=$(get_monitorRange "$Monitor_name" "$Hfreq" "$Vfreq")
+	Monitor_custom=$(grep -v "^#" "$Switchres_file" | grep "monitor" | head -1 | awk '{print $2}')
+	Monitor_default="custom"
+	sed -i "s/.*monitor        .*/	monitor              $Monitor_default/" "$Switchres_file"
+ 	crt_range_custom=$(grep -oP '^\s*crt_range0\s+\K.*' "$Switchres_file")
+ 	sed -i "s/.*crt_range0        .*/	crt_range0              $crt_range_setmode/" "$Switchres_file"
+	DOTCLOCK_MAX=25.0
 	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
-	DOTCLOCK_MIN_SWITCHRES=0
+	if (( $(echo "$DOTCLOCK_MIN >= $DOTCLOCK_MAX" | bc -l) )); then
+    		sed -i "s/.*dotclock_min        .*/	dotclock_min              0/" "$Switchres_file"
+	fi
+	game_switchres=$(switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} -g "${H_size}:${H_shift}:${V_shift}")
 
-        sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
-	switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} 
-	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
-     ;;
+
+	sed -i "s/.*monitor        .*/	monitor              $Monitor_custom/" "$Switchres_file"
+	sed -i "s/.*crt_range0        .*/	crt_range0              $crt_range_custom/" "$Switchres_file"
+	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" "$Switchres_file"
+
+	cp "$Switchres_file" /userdata/system/logs/Switchres_game.ini
+	if [ -f "$info_game" ]; then 
+		rm "$info_game"
+	fi
+	touch "$info_game"
+	echo "Information for the last game" >> "$info_game"
+	echo "Resolution of research=$MODE_Search">> "$info_game"
+	echo "Resolution_input=$MODE" >> "$info_game"
+I	echo "WIDTH=$WIDTH HEIGHT=$HEIGHT PARTHZ=$PARTHZ" >> "$info_game"
+	echo "line of videomodes=$line" >> "$info_game"
+	echo "Active_res=$Active_res Resolution=$Resolution  H_size=$H_size  H_shift=$H_shift V_shift=$V_shift Hfreq=$Hfreq Vfreq=$Vfreq" >> "$info_game"
+	echo "Monitor_name=$Monitor_name" >> "$info_game"
+       	echo "Monitor for ES=$Monitor_custom" >> "$info_game"
+	echo "crt_range for ES with $Monitor_custom = $crt_range_custom" >> "$info_game"
+	echo "crt_range for game with $Monitor_default = $crt_range_setmode" >> "$info_game"
+	echo "Monitor use for game = $Monitor_default" >> "$info_game"
+	echo "Dotclock_min use for game=$DOTCLOCK_MIN" >> "$info_game"
+	echo "game_switchres=$game_switchres" >> "$info_game"
+	;;
+
     "defineMode")   
 	MODE=$1
 	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
