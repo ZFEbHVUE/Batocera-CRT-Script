@@ -1,3 +1,5 @@
+See wiki page for documentation [wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
+
 ## Foreword
 
 This script would not have been possible without the following people to name a few:
