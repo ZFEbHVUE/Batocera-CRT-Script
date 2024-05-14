@@ -1,21 +1,6 @@
 <?xml version="1.0"?>
 <gameList>
 	<game>
-		<path>/userdata/roms/crt/CRT.sh</path>
-		<name>CRT Geometry Adjustments</name>
-		<desc>Adjust CRT Geometry System Wide.
-With this utility you can create a custom monitor if the standard ones show the image off-center.
-Just follow the onscreen instructions to center grid using keyboard or gamepad, and press Enter when done.
-It will reboot with the new custom monitor calculated.
-You might need to adjust Emulationstation centering also (see wiki).
-		</desc>
-		<image>./images/geometry-image.png</image>
-		<manual>./manuals/CRT.sh-manual.pdf</manual>
-		<rating>0</rating>
-		<releasedate>19700101T010000</releasedate>
-		<lang>en</lang>
-	</game>
-	<game>
 		<path>/userdata/roms/crt/GunCon2_Calibration.sh</path>
 		<name>GunCon2 Calibration</name>
 		<desc>GunCon2 Calibration How To
@@ -32,9 +17,38 @@ You only need to do a first calibration once
 		<image>./images/GunCon2_Calibration-image.png</image>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
-		<playcount>5</playcount>
-		<lastplayed>20230425T023800</lastplayed>
-		<gametime>13</gametime>
+		<playcount>1</playcount>
+		<lastplayed></lastplayed>
+		<gametime>1</gametime>
+		<lang>en</lang>
+	</game>
+	<game>
+		<path>./es_adjust_tool.sh</path>
+		<name>ES Centering &amp; Scaling Tool</name>
+		<desc>Scaling and centering for cases in 
+which these operations within the service menu
+and CRT geometry tool do not produce a perfectly centered screen.		
+See Script wiki page for more information</desc>
+		<image>./images/es_adjust_tool-image.png</image>
+		<rating>0</rating>
+		<releasedate>19700101T010000</releasedate>
+		<playcount>1</playcount>
+		<lastplayed></lastplayed>
+		<lang>en</lang>
+	</game>
+	<game>
+		<path>./geometry.sh</path>
+		<name>CRT Geometry Adjustments</name>
+		<desc>Adjust CRT Geometry System Wide.
+With this utility you can create a custom monitor if the standard ones show the image off-center.
+Just follow the onscreen instructions to center grid using keyboard or gamepad.
+Next you need to adjust Emulationstation using the ES Centering &amp; Scaling Tool.</desc>
+		<image>./images/geometry-image.png</image>
+		<manual>./manuals/CRT.sh-manual.pdf</manual>
+		<rating>0</rating>
+		<releasedate>19700101T010000</releasedate>
+		<playcount>1</playcount>
+		<lastplayed></lastplayed>
 		<lang>en</lang>
 	</game>
 </gameList>
