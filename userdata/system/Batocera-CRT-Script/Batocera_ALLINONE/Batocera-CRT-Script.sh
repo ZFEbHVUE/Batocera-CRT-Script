@@ -18,7 +18,7 @@ check_flag_file() {
     if [ -f "$FLAG_FILE" ]; then
         # Prompt the user if they want to run a restore script
         dialog --backtitle "Restore Script" \
-               --yesno "A previous execution has been detected. Do you want to run a restore script?" 8 40
+               --yesno "A backup has been made. Press OK to restore or NO to Install the script" 8 40
 
         # Check the exit status of the dialog
         case $? in
@@ -1639,71 +1639,6 @@ else
 	echo "No USB Arcade encoder(s) has been choosen"
 fi
 
-#######################################################################################
-# Select the calibration resolution for your CRT   via Geometry / Switchres
-###################E####################################################################
-
-echo "#######################################################################"
-echo "##    Configure a specific resolution for your geometry calibation   ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-echo "##    if you choose no the default resolution will be 640x480@60Hz   ##" 
-echo "#######################################################################"
-echo ""
-declare -a Calibration_Geometry_choice=( "YES" "NO" ) 
-for var in "${!Calibration_Geometry_choice[@]}" ; do echo "			$((var+1)) : ${Calibration_Geometry_choice[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
-echo ""
-echo "#######################################################################"
-echo "##                         Make your choice                          ##"
-echo "#######################################################################"
-echo -n "                                  "
-read choice_Calibration_geometry
-while [[ ! ${choice_Calibration_geometry} =~ ^[1-$((var+1))]$ ]] ; do
-	echo -n "Select option 1 to $((var+1)):"
-	read choice_Calibration_geometry
-done
-if [  "$choice_Calibration_geometry" == "2" ] ; then 
-	echo -e "                    your choice is :${GREEN} Bypass with 640x480@60Hz${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-	Resolution_Geometry="640x480 60"
-	Resolution_Avoid=$(echo $Resolution_Geometry | cut -d' ' -f1)
-else
-	echo "#######################################################################"
-	echo "##      Select your custom horizontal resolution for calibration     ##"
-	echo "#######################################################################"
-	echo -n "                                  "
-	read  horizontal_calibration_resolution
-	while [[ ! $horizontal_calibration_resolution =~ ^[0-9]+$ || "$horizontal_calibration_resolution" -lt 0 ]] ; do
-		echo -n "Enter valid number greater than 0 for horizontal_calibration_resolution"
-		read horizontal_calibration_resolution
-	done
-	echo
- 	echo -e "                    CUSTOM horizontal_calibration_resolution  = ${GREEN}${horizontal_calibration_resolution}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-	echo "#######################################################################"
-	echo "##      Select your custom vertical resolution for calibration      ##"
-	echo "#######################################################################"
-	echo -n "                                  "
-	read  vertical_calibration_resolution
-	while [[ ! $vertical_calibration_resolution =~ ^[0-9]+$ || "$vertical_calibration_resolution" -lt 0 ]] ; do
-		echo -n "Enter valid number greater than 0 for vertical_calibration_resolution"
-		read vertical_calibration_resolution
-	done
-	echo
- 	echo -e "                    CUSTOM vertical_calibration_resolution = ${GREEN}${vertical_calibration_resolution}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-
-	echo "#######################################################################"
-	echo "##      Select your custom frequency for calibration                 ##"
-	echo "#######################################################################"
-	echo -n "                                  "
-	read  calibration_frequency 
-	while [[ ! $calibration_frequency =~ ^[0-9]+$ || "$calibration_frequency" -lt 0 ]] ; do
-		echo -n "Enter valid number greater than 0 for calibration_frequency "
-		read calibration_frequency 
-	done
- 	echo -e "                    CUSTOM calibration_frequency  = ${GREEN}${calibration_frequency}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-
-	Resolution=($horizontal_calibration_resolution"x"$vertical_calibration_resolution" "$calibration_frequency)
-	Resolution_Geometry="$Resolution"
-	Resolution_Avoid=$(echo $Resolution_Geometry | cut -d' ' -f1)
-fi
-
 
 #######################################################################################
 # Select the calibration resolution for your GunCon II
@@ -1804,20 +1739,23 @@ echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO FINISH "
 read 
 
 #######################################################################################
-# Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres
+# Create files for adjusting your CRT
 #######################################################################################
-echo "Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ /userdata/roms/
-sed -e "s/\[Resolution_calibration\]/$Resolution_Geometry/g" -e "s/\[card_display\]/$video_modeline/g" -e "s/\[Resolution_avoid\]/$Resolution_Avoid/g" /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/CRT.sh > /userdata/roms/crt/CRT.sh
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg
-cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.sh.keys /usr/share/evmapy/
-chmod 755 /userdata/roms/crt/CRT.sh
-chmod 755 /usr/share/evmapy/CRT.sh.keys
+cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh.keys /usr/share/evmapy/
+cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh.keys /usr/share/evmapy/
+chmod 755 /userdata/roms/crt/es_adjust_tool.sh
+chmod 755 /userdata/roms/crt/geometry.sh
+chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
+chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
+chmod 755 /usr/share/evmapy/es_tool.sh.keys
+chmod 755 /usr/share/evmapy/geometry.sh.keys
 
 #######################################################################################
-# Create geometryForVideomodes.sh  for adjusting resoltuion in videomodes.conf for your CRT
+# Create geometryForVideomodes.sh  for adjusting resolutions in videomodes.conf for your CRT
 #######################################################################################
 
 #cp Batocera-CRT-Script/Geometry_modeline/crt/geometryForVideomodes.sh /userdata/roms/crt/geometryForVideomodes.sh
