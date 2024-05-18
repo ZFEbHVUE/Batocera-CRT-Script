@@ -484,7 +484,7 @@ fi
 clear
 #########################################################################################
 declare -a type_of_monitor=( 	"generic_15" "ntsc" "pal" "arcade_15" "arcade_15ex" "arcade_25" "arcade_31" \
-				"arcade_15_25" "arcade_15_25_31" "arcade_15_31" "vesa_480" "vesa_600" "vesa_768" "vesa_1024" \
+				"arcade_15_25" "arcade_15_31" "arcade_15_25_31" "vesa_480" "vesa_600" "vesa_768" "vesa_1024" \
 				"pc_31_120" "pc_70_120" "h9110" "polo" "pstar" "k7000" "k7131" "d9200" "d9400" "d9800" \
 				"m2929" "m3129" "ms2930" "ms929" "r666b"  )  
 
@@ -496,7 +496,7 @@ declare -A monitor_categories
 monitor_categories["Generic CRT standards 15 KHz"]="generic_15 ntsc pal"
 monitor_categories["Arcade fixed frequency 15 KHz"]="arcade_15 arcade_15ex"
 monitor_categories["Arcade fixed frequency 25/31KHz"]="arcade_25 arcade_31"
-monitor_categories["Arcade multisync 15/25/31 KHz"]="arcade_15_25 arcade_15_25_31"
+monitor_categories["Arcade multisync 15/25/31 KHz"]="arcade_15_25 arcade_15_31 arcade_15_25_31"
 monitor_categories["VESA GTF"]="vesa_480 vesa_600 vesa_768 vesa_1024"
 monitor_categories["PC monitor 120 Hz"]="pc_31_120 pc_70_120"
 monitor_categories["Hantarex"]="h9110 polo pstar"
@@ -538,8 +538,8 @@ Intel_Nvidia_NOUV=0
 
 if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]) || ([ "$TYPE_OF_CARD" == "AMD/ATI" ]) || ([ "$TYPE_OF_CARD" == "INTEL" ] && [[ $video_output == *"DP"* ]]); then
     # Original matrix strings
- 	matrix=("arcade_15 320x240@60 640x480@30 768x576@25" "arcade_15_25 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@30"
-            	"arcade_15_25_31 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@25" "arcade_15ex 320x240@60 640x480@25 768 x576@25"
+ 	matrix=("arcade_15 320x240@60 640x480@30 768x576@25" "arcade_15_25 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@30" "arcade_15_15 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@30" 
+                "arcade_15_25_31 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@25" "arcade_15ex 320x240@60 640x480@25 768 x576@25"
             	"arcade_25 498x384@60 512x384@60 1024x768@30 1072x800@25" "arcade_31 640x480@60" "d9200 320x240@60 640x480@60 768x576@50 800x600@60 1028x576@50"
             	"d9400 320x240@60 640x480@60 768x576@50 800x600@60 1028x576@50" "d9800 320x240@60 640x480@60 768x576@50 800x600@60 1028x576@50"
             	"generic_15 320x240@60 640x480@30 768x576@25" "h9110 320x240@60 640x480@30 768x576@25 1028x576@25" "k7000 320x240@60 640x480@30 768x576@25 1028x576@25"
@@ -558,7 +558,7 @@ if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Dri
     Amd_NvidiaND_IntelDP=1
 else
     # Original matrix strings
-     	matrix=("arcade_15 1280x240@60 1280x480@30 1280x576@25" "arcade_15_25 1280x240@60 1280x480@30" "arcade_15_25_31 1280x240@60 1280x480@30"
+     	matrix=("arcade_15 1280x240@60 1280x480@30 1280x576@25" "arcade_15_25 1280x240@60 1280x480@30" "arcade_15_31 1280x240@60 1280x480@30" "arcade_15_25_31 1280x240@60 1280x480@30"
             	"arcade_15ex 1280x240@60 1280x480@30 1280281280281280281280281x576@25" "arcade_25 1280x768@30 1280x800@25" "arcade_31 1280x480@60" "d9200 1280x240@60 1280x480@60" "d9400 1280x240@60 1280x480@60"
             	"d9800 1280x240@60 1280x480@60" "generic_15 1280x240@60 1280x480@30 1280x576@25" "h9110 1280x240@60 1280x480@30" "k7000 1280x240@60 1280x480@30" "k7131 1280x240@60 1280x480@30"
             	"m2929 1280x480@60" "m3129 1280x240@60 1280x480@60" "ms2930 1280x240@60 1280x480@60" "ms929 1280x240@60 1280x480@60" "ntsc 1280x240@60 1280x480@60" "pal 1280x240@60 1280x480@60"
