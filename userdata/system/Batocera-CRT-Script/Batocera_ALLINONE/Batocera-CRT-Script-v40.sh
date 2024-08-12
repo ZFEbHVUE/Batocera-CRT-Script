@@ -1578,11 +1578,15 @@ case $Version_of_batocera in
 			chmod 755 "${new_path2}videoMode.py"
 
 			if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
-			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_Nvidia_driver_MYZAR_ZFEbHVUE 	/usr/bin/batocera-resolution
+			#cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_Nvidia_driver_MYZAR_ZFEbHVUE 			/usr/bin/batocera-resolution
+			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_Nvidia_driver_MYZAR_ZFEbHVUE-MultiScreen 	/usr/bin/batocera-resolution
 			else
-			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_MYZAR_ZFEbHVUE 			/usr/bin/batocera-resolution
+			#cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_MYZAR_ZFEbHVUE 			/usr/bin/batocera-resolution
+			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_MYZAR_ZFEbHVUE-MultiScreen	/usr/bin/batocera-resolution
+
 			fi
-			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/emulationstation-standalone-v40_ZFEbHVUE 		/usr/bin/emulationstation-standalone
+			#cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/emulationstation-standalone-v40_ZFEbHVUE 		/usr/bin/emulationstation-standalone
+			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/emulationstation-standalone-v40_ZFEbHVUE-MultiScreen	/usr/bin/emulationstation-standalone
 
 		else
 			cp "${new_path1}emulatorlauncher.py.bak" 	"${new_path1}emulatorlauncher.py"
