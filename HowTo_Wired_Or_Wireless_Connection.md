@@ -12,9 +12,13 @@ This command chain downloads the latest version, extracts its contents, moves th
 
 If you want to just download it with Curl without executing do this
 
+ - v39
+
 `curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script.sh`
 
+ - v40
 
+`curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script-v40.sh`
 
 # Manually
 
