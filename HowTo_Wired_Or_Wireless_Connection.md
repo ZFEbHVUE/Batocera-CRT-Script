@@ -1,7 +1,12 @@
 # Using curl command line tool
 
+ - v39
+
 `curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script.sh && /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script.sh`
 
+ - v40
+
+`curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script.sh && /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script-v40.sh`
 
 This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
 
@@ -39,9 +44,17 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 
 `cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE`
 
+ - v39
+
 `chmod 755 Batocera-CRT-Script.sh`
 
 `./Batocera-CRT-Script.sh`
+
+ - v40
+
+`chmod 755 Batocera-CRT-Script.sh`
+
+`./Batocera-CRT-Script-v40.sh`
 
 Here you will be greeted with some information to read. 
 Press Enter and follow the onscreen instructions. 
