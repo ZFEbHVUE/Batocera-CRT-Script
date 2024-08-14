@@ -1,5 +1,13 @@
 **GunCon2 Micro-Calibrations Guide**
 
+
+Micro Calibrations in-game
+
+Button C + D-pad left/right → decrease x-min → apply if your gun is out on left of the screen
+
+Button C + D-pad up/down → increase x-max → apply if your gun is out on right of the screen
+
+
 The GunCon2 Micro-Calibrations will reset on reboot and is also not the same for every resolution.
 So let's solve that
 
