@@ -1,3 +1,9 @@
+### Installation 
+
+[Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
+
+## Wiki page
+
 See wiki page for documentation [wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
 
 ## Foreword
