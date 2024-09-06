@@ -1860,17 +1860,20 @@ echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO FINISH "
 read 
 
 #######################################################################################
-# Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres
+# Create files for adjusting your CRT
 #######################################################################################
-echo "Create CRT.sh for adjusting modeline for your CRT   via Geometry / Switchres" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ /userdata/roms/
-sed -e "s/\[Resolution_calibration\]/$Resolution_Geometry/g" -e "s/\[card_display\]/$video_modeline/g" -e "s/\[Resolution_avoid\]/$Resolution_Avoid/g" /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/CRT.sh > /userdata/roms/crt/CRT.sh
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg
-cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.sh.keys /usr/share/evmapy/
-chmod 755 /userdata/roms/crt/CRT.sh
-chmod 755 /usr/share/evmapy/CRT.sh.keys
+cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh.keys /usr/share/evmapy/
+cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh.keys /usr/share/evmapy/
+chmod 755 /userdata/roms/crt/es_adjust_tool.sh
+chmod 755 /userdata/roms/crt/geometry.sh
+chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
+chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
+chmod 755 /usr/share/evmapy/es_tool.sh.keys
+chmod 755 /usr/share/evmapy/geometry.sh.keys
 
 #######################################################################################
 # Create geometryForVideomodes.sh  for adjusting resoltuion in videomodes.conf for your CRT
@@ -1941,6 +1944,7 @@ fi
 #######################################################################################
 # Add VNC server files to /lib & /usr/lib for v39
 #######################################################################################
+mv /lib/libcrypt.so.1 /lib/libcrypt.so.1.bak
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libcrypt.so.1 /lib/libcrypt.so.1 
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libcrypt.so.1 /usr/lib/libcrypt.so.1
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libvncclient.so.1 /usr/lib/libvncclient.so.1
