@@ -2,6 +2,6 @@
 export DISPLAY=:0
 /usr/bin/xrandr  -display :0.0 --output $(xrandr | grep -o '.* connected' | sed 's/ connected//') --transform none
 /usr/bin/xrandr -display :0.0 --output $(xrandr | grep -o '.* connected' | sed 's/ connected//') --scale-from 1920x1080
-x11vnc -forever -ncache 10
+x11vnc -forever -noxdamage
 /usr/bin/xrandr  -display :0.0 --output $(xrandr | grep -o '.* connected' | sed 's/ connected//') --transform none
 
