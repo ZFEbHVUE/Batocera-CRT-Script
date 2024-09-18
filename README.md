@@ -40,13 +40,8 @@ This bash script will help you setup Batocera on a Crt in 15-25-31kHz
  - Creation of custom EDID during setup for the monitor profile chosen.
  - It will read resolutions from videomodes.conf but switchres will handle the resolution switching not xrandr. 
  - You are free to add your own resolution by editing the file as you choose but keep in mind you need to test if it works for your monitor profile first. 
-  - The CRT geometry script is not working as of now. This will be fixed in the final release. 
-  - Nvidia needs more testing so the more reports we can get as issues on Github or Discord the better. Preferably both for easy tracking.
-  - Known freezing issue with AMD R9 cards in Emulation Station. 
-  Set Game Launch Transition to Instant
-  Main Menu->User Interface Settings->Game Launch Transition-> Instant
-  
-  - We have avoided using 640x480i & 320x240p for boot as we need those resolution for the geometry tool.
+ - Nvidia needs more testing so the more reports we can get as issues on Github or Discord the better. Preferably both for easy tracking.
+ - We have avoided using 640x480i & 320x240p for boot as we need those resolution for the geometry tool.
 Instead we have opted for 641x480i & 321x240p for boot. 
 It is 1 pixel off and nothing the user will ever notice during boot.
 **Keep in mind 321x240 (320x240p) as a boot resolution is not officially supported since there is no Emulation Station Theme support as of now in Batocera.**
