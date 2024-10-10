@@ -6,6 +6,9 @@
 
 See wiki page for documentation [wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
 
+## Discord
+[Discord: Channel #pc-x86_64-support](https://discord.com/invite/JXhfRTr)
+
 ## Foreword
 
 This script would not have been possible without the following people to name a few:
