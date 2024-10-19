@@ -2,11 +2,11 @@
 
  - v39
 
-`curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script.sh && /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script.sh`
+`bash <(curl -s https://pastebin.com/raw/itUtQYks)`
 
  - v40
 
-`curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script-v40.sh && /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script-v40.sh`
+`bash <(curl -s https://pastebin.com/raw/ZtqQBbyZ)`
 
 This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
 
@@ -14,11 +14,11 @@ If you want to just download it with Curl without executing do this
 
  - v39
 
-`curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script.sh`
+`bash <(curl -s https://pastebin.com/raw/8Gg30fZB)`
 
  - v40
 
-`curl -# -L -o main.zip https://github.com/ZFEbHVUE/Batocera-CRT-Script/archive/refs/heads/main.zip && unzip -qq main.zip 'Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script/*' -d /userdata/system/ && mv /userdata/system/Batocera-CRT-Script-main/userdata/system/Batocera-CRT-Script /userdata/system/ && rm main.zip && rm -r /userdata/system/Batocera-CRT-Script-main && chmod 755 /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/Batocera-CRT-Script-v40.sh`
+`bash <(curl -s https://pastebin.com/raw/sMhrHHLP)`
 
 # Manually
 
