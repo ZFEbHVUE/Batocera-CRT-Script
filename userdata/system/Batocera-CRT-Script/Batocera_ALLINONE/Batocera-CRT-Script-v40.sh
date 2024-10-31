@@ -1826,14 +1826,15 @@ cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ /userdata/roms
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg
-cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh.keys /usr/share/evmapy/
-cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh.keys /usr/share/evmapy/
 chmod 755 /userdata/roms/crt/es_adjust_tool.sh
 chmod 755 /userdata/roms/crt/geometry.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
-chmod 755 /usr/share/evmapy/es_tool.sh.keys
-chmod 755 /usr/share/evmapy/geometry.sh.keys
+chmod 0644 /userdata/roms/crt/es_tool.sh.keys
+chmod 0644 /userdata/roms/crt/geometry.sh.keys
+chmod 755 /userdata/roms/crt/grid_tool.sh
+chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/grid_tool.sh
+chmod 0644 /userdata/roms/crt/grid_tool.sh.keys
 
 #######################################################################################
 # Create geometryForVideomodes.sh  for adjusting resoltuion in videomodes.conf for your CRT
