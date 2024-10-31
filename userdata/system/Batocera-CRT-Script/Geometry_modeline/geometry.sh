@@ -12,6 +12,15 @@ if [ ! -d "$log_dir" ]; then
     mkdir -p "$log_dir"
 fi
 
+# Informational dialog box about using the Geometry tool
+geometry_tool_warning() {
+    dialog --title "Important Notice" \
+           --msgbox "The Geometry tool is only to be used after you adjusted the image using the CRT Grid Tool." 10 50
+}
+
+# Display the geometry tool warning at the start of the script
+geometry_tool_warning
+
 # Trap to clear the terminal if the user presses pause/break key
 trap clear_terminal SIGINT
 
@@ -200,7 +209,7 @@ while true; do
                     "768x576@50" "768x576 50Hz" \
                     $(if $show_custom_resolution; then echo '"Custom Resolution" "Enter a custom resolution"'; fi) \
                     "Restore Files" "Revert changes and restore" \
-                    "Quit" "Exit back to terminal" \
+                    "Quit" "Exit back to ES" \
                     3>&1 1>&2 2>&3)
 
     case $choice in
