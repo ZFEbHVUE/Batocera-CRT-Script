@@ -1,7 +1,22 @@
 <?xml version="1.0"?>
 <gameList>
 	<game>
-		<path>/userdata/roms/crt/GunCon2_Calibration.sh</path>
+		<path>./es_adjust_tool.sh</path>
+		<name>ES Centering &amp; Scaling Tool</name>
+		<desc>Scaling and centering for cases in 
+which these operations within the service menu
+and CRT geometry tool do not produce a perfectly centered screen.		
+See Script wiki page for more information</desc>
+		<image>./images/es_adjust_tool-image.png</image>
+		<rating>0</rating>
+		<releasedate>19700101T010000</releasedate>
+		<playcount>2</playcount>
+		<lastplayed>20241006T193838</lastplayed>
+		<gametime>23</gametime>
+		<lang>en</lang>
+	</game>
+	<game>
+		<path>./GunCon2_Calibration.sh</path>
 		<name>GunCon2 Calibration</name>
 		<desc>GunCon2 Calibration How To
 
@@ -17,23 +32,9 @@ You only need to do a first calibration once
 		<image>./images/GunCon2_Calibration-image.png</image>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
-		<playcount>1</playcount>
-		<lastplayed></lastplayed>
-		<gametime>1</gametime>
-		<lang>en</lang>
-	</game>
-	<game>
-		<path>./es_adjust_tool.sh</path>
-		<name>ES Centering &amp; Scaling Tool</name>
-		<desc>Scaling and centering for cases in 
-which these operations within the service menu
-and CRT geometry tool do not produce a perfectly centered screen.		
-See Script wiki page for more information</desc>
-		<image>./images/es_adjust_tool-image.png</image>
-		<rating>0</rating>
-		<releasedate>19700101T010000</releasedate>
-		<playcount>1</playcount>
-		<lastplayed></lastplayed>
+		<playcount>23</playcount>
+		<lastplayed>20241006T194141</lastplayed>
+		<gametime>453</gametime>
 		<lang>en</lang>
 	</game>
 	<game>
@@ -47,8 +48,25 @@ Next you need to adjust Emulationstation using the ES Centering &amp; Scaling To
 		<manual>./manuals/CRT.sh-manual.pdf</manual>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
-		<playcount>1</playcount>
-		<lastplayed></lastplayed>
+		<playcount>3</playcount>
+		<lastplayed>20241031T124318</lastplayed>
+		<gametime>564</gametime>
+		<lang>en</lang>
+	</game>
+	<game>
+		<path>./grid_tool.sh</path>
+		<name>CRT Grid Tool</name>
+		<desc>The grid tool helps adjust image geometry using the CRT service menu.
+Only when you’ve made the best possible adjustments with the grid tool should you use the geometry tool.
+Always write down your default service menu values, save them on your phone, stick a note on the back of your TV,
+or keep them somewhere safe. Just don’t lose them. Preserving these values gives you more CRT range adjustments.
+If you push the CRT range too far in the geometry tool, you’ll have limited options for in-game adjustments later.</desc>
+		<image>./images/grid_tool-image.png</image>
+		<rating>0</rating>
+		<releasedate>19700101T010000</releasedate>
+		<playcount>3</playcount>
+		<lastplayed>20241031T123400</lastplayed>
+		<gametime>560</gametime>
 		<lang>en</lang>
 	</game>
 </gameList>
