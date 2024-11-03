@@ -1810,7 +1810,7 @@ chmod 755 /userdata/roms/crt/es_adjust_tool.sh
 chmod 755 /userdata/roms/crt/geometry.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
-chmod 0644 /userdata/roms/crt/es_tool.sh.keys
+chmod 0644 /userdata/roms/crt/es_adjust_tool.sh.keys
 chmod 0644 /userdata/roms/crt/geometry.sh.keys
 chmod 755 /userdata/roms/crt/grid_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/grid_tool.sh
