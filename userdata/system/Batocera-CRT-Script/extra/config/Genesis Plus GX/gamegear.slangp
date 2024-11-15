@@ -1,0 +1,5 @@
+#reference "/usr/share/batocera/shaders/pixel-art-scaling/pixel_aa_xform.slangp"
+FORCE_ASPECT_RATIO = "0.000000"
+ASPECT_H = "4.000000"
+ASPECT_V = "3.000000"
+FORCE_INTEGER_SCALING_V = "1.000000"

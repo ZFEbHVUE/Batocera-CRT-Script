@@ -1,0 +1,9 @@
+Copy the folder "config" to
+
+/userdata/system/configs/retroarch/
+
+Fix file permissions 
+chmod -R u+rw,go+rw /userdata/system/configs/retroarch/config/ 
+
+Make sure to set Atari Lynx emulator to LIBRETRO: HANDY
+If not it will crash

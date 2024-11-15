@@ -1,0 +1,7 @@
+handy_frameskip = "disabled"
+handy_frameskip_threshold = "33"
+handy_gfx_colors = "16bit"
+handy_lcd_ghosting = "disabled"
+handy_overclock = "1"
+handy_refresh_rate = "60"
+handy_rot = "None"
