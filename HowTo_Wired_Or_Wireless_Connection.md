@@ -1,24 +1,10 @@
 # Using curl command line tool
 
- - v39
-
-`bash <(curl -s https://pastebin.com/raw/itUtQYks)`
-
  - v40
 
 `bash <(curl -s https://pastebin.com/raw/ZtqQBbyZ)`
 
 This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
-
-If you want to just download it with Curl without executing do this
-
- - v39
-
-`bash <(curl -s https://pastebin.com/raw/8Gg30fZB)`
-
- - v40
-
-`bash <(curl -s https://pastebin.com/raw/sMhrHHLP)`
 
 # Manually
 
@@ -47,12 +33,6 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 6) Via SSH type (Without the Grave Accent Symbols) **`**
 
 `cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE`
-
- - v39
-
-`chmod 755 Batocera-CRT-Script.sh`
-
-`./Batocera-CRT-Script.sh`
 
  - v40
 
