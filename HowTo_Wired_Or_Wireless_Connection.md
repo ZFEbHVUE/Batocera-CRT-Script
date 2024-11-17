@@ -1,10 +1,9 @@
 # Using curl command line tool
 
  - v40
+`bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
 
-`bash <(curl -s https://pastebin.com/raw/ZtqQBbyZ)`
-
-This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
+This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, keeps the backup folder if present and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
 
 # Manually
 
