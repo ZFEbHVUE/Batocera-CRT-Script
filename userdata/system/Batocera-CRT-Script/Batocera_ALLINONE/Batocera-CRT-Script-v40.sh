@@ -1810,7 +1810,7 @@ chmod 755 /userdata/roms/crt/es_adjust_tool.sh
 chmod 755 /userdata/roms/crt/geometry.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
-chmod 0644 /userdata/roms/crt/es_adjust_tool.sh.keys
+chmod 0644 /userdata/roms/crt/es_tool.sh.keys
 chmod 0644 /userdata/roms/crt/geometry.sh.keys
 chmod 755 /userdata/roms/crt/grid_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/grid_tool.sh
@@ -1883,7 +1883,7 @@ fi
 	chmod 755 /usr/bin/calibrate.py
 
 #######################################################################################
-# Add VNC server files to /lib & /usr/lib for v39
+# Add VNC server files to /lib & /usr/lib for v40
 #######################################################################################
 mv /lib/libcrypt.so.1 /lib/libcrypt.so.1.bak
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libcrypt.so.1 /lib/libcrypt.so.1 
@@ -1903,6 +1903,25 @@ chmod 0644 /usr/lib/libsasl2.so.2
 chmod +x /usr/bin/vnc
 chmod +x /usr/bin/x11vnc
 chmod +x /usr/bin/vnc-scaled
+
+#######################################################################################
+# Add Overlays and Overrides for handheld system Tool
+#######################################################################################
+cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh /userdata/roms/crt
+cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh.keys /userdata/roms/crt
+chmod 755 /userdata/roms/crt/overlays_overrides.sh
+chmod 644 /userdata/roms/crt/overlays_overrides.sh.keys
+chmod 755 /userdata/system/Batocera-CRT-Script/extra/overlays_overrides_script.sh
+
+#######################################################################################
+# Add Media Keys with restart for Xorg and restart Emulation Station
+#######################################################################################
+cp /userdata/system/Batocera-CRT-Script/extra/extra/media_keys/multimedia_keys.conf /userdata/system/configs/
+cp /userdata/system/Batocera-CRT-Script/extra/media_keys/esrestart /usr/bin
+cp /userdata/system/Batocera-CRT-Script/extra/media_keys/xrestart /usr/bin
+chmod 644 /userdata/system/configs/multimedia_keys.conf
+chmod 755 /usr/bin/esrestart
+chmod 755 /usr/bin/xrestart
 
 #######################################################################################
 ## Save in compilation in batocera image
