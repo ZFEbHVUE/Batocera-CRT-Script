@@ -168,7 +168,7 @@ while true; do
 		"Exit")
 			log "Exiting script without restarting ES"
 			# Show a dialog box before exiting
-			dialog --msgbox "Exiting back to EmulationStation.\n\nPlease Hold LEFTALT+F1 when you are BACK in EmulationStation to apply the changes.\n\nDO NOT PRESS AND HOLD LEFTALT+F1. PRESS OK FIRST TO EXIT!" 10 50
+			dialog --msgbox "Please Hold LEFTALT+F1 when you are BACK in EmulationStation to apply the changes.\n\nPRESS OK FIRST TO EXIT!!!" 10 50
 			clear
 			exit
 			;;
