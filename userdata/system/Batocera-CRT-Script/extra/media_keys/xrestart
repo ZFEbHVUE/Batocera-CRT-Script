@@ -1,0 +1,5 @@
+#!/bin/bash
+killall xinit
+sleep 2s
+startx
+exit 0
