@@ -31,7 +31,6 @@ while true; do
                     "Custom Es Arg Override"  "Edit Values" \
                     "es.arg.override" "Restore back to default" \
                     "Toggle Debug Mode" "Turn debug mode on/off" \
-                    "Quit"  "Exit to restart es and apply changes" \
                     "Exit"  "Exit back to ES without restarting es" 3>&1 1>&2 2>&3)
     
     if ! $debug_mode; then
@@ -166,21 +165,17 @@ while true; do
         "Toggle Debug Mode")
             toggle_debug
             ;;
-        "Quit")
-            log "Exiting script and restarting ES"
-            # Exit and restart es
-            batocera-es-swissknife --restart
-            exit
-            ;;
-        "Exit")
-            log "Exiting script without restarting ES"
-            # Exit back to ES without restarting ES
-            clear
-            exit
-            ;;
+		"Exit")
+			log "Exiting script without restarting ES"
+			# Show a dialog box before exiting
+			dialog --msgbox "Please Hold LEFTALT+F1 when you are BACK in EmulationStation to apply the changes.\n\nPRESS OK FIRST TO EXIT!!!" 10 50
+			clear
+			exit
+			;;
         *)
             log "Invalid option: $choice"
             echo "Invalid option"
             ;;
     esac
 done
+
