@@ -6,6 +6,13 @@
 
 This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, keeps the backup folder if present and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
 
+If your Graphics card is an R9 380 model you will need to rerun the setup one more time after first run 
+
+``cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE``
+
+
+``./Batocera-CRT-Script-v40.sh``
+
 # Manually
 
 Setup via wired or wireless network.
