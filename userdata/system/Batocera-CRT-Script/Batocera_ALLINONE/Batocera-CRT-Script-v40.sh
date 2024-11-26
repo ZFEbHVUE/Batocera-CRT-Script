@@ -1810,7 +1810,7 @@ chmod 755 /userdata/roms/crt/es_adjust_tool.sh
 chmod 755 /userdata/roms/crt/geometry.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
-chmod 0644 /userdata/roms/crt/es_tool.sh.keys
+chmod 0644 /userdata/roms/crt/es_adjust_tool.sh.keys
 chmod 0644 /userdata/roms/crt/geometry.sh.keys
 chmod 755 /userdata/roms/crt/grid_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/grid_tool.sh
@@ -1916,7 +1916,7 @@ chmod 755 /userdata/system/Batocera-CRT-Script/extra/overlays_overrides_script.s
 #######################################################################################
 # Add Media Keys with restart for Xorg and restart Emulation Station
 #######################################################################################
-cp /userdata/system/Batocera-CRT-Script/extra/extra/media_keys/multimedia_keys.conf /userdata/system/configs/
+cp /userdata/system/Batocera-CRT-Script/extra/media_keys/multimedia_keys.conf /userdata/system/configs/
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/esrestart /usr/bin
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/xrestart /usr/bin
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/emukill /usr/bin
