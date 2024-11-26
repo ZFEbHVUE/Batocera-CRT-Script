@@ -1919,9 +1919,11 @@ chmod 755 /userdata/system/Batocera-CRT-Script/extra/overlays_overrides_script.s
 cp /userdata/system/Batocera-CRT-Script/extra/extra/media_keys/multimedia_keys.conf /userdata/system/configs/
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/esrestart /usr/bin
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/xrestart /usr/bin
+cp /userdata/system/Batocera-CRT-Script/extra/media_keys/emukill /usr/bin
 chmod 644 /userdata/system/configs/multimedia_keys.conf
 chmod 755 /usr/bin/esrestart
 chmod 755 /usr/bin/xrestart
+chmod 755 /usr/bin/emukill
 
 #######################################################################################
 ## Save in compilation in batocera image
