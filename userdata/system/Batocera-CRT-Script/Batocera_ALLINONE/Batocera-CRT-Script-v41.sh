@@ -2028,14 +2028,12 @@ else
 fi
 chmod 755 /userdata/system/scripts/first_script.sh
 ######################################################################################
-# Create 1_GunCon2.sh and GunCon2_Calibration.sh for V36, V37 and v38
-#######################################################################################
-if ([ "$Version_of_batocera" == "v39" ]||[ "$Version_of_batocera" == "v40" ]); then
-	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
-	chmod 755 /userdata/system/scripts/1_GunCon2.sh
-	sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
-	chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
-fi
+# Create 1_GunCon2.sh and GunCon2_Calibration.sh
+######################################################################################
+sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
+chmod 755 /userdata/system/scripts/1_GunCon2.sh
+sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
+chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
 
 
 #######################################################################################
