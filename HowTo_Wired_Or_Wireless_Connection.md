@@ -43,7 +43,7 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 
  - v40
 
-`chmod 755 Batocera-CRT-Script.sh`
+`chmod 755 Batocera-CRT-Script-v40.sh`
 
 `./Batocera-CRT-Script-v40.sh`
 
