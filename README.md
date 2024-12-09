@@ -1,4 +1,4 @@
-### Installation 
+### INSTALLATION INSTRUCTIONS 
 
 [Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
 
