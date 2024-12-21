@@ -52,7 +52,7 @@ Section "Screen"
     Monitor        "CRT"
     Option         "AllowIndirectGLXProtocol" "off"
     Option         "TripleBuffer" "on"
-   
+    Option         "ConnectedMonitor"  "[card_display]"
 EndSection
 
 
