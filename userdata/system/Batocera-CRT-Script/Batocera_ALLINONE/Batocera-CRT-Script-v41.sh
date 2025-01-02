@@ -2225,6 +2225,10 @@ case $Version_of_batocera in
 
  		cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/plugin.ini /userdata/system/configs/mame/plugin.ini
 		chmod 644 /userdata/system/configs/mame/plugin.ini
+
+                #only for V41. Xemu from V42 to fixe a Mesa isse with AAMD
+		cp -rf /userdata/system/Batocera-CRT-Script/UsrBin_configs/xemu_v41/usr/*   /usr/
+		chmod 755 /usr/bin/xemu
 	;;
 
 
