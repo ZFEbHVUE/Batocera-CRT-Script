@@ -1662,6 +1662,10 @@ case $Version_of_batocera in
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/get_monitorRange  /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange
 
+                #only for V41. Xemu from V42 to fixe a Mesa isse with AAMD
+                cp -r /userdata/system/Batocera-CRT-Script/UsrBin_configs/xemu_v41/usr /	
+		chmod 755 /usr/bin/xemu
+
 	;;
 
 
