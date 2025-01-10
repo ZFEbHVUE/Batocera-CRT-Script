@@ -1,17 +1,17 @@
 # Using curl command line tool
 
- - v40
+ - v41
 
 `bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
 
 This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, keeps the backup folder if present and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
 
-If your Graphics card is an R9 380 model you will need to rerun the setup one more time after first run 
+If your Graphics card is an R9 380 model you will need to re-run the setup one more time after first run 
 
 ``cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE``
 
 
-``./Batocera-CRT-Script-v40.sh``
+``./Batocera-CRT-Script-v41.sh``
 
 # Manually
 
@@ -41,11 +41,11 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 
 `cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE`
 
- - v40
+ - v41
 
-`chmod 755 Batocera-CRT-Script-v40.sh`
+`chmod 755 Batocera-CRT-Script-v41.sh`
 
-`./Batocera-CRT-Script-v40.sh`
+`./Batocera-CRT-Script-v41.sh`
 
 Here you will be greeted with some information to read. 
 Press Enter and follow the onscreen instructions. 
