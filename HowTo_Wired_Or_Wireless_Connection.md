@@ -45,7 +45,7 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 
 `chmod 755 Batocera-CRT-Script-v40.sh`
 
-`./Batocera-CRT-Script-v41.sh`
+`./Batocera-CRT-Script-v40.sh`
 
 Here you will be greeted with some information to read. 
 Press Enter and follow the onscreen instructions. 
