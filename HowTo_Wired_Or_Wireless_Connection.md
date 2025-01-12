@@ -1,6 +1,6 @@
 # Using curl command line tool
 
- - v41
+ - v40
 
 `bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
 
@@ -11,7 +11,7 @@ If your Graphics card is an R9 380 model you will need to re-run the setup one m
 ``cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE``
 
 
-``./Batocera-CRT-Script-v41.sh``
+``./Batocera-CRT-Script-v40.sh``
 
 # Manually
 
@@ -41,9 +41,9 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 
 `cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE`
 
- - v41
+ - v40
 
-`chmod 755 Batocera-CRT-Script-v41.sh`
+`chmod 755 Batocera-CRT-Script-v40.sh`
 
 `./Batocera-CRT-Script-v41.sh`
 
