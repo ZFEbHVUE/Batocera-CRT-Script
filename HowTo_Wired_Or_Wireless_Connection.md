@@ -1,6 +1,15 @@
-# Using curl command line tool
+* Don't have anything else then the CRT connected to the dGPU/APU during setup. 
 
- - v40
+* Run the CRT Scrip
+* Choose the correct input
+* Select a correct monitor profile for you CRT.
+* Set resolution to 640x480/768x576 (No official theme support for 320x240 at this point)
+* Set monitor rotation to "None", NORMAL   (0°) (For a Horizontal setup = Normal)
+* Press Enter and skip ADVANCED CONFIGURATION for all 3 option (If you don't know what they mean)
+* Select default resolution for GunCon2 (320x240@60Hz)
+
+# Using curl command line tool
+ - v41
 
 `bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
 
@@ -10,8 +19,21 @@ If your Graphics card is an R9 380 model you will need to re-run the setup one m
 
 ``cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE``
 
+``./Batocera-CRT-Script-v41.sh``
 
-``./Batocera-CRT-Script-v40.sh``
+### There is currently a bug for AMD APU users. 
+### VideoMode: Auto in EmulationStation doesn't work. 
+### To fix the issue until we have issued a fix is by doing the following after installation.
+
+SSH
+
+`cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_MYZAR_ZFEbHVUE /usr/bin/batocera-resolution`
+
+`batocera-save-overlay`
+
+`reboot`
+
+
 
 # Manually
 
@@ -41,11 +63,11 @@ Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setu
 
 `cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE`
 
- - v40
+ - v41
 
-`chmod 755 Batocera-CRT-Script-v40.sh`
+`chmod 755 Batocera-CRT-Script-v41.sh`
 
-`./Batocera-CRT-Script-v40.sh`
+`./Batocera-CRT-Script-v41.sh`
 
 Here you will be greeted with some information to read. 
 Press Enter and follow the onscreen instructions. 
