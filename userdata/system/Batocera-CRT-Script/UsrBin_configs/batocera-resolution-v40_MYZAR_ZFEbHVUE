@@ -223,7 +223,7 @@ case "${ACTION}" in
 	echo "Information for the last game" >> "$info_game"
 	echo "Resolution of research=$MODE_Search">> "$info_game"
 	echo "Resolution_input=$MODE" >> "$info_game"
-I	echo "WIDTH=$WIDTH HEIGHT=$HEIGHT PARTHZ=$PARTHZ" >> "$info_game"
+	echo "WIDTH=$WIDTH HEIGHT=$HEIGHT PARTHZ=$PARTHZ" >> "$info_game"
 	echo "line of videomodes=$line" >> "$info_game"
 	echo "Active_res=$Active_res Resolution=$Resolution  H_size=$H_size  H_shift=$H_shift V_shift=$V_shift Hfreq=$Hfreq Vfreq=$Vfreq" >> "$info_game"
 	echo "Monitor_name=$Monitor_name" >> "$info_game"
