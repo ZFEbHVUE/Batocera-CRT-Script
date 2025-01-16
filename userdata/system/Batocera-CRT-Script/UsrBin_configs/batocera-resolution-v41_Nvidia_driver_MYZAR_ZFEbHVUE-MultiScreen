@@ -37,7 +37,8 @@ f_usage() {
 }
 
 f_minTomaxResolution() {
-    xrandr --output "${PSCREEN}" --auto # reinit the screen (in case it was off)
+    # this command makes issues for CRT using APU
+    #xrandr --output "${PSCREEN}" --auto # reinit the screen (in case it was off)
     
     CURRENT_ROTATION=$(xrandr --currentRotation "${PSCREEN}" | cut -c1)
     BOOTRESOLUTION="$(batocera-settings-get -f "$BOOTCONF" es.resolution)"
