@@ -474,6 +474,39 @@ ALL_OUTPUTS=($(ls /sys/class/drm/ | grep -E '^card[0-9]+-.*' | sed 's/^card[0-9]
 
 CONNECTED_DRM_DISPLAY=$(get_connected_drm_display)
 CONNECTED_XRANDR_DISPLAY=$(get_connected_xrandr_display)
+#####################################################################################################################################################
+#####################################################################################################################################################
+
+# Display connected outputs in /sys/class/drm
+echo -e "\nThe connected display in /sys/class/drm\n"
+for OUTPUT in "${ALL_OUTPUTS[@]}"; do
+    if [ "$OUTPUT" == "$CONNECTED_DRM_DISPLAY" ]; then
+        echo -e "${GREEN}${OUTPUT} (Connected Output)${NOCOLOR}"
+    else
+        echo "$OUTPUT"
+    fi
+done
+
+# Display xrandr output names and statuses
+echo -e "\nThe connected display in xrandr\n"
+DISPLAY=:0 xrandr --query | grep -E '^[A-Za-z0-9\-]+.*' | grep -v '^Screen' | while read -r LINE; do
+    # Extract the status (connected/disconnected) and trim the output
+    STATUS=$(echo "$LINE" | awk '{print $2}')
+    NAME=$(echo "$LINE" | awk '{print $1}')
+    
+    # Format the output by removing 'connected' or 'disconnected'
+    FORMATTED_NAME=$(echo "$NAME" | sed -e 's/ connected//g' -e 's/ disconnected//g')
+    
+    if [ "$STATUS" == "connected" ]; then
+        echo -e "${GREEN}${FORMATTED_NAME} connected${NOCOLOR}"
+    else
+        echo "$FORMATTED_NAME disconnected"
+    fi
+done
+
+# Prompt user to proceed with disabling other outputs
+read -p $'\nAll other displays will now be disabled. Press Enter to continue.'
+
 
 mkdir -p /etc/X11/xorg.conf.d
 tee "$CONFIG_FILE" > /dev/null <<EOF
