@@ -2010,13 +2010,13 @@ chmod 0644 /userdata/roms/crt/grid_tool.sh.keys
 #chmod 755 /userdata/roms/crt/geometryForVideomodes.sh
 
 #######################################################################################
-# Create GunCon2 LUA plugin for GroovyMame for V36, V37 and V38
+# Create GunCon2 LUA plugin for GroovyMame for V39, V40 and V41
 #######################################################################################
 ## if the folder doesn't exist, it will be created now
 if [ ! -d "/usr/bin/mame/plugins/gunlight" ];then
 	mkdir /usr/bin/mame/plugins/gunlight
 fi
-if ([ "$Version_of_batocera" == "v39" ]||[ "$Version_of_batocera" == "v40" ]); then
+if ([ "$Version_of_batocera" == "v39" ]||[ "$Version_of_batocera" == "v40" ]||[ "$Version_of_batocera" == "v41" ]); then
 	cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/gunlight_menu.lua /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
 	cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/gunlight_save.lua /usr/bin/mame/plugins/gunlight/gunlight_save.lua
 	cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/init.lua /usr/bin/mame/plugins/gunlight/init.lua
