@@ -21,20 +21,6 @@ If your Graphics card is an R9 380 model you will need to re-run the setup one m
 
 ``./Batocera-CRT-Script-v41.sh``
 
-### There is currently a bug for AMD APU users. 
-### VideoMode: Auto in EmulationStation doesn't work. 
-### To fix the issue until we have issued a fix is by doing the following after installation.
-
-SSH
-
-`cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v40_MYZAR_ZFEbHVUE /usr/bin/batocera-resolution`
-
-`batocera-save-overlay`
-
-`reboot`
-
-
-
 # Manually
 
 Setup via wired or wireless network.
