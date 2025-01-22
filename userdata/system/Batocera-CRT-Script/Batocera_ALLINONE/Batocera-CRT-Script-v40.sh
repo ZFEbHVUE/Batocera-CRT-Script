@@ -90,6 +90,7 @@ check_flag_file() {
                 # User chose to quit
                 clear
                 echo "Exiting back to terminal."
+                exit 0
                 ;;
         esac
     fi
