@@ -611,7 +611,13 @@ while [[ ! ${video_output_choice} =~ ^[1-$((var+1))]$ ]] && [[ "$video_output_ch
 	echo -n "Select option 1 to $((var+1)):" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 	read video_output_choice
 done
-video_output=${OutputVideo[$video_output_choice-1]}
+
+if [[ "$video_output_choice" == "" ]]; then
+        video_output=$valid_card
+else
+	video_output=${OutputVideo[$video_output_choice-1]}
+fi
+
 echo -e "                    your choice is :${GREEN}  $video_output${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 ########################################################################################
