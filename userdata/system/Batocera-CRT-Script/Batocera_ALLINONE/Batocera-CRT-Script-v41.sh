@@ -1,5 +1,102 @@
 #!/bin/bash
 
+#######################################################################################
+##                               Output Detection Script Start                       ##
+#######################################################################################
+
+# Enable testing mode (set to "true" for testing, "false" for real detection)
+TEST_MODE=false
+
+# Function to get the count of connected outputs from xrandr
+function get_connected_output_count {
+    if [ "$TEST_MODE" == "true" ]; then
+        echo 2  # Simulate more than one connected output
+    else
+        export DISPLAY=:0
+        xrandr --listmonitors | awk '/\+/ {count++} END {print count}'
+    fi
+}
+
+# Check the number of connected outputs
+CONNECTED_OUTPUTS=$(get_connected_output_count)
+
+# If more than one output is detected
+if [ "$CONNECTED_OUTPUTS" -gt 1 ]; then
+    # Display a warning message using dialog with a larger box
+    dialog --title "Warning!" \
+           --msgbox "*************************************************\n\
+\nWARNING: More than one input has been detected!\n\n\
+Disconnect all outputs except the one you intend to use for outputting to your CRT.\n\
+Then restart the script and try again.\n\
+*************************************************" \
+           15 60
+    clear
+    exit 1
+fi
+
+# If only one output is connected, proceed with the rest of the script
+echo "Only one output detected. Proceeding with configuration..."
+
+#######################################################################################
+##                               Output Detection Script End                         ##
+#######################################################################################
+
+#######################################################################################
+##                       10-monitor.conf Output Detection Script Start               ##
+#######################################################################################
+
+# File path to check
+file_path="/etc/X11/xorg.conf.d/10-monitor.conf"
+
+# Function to show dialog and handle renaming
+check_and_rename_file() {
+    # Get the current timestamp in the desired format
+    timestamp=$(date +"%Y.%m.%d,%H.%M.%S")
+
+    # Rephrased text for the dialog box
+    message="The script has detected that this setup script has already been run once.\nDuring the setup, the script disables all display outputs except the connected one.\nTo proceed, the existing configuration file has been backed up and renamed to avoid conflicts."
+
+    # Show the dialog
+    dialog --title "Existing Configuration Detected" \
+           --backtitle "Monitor Configuration Setup" \
+           --ok-label "Ok to Continue" \
+           --cancel-label "Cancel to Exit" \
+           --msgbox "$message" 10 60
+
+    # Check if the user pressed OK
+    if [ $? -eq 0 ]; then
+        # Rename the file with the timestamp
+        new_file_path="${file_path}.${timestamp}"
+        mv "$file_path" "$new_file_path"
+
+        # Set file permissions to 000
+        chmod 000 "$new_file_path"
+
+        echo "File renamed to: $new_file_path"
+
+        # Execute batocera-save-overlay and reboot
+        dialog --title "Rebooting System" \
+               --msgbox "Rebooting Batocera to apply changes. Please run the script again after the reboot." 8 50
+        batocera-save-overlay
+        reboot
+    else
+        echo "User chose to exit. Exiting script."
+        exit 1
+    fi
+}
+
+# Main script logic
+if [ -f "$file_path" ]; then
+    check_and_rename_file
+fi
+
+# Continue with the rest of the script here
+echo "Proceeding with the script..."
+
+#######################################################################################
+##                               10-monitor.conf Detection Script End                ##
+#######################################################################################
+
 # Set terminal type and language locale
 export TERM=xterm-256color
 export LANG=C
