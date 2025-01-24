@@ -1950,21 +1950,22 @@ fi
 
 #######################################################################################
 # Select the calibration resolution for your GunCon II
-# #######################################################################################
+#######################################################################################
 
 echo "####################################################################################"
 echo "##         Configure a specific resolution the calibration of your GunCon2        ##"  | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 echo "##                                                                                ##"
+echo "##      (DEFAULT) NO  for AMD/ATI or Nvidia(Maxwell) Default is (320x240@60Hz)    ##"
 echo "##                YES for Nvidia with Dotclok_min=25.0 (try 640x480@60Hz)         ##"
-echo "##                NO  for AMD/ATI or Nvidia(Maxwell) Default is (320x240@60Hz)    ##"
 echo "##                                                                                ##"
 echo "##  EXPERIMENTAL : FOR AMD/ATI/NVIDIA YOU CAN USE OWN RESOLUTION AND SEE WHAT     ##"
 echo "##  IS BETTER AND REPORT US YOUR EXPERIENCE IN GAMES. YOU CAN TRY 640x480@60Hz    ##"
 echo "##  OR WHAT YOU WANT LIKE 769x576@50Hz. FOR THAT TYPE YES                         ##"
 echo "##                                                                                ##"
+echo "##                 Press Enter To Select DEFAULT Value 320x240                    ##"
 echo "####################################################################################"
 echo ""
-declare -a Calibration_Guncon2_choice=( "YES" "NO" )
+declare -a Calibration_Guncon2_choice=( "NO" "YES" )
 for var in "${!Calibration_Guncon2_choice[@]}" ; do echo "			$((var+1)) : ${Calibration_Guncon2_choice[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 echo ""
 echo "#######################################################################"
@@ -1972,57 +1973,61 @@ echo "##                         Make your choice                          ##"
 echo "#######################################################################"
 echo -n "                                  "
 read choice_Calibration_Guncon2
-while [[ ! ${choice_Calibration_Guncon2} =~ ^[1-$((var+1))]$ ]] ; do
-	echo -n "Select option 1 to $((var+1)):"
+
+# Handle invalid input or default value (ENTER)
+while [[ ! ${choice_Calibration_Guncon2} =~ ^[1-$((var+1))]$ ]] && [[ -n ${choice_Calibration_Guncon2} ]]; do
+	echo -n "Select option 1 to $((var+1)) or press ENTER for default: "
 	read choice_Calibration_Guncon2
 done
-if [  "$choice_Calibration_Guncon2" == "2" ] ; then
-	echo -e "                    your choice is :${GREEN} Bypass with 320x240@60Hz${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+
+if [ -z "$choice_Calibration_Guncon2" ] || [ "$choice_Calibration_Guncon2" == "1" ]; then
+	echo -e "                    Your choice is: ${GREEN}Bypass with default resolution (320x240@60Hz)${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+	# Set default resolution variables
 	Guncon2_x=320
 	Guncon2_y=240
 	Guncon2_freq=60
 	Guncon2_res=($Guncon2_x"x"$Guncon2_y)
-	
-	Resolution_Avoid=$(echo $Resolution_Geometry | cut -d' ' -f1)
 else
+	echo -e "                    Your choice is: ${GREEN}Custom resolution setup${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+
+	# Custom horizontal resolution
 	echo "###############################################################################"
 	echo "##      Select your custom horizontal resolution for Guncon2 calibration     ##"
 	echo "###############################################################################"
 	echo -n "                                  "
-	read  Guncon2_x
-	while [[ ! $Guncon2_x =~ ^[0-9]+$ || "$Guncon2_x" -lt 0 ]] ; do
-		echo -n "Enter valid number greater than 0 for Guncon2_x"
+	read Guncon2_x
+	while [[ ! $Guncon2_x =~ ^[0-9]+$ || "$Guncon2_x" -lt 0 ]]; do
+		echo -n "Enter a valid number greater than 0 for Guncon2_x: "
 		read Guncon2_x
 	done
-	echo
- 	echo -e "                    CUSTOM Guncon2_x Horizontal resolution  = ${GREEN}${Guncon2_x}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+	echo -e "                    CUSTOM Guncon2_x Horizontal resolution  = ${GREEN}${Guncon2_x}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+
+	# Custom vertical resolution
 	echo "###############################################################################"
 	echo "##      Select your custom vertical resolution for Guncon2 calibration       ##"
 	echo "###############################################################################"
-
 	echo -n "                                  "
-	read  Guncon2_y
-	while [[ ! $Guncon2_y =~ ^[0-9]+$ || "$Guncon2_y" -lt 0 ]] ; do
-		echo -n "Enter valid number greater than 0 for Guncon2_y"
+	read Guncon2_y
+	while [[ ! $Guncon2_y =~ ^[0-9]+$ || "$Guncon2_y" -lt 0 ]]; do
+		echo -n "Enter a valid number greater than 0 for Guncon2_y: "
 		read Guncon2_y
 	done
-	echo
- 	echo -e "                    CUSTOM Guncon2_y Horizontal resolution  = ${GREEN}${Guncon2_y}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+	echo -e "                    CUSTOM Guncon2_y Vertical resolution  = ${GREEN}${Guncon2_y}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 
+	# Custom frequency
 	echo "###############################################################################"
 	echo "##      Select your custom frequency resolution for Guncon2 calibration      ##"
 	echo "###############################################################################"
-
 	echo -n "                                  "
-	read  Guncon2_freq
-	while [[ ! $Guncon2_freq =~ ^[0-9]+$ || "Guncon2_freq" -lt 0 ]] ; do
-		echo -n "Enter valid number greater than 0 for calibration_frequency "
+	read Guncon2_freq
+	while [[ ! $Guncon2_freq =~ ^[0-9]+$ || "$Guncon2_freq" -lt 0 ]]; do
+		echo -n "Enter a valid number greater than 0 for Guncon2_freq: "
 		read Guncon2_freq
 	done
- 	echo -e "                    CUSTOM frequency resolution  = ${GREEN}${calibration_frequency}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+	echo -e "                    CUSTOM frequency resolution  = ${GREEN}${Guncon2_freq}${NOCOLOR}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 
+	# Set custom resolution
 	Guncon2_res=($Guncon2_x"x"$Guncon2_y)
-
 fi
 
 
