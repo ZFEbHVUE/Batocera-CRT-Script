@@ -548,7 +548,7 @@ echo "here"
 		output=$(lspci -vnn | grep -A 12 '[030[02]]' | grep -Ei "vga")
 		vendor_name=$(echo "$output" | sed -n -E 's/.*\[(\w+:\w+)\].*/\1/p' | awk -F ':' '{print $1}')
 		device_ID=$(echo "$output" | sed -n -E 's/.*\[(\w+:\w+)\].*/\1/p' | awk -F ':' '{print $2}')
-		if grep -q "$vendor_name:$device_ID.*AMD_IS_APU" /userdata/system/Batocera-CRT-Script/Cards_detection/list_detection_amd_apu.txt; then
+		if grep -iq "{0x$vendor_name, 0x$device_ID, .*AMD_IS_APU}" /userdata/system/Batocera-CRT-Script/Cards_detection/list_detection_amd_apu.txt; then
     			AMD_IS_APU=1
 			echo ""
 			echo "#######################################################################"
