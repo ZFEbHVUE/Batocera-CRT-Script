@@ -548,7 +548,7 @@ echo "here"
 		output=$(lspci -vnn | grep -A 12 '[030[02]]' | grep -Ei "vga")
 		vendor_name=$(echo "$output" | sed -n -E 's/.*\[(\w+:\w+)\].*/\1/p' | awk -F ':' '{print $1}')
 		device_ID=$(echo "$output" | sed -n -E 's/.*\[(\w+:\w+)\].*/\1/p' | awk -F ':' '{print $2}')
-		if grep -q "$vendor_name:$device_ID.*AMD_IS_APU" /userdata/system/Batocera-CRT-Script/Cards_detection/list_detection_amd_apu.txt; then
+		if grep -iq "{0x$vendor_name, 0x$device_ID, .*AMD_IS_APU}" /userdata/system/Batocera-CRT-Script/Cards_detection/list_detection_amd_apu.txt; then
     			AMD_IS_APU=1
 			echo ""
 			echo "#######################################################################"
@@ -817,7 +817,7 @@ if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Dri
             	"vesa_1024 640x480@60 768x576@50 800x600@60 1024x576@50 1024x768@50")
  
  
-    if [ "$TYPE_CARD" == "AMD/ATI" ] && [ "$AMD_IS_APU" == 1 ]; then
+    if [ "$TYPE_OF_CARD" == "AMD/ATI" ] && [ "$AMD_IS_APU" == 1 ]; then
         IFE=1
     else
         IFE=0
@@ -1821,7 +1821,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		chmod 755 /usr/bin/emulationstation-standalone
 		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/Batocera-CRT-Script/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
-		chmod 755 /etc/switchres.ini
+		sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
+  		chmod 755 /etc/switchres.ini
 
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/get_monitorRange  /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange
@@ -1861,7 +1862,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		chmod 755 /usr/bin/emulationstation-standalone
 		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/Batocera-CRT-Script/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
-		chmod 755 /etc/switchres.ini
+		sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
+  		chmod 755 /etc/switchres.ini
 
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/get_monitorRange  /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange
@@ -1902,7 +1904,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		chmod 755 /usr/bin/emulationstation-standalone
 		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/Batocera-CRT-Script/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
-		chmod 755 /etc/switchres.ini
+		sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
+  		chmod 755 /etc/switchres.ini
 
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/get_monitorRange  /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange
@@ -1947,7 +1950,8 @@ case $Version_of_batocera in
 		chmod 755 /usr/bin/batocera-resolution 
 		chmod 755 /usr/bin/emulationstation-standalone
 		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g"  /userdata/system/Batocera-CRT-Script/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
-		chmod 755 /etc/switchres.ini
+		sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
+ 		chmod 755 /etc/switchres.ini
 
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/get_monitorRange  /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange
