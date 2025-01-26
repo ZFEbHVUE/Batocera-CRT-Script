@@ -1,12 +1,48 @@
-* Don't have anything else then the CRT connected to the dGPU/APU during setup. 
+**Important Information:**
+
+The reason multiple monitors cannot be connected during setup is that Batocera's current implementation of multi-screen support can interfere with detecting the correct output.  
+
+To avoid this, all outputs except the one in use must be disabled. It's essential that the output port you use during setup is the same one you will use for CRT output. **Following this step is crucial for proper configuration.**  
+
+That said, you can still install the script locally using an LCD/OLED monitor, but it must be connected to the same output you plan to use for the CRT.  
+
+**Guidelines for Specific Outputs:**  
+- **VGA Output:**  
+  * Use a VGA-to-VGA cable to connect an LCD/OLED monitor.  
+  * Alternatively, use a VGA-to-HDMI or VGA-to-DP converter.  
+
+- **DVI-I Output:**  
+  * Use a DVI-I-to-DVI-I cable to connect an LCD/OLED monitor.  
+  * Alternatively, use a DVI-I-to-HDMI or DVI-I-to-DP converter.  
+
+You may also use an EDID emulator (also known as a dummy plug or headless display adapter) for VGA, DVI-I, or DP outputs to simplify setup.
+
+**Recommended Installation Method:**  
+It's still recommended to install the script via SSH, as it’s the quickest and most convenient method, provided the PC is connected to the same network.  
+
+You **don’t need a second PC for this**—your mobile phone or laptop can be used with an SSH client.  
+
+**Examples of SSH clients for iOS devices:**  
+- Blink Shell  
+- Termius  
+- a-Shell  
+- WebSSH  
+
+**Examples of SSH clients for Android:**  
+- ConnectBot  
+- JuiceSSH  
+- Termius  
+- Termux
+
+**Installation**
 
 * Run the CRT Scrip
 * Choose the correct input
 * Select a correct monitor profile for you CRT.
 * Set resolution to 640x480/768x576 (No official theme support for 320x240 at this point)
 * Set monitor rotation to "None", NORMAL   (0°) (For a Horizontal setup = Normal)
-* Press Enter and skip ADVANCED CONFIGURATION for all 3 option (If you don't know what they mean)
-* Select default resolution for GunCon2 (320x240@60Hz)
+* Press Enter and skip ADVANCED CONFIGURATION for all 4 option (If you don't know what they mean)
+* Default resolution for GunCon2 calibration is (320x240@60Hz)
 
 # Using curl command line tool
  - v41
