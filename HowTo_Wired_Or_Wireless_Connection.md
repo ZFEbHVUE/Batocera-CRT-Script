@@ -53,9 +53,7 @@ This command chain downloads the latest version, extracts its contents, moves th
 
 If your Graphics card is an R9 380 model you will need to re-run the setup one more time after first run 
 
-``cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE``
-
-``./Batocera-CRT-Script-v41.sh``
+``/userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/./Batocera-CRT-Script-v41.sh``
 
 # Manually
 
