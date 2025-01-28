@@ -508,11 +508,11 @@ case $selected_card in
 				read
 				reboot
 				exit
-			fi
+                              fi
 				# Define file paths for adding line to emulationstation configuration
-				source_file="/userdata/system/Batocera-CRT-Script/System_configs/R9/es_settings.cfg"
+				source_file="/userdata/system/Batocera-CRT-Script/System_configs/R9/v41/es_settings.cfg"
 				destination_file="/userdata/system/configs/emulationstation/es_settings.cfg"
-				line_to_add='<string name="GameTransitionStyle" value="instant" />'
+				line_to_add='        <string name="GameTransitionStyle" value="instant" />'
 
 				# Check if destination file exists
 				if [ ! -f "$destination_file" ]; then
@@ -525,7 +525,7 @@ case $selected_card in
 				# Check if the line to add is already present in the destination file
 				if ! grep -qF "$line_to_add" "$destination_file"; then
 				# Add the line after <config> if it's not present
-				sed -i '/<\/config>/i '"$line_to_add"'' "$destination_file"
+				sed -i '/<\/config>/i\'"$line_to_add"'' "$destination_file"
 				fi
 		else
 			R9_380="NO"
