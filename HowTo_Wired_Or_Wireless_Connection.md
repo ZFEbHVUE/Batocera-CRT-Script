@@ -45,9 +45,13 @@ You **don’t need a second PC for this**—your mobile phone or laptop can be u
 * Default resolution for GunCon2 calibration is (320x240@60Hz)
 
 # Using curl command line tool
- - v41
+ ### v41
+* bit.ly
+  * `bash <(curl -Ls https://bit.ly/batocera-crt-script | sed 's/\r$//')`
+* Pastebin
+  * `bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
+* QR Code for mobile
 
-`bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
 
 This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, keeps the backup folder if present and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
 
