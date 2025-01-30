@@ -51,7 +51,7 @@ You **don’t need a second PC for this**—your mobile phone or laptop can be u
 * Pastebin
   * `bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
 * QR Code for mobile
-
+  * ![](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/wiki_page/bit.ly_batocera-crt-script_small.png)
 
 This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, keeps the backup folder if present and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
 
