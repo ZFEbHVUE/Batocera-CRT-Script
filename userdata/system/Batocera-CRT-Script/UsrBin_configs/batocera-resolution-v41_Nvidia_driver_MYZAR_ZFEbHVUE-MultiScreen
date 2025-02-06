@@ -89,7 +89,6 @@ f_minTomaxResolution() {
         echo "No resolution set, nothing to do..." >> $log
         exit 0
     fi
-    ;;
 
     # check if there is any change required
     if [ "$CURRENTWIDTH" -eq "$MAXWIDTH" ] && [ "$CURRENTHEIGHT" -eq "$MAXHEIGHT" ]; then
@@ -227,7 +226,6 @@ case "${ACTION}" in
 	touch "$info_game"
 	echo "Information for the last game" >> "$info_game"
 	echo "Resolution of research=$MODE_Search">> "$info_game"
-
 	echo "Resolution_input=$MODE" >> "$info_game"
 	echo "WIDTH=$WIDTH HEIGHT=$HEIGHT PARTHZ=$PARTHZ" >> "$info_game"
 	echo "line of videomodes=$line" >> "$info_game"
@@ -241,7 +239,8 @@ case "${ACTION}" in
 	echo "game_switchres=$game_switchres" >> "$info_game"
 
 	;;
-     "defineMode")   
+	
+   "defineMode")   
 	MODE=$1 
 
 	#version /bash
@@ -264,7 +263,9 @@ case "${ACTION}" in
 	MODELINE_CUSTOM="\"${RES_MODE}\" $(echo "$MODE_switchres" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
 	sed -i  "s/.*Modeline.*/    Modeline            $MODELINE_CUSTOM/" 	/userdata/system/99-nvidia.conf
     ;;
-	
+ 
+
+
     "setMode_CVT")
         MODE=$1
         if echo "${MODE}" | grep -qE 'max-' # special max-widthxheight
