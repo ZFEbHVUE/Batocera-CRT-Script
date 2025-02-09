@@ -74,7 +74,7 @@ These pre-configured Monitor Profiles have 50+ resolutions added that should onl
  - Nanao - ms2930, ms929
  - Rodotron - r666b 
 
-AMD Cards are preferred.
+AMD Cards are preferred. With native analog out. Avoid R5-R7-R9 with DisplayPort only.
 
     Anything up to R9 380X will work. R5-R7-R9 Cards are highly recommended.
 
