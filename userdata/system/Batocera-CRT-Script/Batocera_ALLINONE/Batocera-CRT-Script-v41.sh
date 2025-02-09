@@ -1407,7 +1407,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		echo "##                                                                   ##"
 		echo "##                         M.A.M.E. MONITOR                          ##"
 		echo "##            Tinker only if you know what you are doing             ##"
-		echo "##                 or if you have problems launching                 ##"5
+		echo "##                 or if you have problems launching                 ##"
 		echo "##                           M.A.M.E.                                ##"
 		echo "##                        (Black Screen)                             ##"
 		echo "##                                                                   ##"
@@ -1471,7 +1471,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 	echo "##                                                                   ##"
 	echo "##                  If you don't know about it or                    ##"
 	echo "##                 if you want to let the script                     ##"
-	echo "##        set default super-resolution for your graphics card       /userdata/roms/crt/cutsom.bin /  ##"
+	echo "##        set default super-resolution for your graphics card        ##"
 	echo "##                            press ENTER                            ##"
 	echo "##                                                                   ##"
 	echo "#######################################################################"
@@ -1482,7 +1482,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 	echo "#######################################################################"
 	echo "##             Make your choice for super-resolution                 ##"
 	echo "#######################################################################"
-	echo -n "                                  " /userdata/roms/crt/cutsom.bin /
+	echo -n "                                  "
 	read sr_choice
 	while [[ ! ${sr_choice} =~ ^[1-$((var+1))]$ ]] && [[ "$sr_choice" != "" ]] ; do
 		echo -n "Select option 1 to $((var+1)) or ENTER to bypass this configuration:"
@@ -1528,7 +1528,7 @@ if [ "$DT_SR_Choice" == "YES" ] ; then
 		echo "##                                                                   ##"
 		echo "#######################################################################"
 		echo ""
-		declare -a sr_m_selector=( "1920 - Intel default" "2560 - amd/ati /userdata/roms/crt/cutsom.bin / default" "3840 - nvidia default" "Same as main monitor" "CUSTOM (experimental)")
+		declare -a sr_m_selector=( "1920 - Intel default" "2560 - amd/ati/ default" "3840 - nvidia default" "Same as main monitor" "CUSTOM (experimental)")
 		for var in "${!sr_m_selector[@]}" ; do echo "			$((var+1)) : ${sr_m_selector[$var]}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log; done
 		echo ""
 		echo "#######################################################################"
