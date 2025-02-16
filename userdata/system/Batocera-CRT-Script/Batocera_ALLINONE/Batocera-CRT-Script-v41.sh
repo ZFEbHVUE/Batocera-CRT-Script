@@ -1744,29 +1744,6 @@ fi
 cp /userdata/system/Batocera-CRT-Script/etc_configs/Monitors_config/20-radeon.conf /etc/X11/xorg.conf.d/20-radeon.conf
 chmod 644 /etc/X11/xorg.conf.d/20-radeon.conf
 
-#######################################################################################
-## Put EDID (Extended Display Identification Data) metadata formats for display devices 
-#######################################################################################
-
-#cp -rf /userdata/system/Batocera-CRT-Script/Firmware_configs/edid /lib/firmware/
-
-#######################################################################################
-## Batocera-resolution and EmulationStation-standalone
-## Disable EmulationStation from forcing 60 Hz in Emulationstation-standalone
-#######################################################################################
-# first time using the script save the batocera-resolution in batocera-resolution.bak
-if [ ! -f "/usr/bin/batocera-resolution.bak" ];then
-	cp /usr/bin/batocera-resolution /usr/bin/batocera-resolution.bak
-fi 
-
-if [ ! -f "/usr/bin/emulationstation-standalone.bak" ];then
-	cp /usr/bin/emulationstation-standalone /usr/bin/emulationstation-standalone.bak
-fi
-
-if [ ! -f "/usr/bin/retroarch.bak" ];then
-	cp /usr/bin/retroarch /usr/bin/retroarch.bak
-fi 
-
 ##################################################################################################
 python_directory=$(find /usr/lib/ -maxdepth 1 -type d -name "python*" -exec basename {} \; -quit)
 new_path1="/usr/lib/${python_directory}/site-packages/configgen/"
