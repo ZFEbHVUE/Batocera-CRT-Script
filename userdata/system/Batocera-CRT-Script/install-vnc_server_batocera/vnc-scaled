@@ -2,6 +2,11 @@
 export DISPLAY=:0
 /usr/bin/xrandr  -display :0.0 --output $(xrandr | grep -o '.* connected' | sed 's/ connected//') --transform none
 /usr/bin/xrandr -display :0.0 --output $(xrandr | grep -o '.* connected' | sed 's/ connected//') --scale-from 1920x1080
-x11vnc -forever -noxdamage
+
+# Kill any existing x11vnc instances using port 5900 (optional but safer)
+fuser -k 5900/tcp
+
+# Start x11vnc on port 5900
+x11vnc -forever -noxdamage -rfbport 5900 -shared
 /usr/bin/xrandr  -display :0.0 --output $(xrandr | grep -o '.* connected' | sed 's/ connected//') --transform none
 
