@@ -1,5 +1,9 @@
 #!/bin/bash
 
 export DISPLAY=:0
-x11vnc -forever -noxdamage
 
+# Kill any existing x11vnc instances using port 5900 (optional but safer)
+fuser -k 5900/tcp
+
+# Start x11vnc on port 5900
+x11vnc -forever -noxdamage -rfbport 5900 -shared
