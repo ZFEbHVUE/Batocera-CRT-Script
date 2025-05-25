@@ -2257,6 +2257,12 @@ chmod 755 /usr/bin/xrestart
 chmod 755 /usr/bin/emukill
 
 #######################################################################################
+# Add Kodi to ports folder
+#######################################################################################
+cp /userdata/system/Batocera-CRT-Script/extra/Kodi/Kodi.sh /userdata/roms/ports
+chmod 755 /userdata/roms/ports/Kodi.sh
+
+#######################################################################################
 ## Save in compilation in batocera image
 #######################################################################################
 batocera-save-overlay
