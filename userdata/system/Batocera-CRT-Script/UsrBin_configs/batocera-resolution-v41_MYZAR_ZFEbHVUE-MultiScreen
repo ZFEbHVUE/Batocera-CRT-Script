@@ -192,15 +192,44 @@ case "${ACTION}" in
         unset IFS
 
 	Monitor_name=$(awk '/Monitor Type:/{print $3}' "$log_file_monitor")
-	crt_range_setmode=$(get_monitorRange "$Monitor_name" "$Hfreq" "$Vfreq")
 	Monitor_custom=$(grep -v "^#" "$Switchres_file" | grep "monitor" | head -1 | awk '{print $2}')
 	Monitor_default="custom"
-	sed -i "s/.*monitor        .*/	monitor              $Monitor_default/" "$Switchres_file"
- 	crt_range_custom=$(grep -oP '^\s*crt_range0\s+\K.*' "$Switchres_file")
- 	sed -i "s/.*crt_range0        .*/	crt_range0              $crt_range_setmode/" "$Switchres_file"
+
+	# Backup all crt_rangeN entries (0–9)
+	declare -A crt_ranges_backup
+	for i in {0..9}; do
+		range=$(grep -oP "^\s*crt_range${i}\s+\K.*" "$Switchres_file")
+		if [[ -n "$range" ]]; then
+			crt_ranges_backup[$i]="$range"
+		fi
+	done
+
+	# Temporarily set monitor to "custom"
+	sed -i "s/.*monitor        .*/    monitor              $Monitor_default/" "$Switchres_file"
+
+	# Backup all crt_rangeN entries (0–9)
+	for i in "${!crt_ranges_backup[@]}"; do
+		if grep -q "^[[:space:]]*crt_range${i}[[:space:]]\+" "$Switchres_file"; then
+		   # Replace if line exists
+           sed -i "s|^\s*crt_range${i}\s\+.*|	crt_range${i}              ${crt_ranges_backup[$i]}|" "$Switchres_file"
+      else
+           # Append if missing
+           echo -e "\tcrt_range${i}              ${crt_ranges_backup[$i]}" >> "$Switchres_file"
+      fi
+  done
+
+	# Only override crt_range0 if monitor is not custom
+	if [[ "$Monitor_name" != "custom" ]]; then
+		crt_range_setmode=$(get_monitorRange "$Monitor_name" "$Hfreq" "$Vfreq")
+		sed -i "s/.*crt_range0        .*/    crt_range0              $crt_range_setmode/" "$Switchres_file"
+	else
+		echo "[INFO] monitor=custom — preserving user-defined crt_range0–crt_range9 from switchres.ini"
+	fi
+
 	DOTCLOCK_MAX=25.0
 	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
 
+	
 	#version bash
 	if (( $(echo "$DOTCLOCK_MIN >= $DOTCLOCK_MAX" | bc -l) )); then
     		sed -i "s/.*dotclock_min        .*/	dotclock_min              0/" "$Switchres_file"
@@ -211,12 +240,16 @@ case "${ACTION}" in
     	#	sed -i "s/.*dotclock_min        .*/	dotclock_min              0/" "$Switchres_file"
 	#fi
 
-	game_switchres=$(switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} -g "${H_size}:${H_shift}:${V_shift}")
+    game_switchres=$(switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} -g "${H_size}:${H_shift}:${V_shift}")
 
+    # Restore monitor and dotclock_min
+    sed -i "s/.*monitor        .*/    monitor              $Monitor_custom/" "$Switchres_file"
+    sed -i "s/.*dotclock_min        .*/    dotclock_min              $DOTCLOCK_MIN/" "$Switchres_file"
 
-	sed -i "s/.*monitor        .*/	monitor              $Monitor_custom/" "$Switchres_file"
-	sed -i "s/.*crt_range0        .*/	crt_range0              $crt_range_custom/" "$Switchres_file"
-	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" "$Switchres_file"
+    # Restore all crt_range0–9
+    for i in "${!crt_ranges_backup[@]}"; do
+        sed -i "s|^[[:space:]]*crt_range${i}[[:space:]]\+.*|    crt_range${i}              ${crt_ranges_backup[$i]}|" "$Switchres_file"
+    done	
 
         
 	cp "$Switchres_file" /userdata/system/logs/Switchres_game.ini
