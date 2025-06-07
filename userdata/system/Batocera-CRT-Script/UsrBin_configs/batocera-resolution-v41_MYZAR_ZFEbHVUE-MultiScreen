@@ -4,6 +4,30 @@ log="/userdata/system/logs/display.log"
 mpvlog="/userdata/system/logs/mpv.log"
 BOOTCONF="/boot/batocera-boot.conf"
 
+# --- Clean up previous switchres modeline - start ---
+STATE_FILE="/tmp/switchres-last-resolution-state"
+
+if [ -f "$STATE_FILE" ]; then
+    read -r LAST_OUTPUT LAST_MODE < "$STATE_FILE"
+    CURRENT_MODE=$(xrandr --verbose | awk -v out="$LAST_OUTPUT" '
+        $0 ~ "^"out {found=1}
+        found && / connected/ {found=0}
+        found && /[0-9]+x[0-9]+/ && /\*/ {print $1; exit}
+    ')
+
+    if [ "$CURRENT_MODE" = "$LAST_MODE" ]; then
+        echo "[batocera-resolution] Skipping deletion of $LAST_MODE because it is currently active on $LAST_OUTPUT" >> $log
+    elif xrandr | grep -q "$LAST_MODE"; then
+        echo "[batocera-resolution] Deleting modeline $LAST_MODE from output $LAST_OUTPUT" >> $log
+        xrandr --delmode "$LAST_OUTPUT" "$LAST_MODE"
+    else
+        echo "[batocera-resolution] Previous modeline $LAST_MODE not found, skipping deletion" >> $log
+    fi
+
+    rm -f "$STATE_FILE"
+fi
+# --- Clean up previous switchres modeline - end ---
+
 PSCREEN=
 if test "${1}" = "--screen"
 then
@@ -241,6 +265,15 @@ case "${ACTION}" in
 	#fi
 
     game_switchres=$(switchres ${WIDTH} ${HEIGHT} ${PARTHZ} -s -k -f ${WIDTH}x${HEIGHT}@${PARTHZ} -g "${H_size}:${H_shift}:${V_shift}")
+
+	# --- Log newly generated modeline for future cleanup - start ---
+	NEW_MODE=$(xrandr | grep 'SR-1_' | awk '{print $1}' | tail -n1)
+
+	if [ -n "$NEW_MODE" ] && [ -n "$OUTPUT" ]; then
+		echo "$OUTPUT $NEW_MODE" > /tmp/switchres-last-resolution-state
+		echo "[batocera-resolution] Stored modeline state: $NEW_MODE on $OUTPUT" >> $log
+	fi
+	# --- Log newly generated modeline for future cleanup - end ---
 
     # Restore monitor and dotclock_min
     sed -i "s/.*monitor        .*/    monitor              $Monitor_custom/" "$Switchres_file"
