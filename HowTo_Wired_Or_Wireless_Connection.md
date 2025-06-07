@@ -1,4 +1,4 @@
----
+
 
 ## ✅ Post-Installation Steps (Important!)
 
@@ -118,12 +118,12 @@ You **don’t need a second PC for this**—your mobile phone or laptop can be u
 **v41**
 
 - **bit.ly**
-  ```bash
+  ```
   bash <(curl -Ls https://bit.ly/batocera-crt-script | sed 's/\r$//')
   ```
 
 - **Pastebin**
-  ```bash
+  ```
   bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')
   ```
 
@@ -165,7 +165,7 @@ Before running the script:
 
 6. In SSH terminal, run the following:
 
-```bash
+```
 cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE
 chmod 755 Batocera-CRT-Script-v41.sh
 ./Batocera-CRT-Script-v41.sh
