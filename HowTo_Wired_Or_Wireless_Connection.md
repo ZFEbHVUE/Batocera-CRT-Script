@@ -8,7 +8,7 @@ Once the installation completes, follow these steps carefully to avoid potential
 
 After installation finishes, type the following in the terminal:
 
-```bash
+```
 shutdown -h now
 ```
 
