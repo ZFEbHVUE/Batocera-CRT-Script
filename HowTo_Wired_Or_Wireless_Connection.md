@@ -1,4 +1,61 @@
-**Important Information:**
+---
+
+## ✅ Post-Installation Steps (Important!)
+
+Once the installation completes, follow these steps carefully to avoid potential overlay issues and signal damage to your CRT:
+
+### 🔌 1. Proper Shutdown After Script Installation
+
+After installation finishes, type the following in the terminal:
+
+```bash
+shutdown -h now
+```
+
+This ensures Batocera saves the changes properly before powering off.  
+Failing to do this may cause script installation errors due to the overlay not committing changes correctly.
+
+Once the system has shut down completely, **power it back on to continue** with the setup.
+
+> ⚠️ **Important for CRT users:**  
+Avoid having your CRT powered on or set to the same input **during BIOS/post boot**, especially if you're using a **15kHz-only CRT**. The default output sends **unsafe 31kHz signals** during early BIOS/post boot.
+
+---
+
+### 🔁 2. First Boot After Installation – Setup Instructions
+
+Once your system is rebooted **with the CRT Script installed**, you must do the following:
+
+1. Go to:  
+   `MAIN MENU → SYSTEM SETTINGS → HARDWARE`
+
+2. Set these values:
+
+   - **VIDEO OUTPUT:**  
+     Set this to the correct connected output. There should only be one listed.
+
+   - **VIDEO MODE:**  
+     Set this based on your chosen profile:
+
+#### For 15kHz CRT Profiles
+
+| Output Resolution | Recommended Video Mode Setting |
+|-------------------|--------------------------------|
+| 640×480           | `Boot_480i 1.0:0:0 15KHz 60Hz`  |
+| 768×576           | `Boot_576i 1.0:0:0 15KHz 50Hz`  |
+
+#### For 31kHz (VGA) Profiles
+
+| Output Resolution | Recommended Video Mode Setting |
+|-------------------|--------------------------------|
+| 640×480           | `Boot_480i 1.0:0:0 31KHz 60Hz`  |
+
+> 📝 All profiles will have a `Boot_` prefix in the list.  
+> 📝 Make sure the **Boot_** entry you select matches the **exact resolution** you picked during installation.
+
+---
+
+## 🧠 Important Information:
 
 The reason multiple monitors cannot be connected during setup is that Batocera's current implementation of multi-screen support can interfere with detecting the correct output.  
 
@@ -17,10 +74,15 @@ That said, you can still install the script locally using an LCD/OLED monitor, b
 
 You may also use an EDID emulator (also known as a dummy plug or headless display adapter) for VGA, DVI-I, or DP outputs to simplify setup.
 
-**Recommended Installation Method:**  
-It's still recommended to install the script via SSH, as it’s the quickest and most convenient method, provided the PC is connected to the same network.  
+---
+
+## 💻 Recommended Installation Method:
+
+It’s still recommended to install the script via SSH, as it’s the quickest and most convenient method, provided the PC is connected to the same network.  
 
 You **don’t need a second PC for this**—your mobile phone or laptop can be used with an SSH client.  
+
+   [📎 Batocera SSH Guide](https://wiki.batocera.org/access_the_batocera_via_ssh)
 
 **Examples of SSH clients for iOS devices:**  
 - Blink Shell  
@@ -34,66 +96,80 @@ You **don’t need a second PC for this**—your mobile phone or laptop can be u
 - Termius  
 - Termux
 
-**Installation**
+---
 
-* Run the CRT Scrip
-* Choose the correct input
-* Select a correct monitor profile for you CRT.
-* Set resolution to 640x480/768x576 (No official theme support for 320x240 at this point)
-* Set monitor rotation to "None", NORMAL   (0°) (For a Horizontal setup = Normal)
-* Press Enter and skip ADVANCED CONFIGURATION for all 4 option (If you don't know what they mean)
-* Default resolution for GunCon2 calibration is (320x240@60Hz)
+## 📥 Installation
 
-# Using curl command line tool
- ### v41
-* bit.ly
-  * `bash <(curl -Ls https://bit.ly/batocera-crt-script | sed 's/\r$//')`
-* Pastebin
-  * `bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')`
-* QR Code for mobile
-  * ![](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/wiki_page/bit.ly_batocera-crt-script_small.png)
+- Run the CRT Script
+- Choose the correct input
+- Select a correct monitor profile for your CRT
+- Set resolution to 640x480/768x576  
+  *(No official theme support for 320x240 at this point)*
+- Set monitor rotation to "None", NORMAL (0°)  
+  *(Horizontal setup = Normal)*
+- Press Enter and skip ADVANCED CONFIGURATION for all 4 options  
+  *(If you don't know what they mean)*
+- Default resolution for GunCon2 calibration is `320x240@60Hz`
 
-This command chain downloads the latest version, extracts its contents, moves the desired folder to the desired location, removes unnecessary files and folders, sets permissions for the script file, keeps the backup folder if present and finally executes the script. Each command is executed only if the previous command succeeds, ensuring a smooth execution flow.
+---
 
-If your Graphics card is an R9 380 model you will need to re-run the setup one more time after first run 
+### 🌀 Using curl (Command Line)
 
-``/userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/./Batocera-CRT-Script-v41.sh``
+**v41**
 
-# Manually
+- **bit.ly**
+  ```bash
+  bash <(curl -Ls https://bit.ly/batocera-crt-script | sed 's/\r$//')
+  ```
 
-Setup via wired or wireless network.
+- **Pastebin**
+  ```bash
+  bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')
+  ```
 
-Now before running the script make sure you have connected the correct cables to the correct output on your card that you are going to use.
-Also make sure the Tv/Monitor is off or on another Tv AV/Channel during the setup process. 
+- **QR Code for Mobile:**  
+  ![](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/wiki_page/bit.ly_batocera-crt-script_small.png)
 
-1) Press the code icon on GitHub and choose **Download Zip**
-    
-2) Extract the zipfile `Batocera-CRT-Script-main.zip` into a temporary folder on your PC.
+> This command chain downloads the latest version, extracts its contents, moves the folder, sets script permissions, preserves backups (if any), and finally executes the script.
 
-3) Access your Batocera installation over the network. 
-     See official guide here on how to do so here.
-     https://wiki.batocera.org/add_games_bios?s[]=transfer#add_games_bios_files_to_batocera 
+**Note:** If your graphics card is an **R9 380**, rerun the setup after first boot:
 
-4) Drag and drop the `system` folder to your Batocera installation
-     The correct path should be
-      `/userdata/system`
-      Via SMB you are already in the `userdata` folder so just drag and drop the folder.
- 
-5) Connect to your Batocera installation via SSH 
-    See official guide on how to do so here: 
-     https://wiki.batocera.org/access_the_batocera_via_ssh
-    
-6) Via SSH type (Without the Grave Accent Symbols) **`**
+```bash
+/userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/./Batocera-CRT-Script-v41.sh
+```
 
-`cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE`
+---
 
- - v41
+## 📦 Manual Installation
 
-`chmod 755 Batocera-CRT-Script-v41.sh`
+Use this if installing via wired or wireless network manually.
 
-`./Batocera-CRT-Script-v41.sh`
+Before running the script:
+- Connect the correct output on your GPU to the correct cable.
+- Ensure your CRT is either **off** or on a **different AV channel** during setup.
 
-Here you will be greeted with some information to read. 
-Press Enter and follow the onscreen instructions. 
+### Steps:
 
+1. Press the **Code** button on GitHub and choose **Download ZIP**
 
+2. Extract `Batocera-CRT-Script-main.zip` into a temporary folder on your PC
+
+3. Access Batocera over your network:  
+   [📎 Batocera Network File Transfer Guide](https://wiki.batocera.org/add_games_bios?s[]=transfer#add_games_bios_files_to_batocera)
+
+4. Drag and drop the `system` folder into `/userdata`  
+   *(Via SMB, you're already in `/userdata`)*
+
+5. Connect via SSH:  
+   [📎 Batocera SSH Guide](https://wiki.batocera.org/access_the_batocera_via_ssh)
+
+6. In SSH terminal, run the following:
+
+```bash
+cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE
+chmod 755 Batocera-CRT-Script-v41.sh
+./Batocera-CRT-Script-v41.sh
+```
+
+You'll be greeted with a welcome message.  
+Press Enter and follow the onscreen instructions.
