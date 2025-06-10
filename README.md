@@ -64,7 +64,7 @@ These pre-configured Monitor Profiles have 50+ resolutions added that should onl
  - Generic CRT standards 15 KHz - generic_15, ntsc, pal
  - Arcade fixed frequency 15 KHz - arcade_15, arcade_15ex
  - Arcade fixed frequency 25/31KHz - arcade_25, arcade_31
- - Arcade multisync 15/25/31 KHz - arcade_15_25, arcade_15_25_31
+ - Arcade multisync 15/25/31 KHz - arcade_15_25, arcade_15_31, arcade_15_25_31
  - VESA GTF - vesa_480, vesa_600, vesa_768, vesa_1024
  - PC monitor 120 Hz - pc_31_120, pc_70_120
  - Hantarex - h9110, polo, pstar
