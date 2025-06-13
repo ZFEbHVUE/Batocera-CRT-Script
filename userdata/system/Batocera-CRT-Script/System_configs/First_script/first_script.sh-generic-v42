@@ -15,7 +15,7 @@ case $1 in
 
 		if [[ "$3" == "libretro" ]]; then
 			# Disable VSync for libretro emulators (RetroArch)
-			export vblank_mode=0
+			export vblank_mode=0 # TearFree removed — modesetting driver doesn't support it
 
 			if [[ "$2" == "fbneo" ]]; then
 				xrandr -display :0.0 -o [display_fbneo_rotation]
@@ -41,14 +41,6 @@ case $1 in
 
 		else
 			xrandr -display :0.0 -o [display_standalone_rotation]
-
-			# Placeholder for future tweaks (TearFree removed — modesetting doesn't support it)
-			if ([[ "$4" == "dolphin" ]]||[[ "$4" == "xemu" ]]||[[ "$2" == "windows" ]]|| \
-			     [[ "$2" == "wiiu" ]]||[[ "$2" == "psx" ]]||[[ "$2" == "psp" ]]|| \
-			     [[ "$2" == "ps2" ]]||[[ "$2" == "ps3" ]]||[[ "$2" == "switch" ]]); then
-				# No TearFree setting here — modesetting driver doesn't support it
-				:
-			fi
 		fi
 	;;
 
@@ -58,6 +50,6 @@ case $1 in
 		xrandr -display :0.0 -o [display_ES_rotation]
 		xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
 
-		# No need to unset vblank_mode — it's per-process and dies with the emulator
+		# No need to unset vblank_mode here — it's per-process and dies with the emulator
 	;;
 esac
