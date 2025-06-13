@@ -2310,11 +2310,11 @@ if [ "$BOOT_RESOLUTION" == "1" ]; then
 
 	sed 	-e "s/\[display_mame_rotation\]/$display_mame_rotate/g" -e "s/\[display_fbneo_rotation\]/$display_fbneo_rotate/g" -e "s/\[display_libretro_rotation\]/$display_libretro_rotate/g" \
 		-e "s/\[display_standalone_rotation\]/$display_standalone_rotate/g" -e "s/\[display_ES_rotation\]/$display_rotate/g" \
-		-e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$RES_EDID/g" /userdata/system/Batocera-CRT-Script/System_configs/First_script/first_script.sh-generic-v33 > /userdata/system/scripts/first_script.sh
+		-e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$RES_EDID/g" /userdata/system/Batocera-CRT-Script/System_configs/First_script/first_script.sh-generic-v42 > /userdata/system/scripts/first_script.sh
 else
 	sed 	-e "s/\[display_mame_rotation\]/$display_mame_rotate/g" -e "s/\[display_fbneo_rotation\]/$display_fbneo_rotate/g" -e "s/\[display_libretro_rotation\]/$display_libretro_rotate/g" \
 		-e "s/\[display_standalone_rotation\]/$display_standalone_rotate/g" -e "s/\[display_ES_rotation\]/$display_rotate/g" \
-		-e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$RES_EDID_SCANNING/g" /userdata/system/Batocera-CRT-Script/System_configs/First_script/first_script.sh-generic-v33 > /userdata/system/scripts/first_script.sh
+		-e "s/\[card_display\]/$video_modeline/g" -e "s/\[es_resolution\]/$RES_EDID_SCANNING/g" /userdata/system/Batocera-CRT-Script/System_configs/First_script/first_script.sh-generic-v42 > /userdata/system/scripts/first_script.sh
 fi
 chmod 755 /userdata/system/scripts/first_script.sh
 ######################################################################################
