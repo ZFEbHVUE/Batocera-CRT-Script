@@ -1,0 +1,55 @@
+#!/bin/bash
+# Event hook script used by Batocera on game START or STOP
+
+# Set logfile location and filename (optional)
+logfile=/tmp/scriptlog.txt
+
+case $1 in
+	gameStart)
+
+		# Store emulator context
+		echo $2 > /dev/shm/sysname.txt
+		echo $3 > /dev/shm/emulator.txt
+		echo $4 > /dev/shm/core.txt
+		echo $5 > /dev/shm/args.txt
+
+		if [[ "$3" == "libretro" ]]; then
+			# Disable VSync for libretro emulators (RetroArch)
+			export vblank_mode=0 # TearFree removed — modesetting driver doesn't support it
+
+			if [[ "$2" == "fbneo" ]]; then
+				xrandr -display :0.0 -o [display_fbneo_rotation]
+			else
+				xrandr -display :0.0 -o [display_libretro_rotation]
+			fi
+
+		elif [[ "$3" == "mame" ]]; then
+			# Disable VSync for standalone MAME
+			export vblank_mode=0
+
+			# Optional: manual resolution override
+			#MYZAR
+			#batocera-resolution setMode 640x480.60.00
+			#ZFEbHVUE
+			#batocera-resolution defineMode "640x480.60.0"
+			#batocera-resolution setMode_CVT "640x480.60.0"
+
+			xrandr -display :0.0 -o [display_mame_rotation]
+
+		elif [[ "$3" == "fpinball" ]]; then
+			xrandr -display :0.0 -o [display_ES_rotation]
+
+		else
+			xrandr -display :0.0 -o [display_standalone_rotation]
+		fi
+	;;
+
+	gameStop)
+
+		# Restore rotation to ES default and resolution
+		xrandr -display :0.0 -o [display_ES_rotation]
+		xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
+
+		# No need to unset vblank_mode here — it's per-process and dies with the emulator
+	;;
+esac
