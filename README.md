@@ -1,60 +1,89 @@
-### INSTALLATION INSTRUCTIONS 
+## 🚀 Installation Instructions
 
-[Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
+📥 **Install the Script**  
+Follow the full setup guide here:  
+🔗 [Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
 
-## Wiki page
+📚 **Full Documentation**  
+Read the Wiki for detailed usage and configuration:  
+🔗 [Batocera-CRT-Script Wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
 
-See wiki page for documentation [wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
+💬 **Need Help?**  
+Join the discussion on Discord:  
+🔗 [Discord: #pc-x86_64-support](https://discord.com/invite/JXhfRTr)
 
-## Discord
-[Discord: Channel #pc-x86_64-support](https://discord.com/invite/JXhfRTr)
+---
 
-## Foreword
+## 📝 Foreword
 
-This script would not have been possible without the following people to name a few:
- - ZFEbHVUE, main coder and tester
- - Rion, 15KHz CRT Guru-Meditation
- - myzar's Nvidia knowledge
- - jfroco's work to output Batocera on a CRTs.
- - rtissera's knowledge, enthusiasm and willingness to add 15 KHz patches.
- - Calamity for his knowledge, drivers, tools and GroovyMame.
- - Substring's work on GroovyArcade, SDL, KMS etcetera.
- - D0023R Doozer's continued work at adding 15 KHz support to the Linux kernel.
- - dmanlcf's work on keeping up to date for the 15khz patches for Batocera.
+This project would not have been possible without the help of many skilled and passionate individuals:
 
-### Contributors 
- - Sirmagb  (Thx for your CRT.sh modeline's geometry tool idea)    
- - Yavimaya (Thx for your code contribution)
- - [fishcu](https://github.com/fishcu) - shaders: pixel_aa_xform.slangp & box_filter_aa_xform.slangp
+### 👨‍💻 Core Developers & Contributors
+- **ZFEbHVUE** – Lead developer and main tester  
+- **Rion** – CRT wizard and 15kHz support guru  
+- **myzar** – NVIDIA driver and compatibility insights  
+- **jfroco** – Early CRT output work for Batocera  
+- **rtissera** – His knowledge, enthusiasm, and willingness made it possible to add 15kHz patches into Batocera
+- **Substring** – Maintainer of GroovyArcade and KMS/SDL improvements  
+- **Calamity** – Develops and maintains the 15kHz Linux kernel patches, adding support for new AMD dGPUs/APUs and creating tools like CRT_EmuDriver, GroovyMAME, and Switchres  
+- **D0023R (Doozer)** – Maintains the [linux_kernel_15khz](https://github.com/D0023R/linux_kernel_15khz) repository, ensuring Calamity’s patches stay up-to-date with the latest Linux kernel versions
+- **dmanlcf** – Maintains 15kHz kernel patches for Batocera
 
-### Testers 
- - GecKoTDF
- - Sirmagb
+### 👥 Contributors
+- **Sirmagb** – Geometry tool idea used in `crt.sh`  
+- **Yavimaya** – Code contributions  
+- **[fishcu](https://github.com/fishcu)** – Shader author for `pixel_aa_xform.slangp` and `box_filter_aa_xform.slangp`
 
-### Special Thanks
-- krahsdevil (Emulation Station assets) 
+### 🧪 Testers
+- **GecKoTDF** – Hands-on CRT hardware testing  
+- **Sirmagb** – Continued validation and feedback
+
+### 🎨 Special Thanks
+- **krahsdevil** – Created EmulationStation artwork and assets
+
+---
  
-## :video_game::penguin: Batocera-CRT-Script :video_game::penguin:
+## 🖥️ CRT Setup Script Overview
 
-This bash script will help you setup Batocera on a Crt in 15-25-31kHz
- 
- - Complete integration of the [Switchres](https://github.com/antonioginer/switchres/blob/master/README.md) tool (not the api) for switching modelines. (resolutions)
- - Detection of AMD APUs if used with the Cabledeconn DP2VGA listed on the [Wiki](https://wiki.batocera.org/batocera-and-crt#displayport_to_vga_dac) page.
- - Creation of custom EDID during setup for the monitor profile chosen.
- - It will read resolutions from videomodes.conf but switchres will handle the resolution switching not xrandr. 
- - You are free to add your own resolution by editing the file as you choose but keep in mind you need to test if it works for your monitor profile first. 
- 
-**Keep in mind 320x240 (320x240p) as a boot resolution is not officially supported since there is no Emulation Station Theme support as of now in Batocera.**
+This Bash script enables **true CRT support** in **Batocera**, including 15kHz, 25kHz, and 31kHz video output.  
+Batocera does not natively support CRT displays — this script adds the full support needed for proper signal generation and resolution switching.
 
-It comes pre-configured with all 29 Monitor Profiles Switchres supports.
+---
 
-These pre-configured Monitor Profiles have 50+ resolutions added that should only be used with
+### ✅ Key Features
 
- - Standalone Emulators
- - Native Linux Games
- - Non libretro Ports
- - Wine, Flatpak & Steam
- - GroovyMame & Retroarch is preconfigured to use the switchres api.
+- 🔁 **Modeline Switching**  
+  Fully integrates the [Switchres tool](https://github.com/antonioginer/switchres/blob/master/README.md) (not the API) to handle resolution switching — *bypassing xrandr*.
+
+- 🧠 **EDID & APU Detection**  
+  - Automatically detects **AMD APUs** when using the **CableDeconn DP2VGA** (listed on the [Batocera Wiki](https://wiki.batocera.org/batocera-and-crt#displayport_to_vga_dac)).
+  - Generates a **custom EDID** based on your selected monitor profile.
+
+- 📁 **videomodes.conf Integration**  
+  Resolutions are read from `videomodes.conf`, but **Switchres handles switching**, not xrandr.  
+  You may manually add resolutions, but be sure to test them with your monitor profile first.
+
+---
+
+### ⚠️ Note on 320×240 Boot Resolution
+
+`320x240p` as a **boot resolution** is *not officially supported*,  
+as **EmulationStation themes do not currently support it** in Batocera.
+
+---
+
+### 🖼️ Monitor Profiles & Preconfigured Resolutions
+
+- Comes with **29 pre-configured monitor profiles** supported by Switchres.
+- Each profile includes **50+ hand-picked resolutions**, optimized for:
+
+  - 🎮 Standalone Emulators (e.g., PCSX2, Dolphin)
+  - 🐧 Native Linux Games
+  - 📦 Non-Libretro Ports
+  - 🍷 Wine, Flatpak & Steam Games
+
+> 🕹️ **RetroArch** (Libretro cores) and **GroovyMAME** are preconfigured to use the **Switchres API** for automatic resolution switching.
+
 
 ## 🖥️ Monitor Profile Overview
 
