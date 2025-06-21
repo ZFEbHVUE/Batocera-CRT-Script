@@ -196,9 +196,6 @@ Some NVIDIA GPUs (pre-Maxwell) **may appear to work** with CRT output using the 
 
 > 🔧 These cards are **not recommended**, and any success is coincidental.
 
-#### ⚠️ **Older cards via nouveau**
-Some legacy NVIDIA cards may function with the open-source `nouveau` driver, but compatibility is **inconsistent** and often unreliable.
-
 **Recommendation:** Go with AMD for proper CRT support and future-proofing.
 We only provide official support for **NVIDIA Maxwell cards using proprietary drivers**, and even that may break at any time.
   
