@@ -56,20 +56,61 @@ These pre-configured Monitor Profiles have 50+ resolutions added that should onl
  - Wine, Flatpak & Steam
  - GroovyMame & Retroarch is preconfigured to use the switchres api.
 
-## Monitor Profile info
+## 🖥️ Monitor Profile Overview
 
- - Generic CRT standards 15 KHz - generic_15, ntsc, pal
- - Arcade fixed frequency 15 KHz - arcade_15, arcade_15ex
- - Arcade fixed frequency 25/31KHz - arcade_25, arcade_31
- - Arcade multisync 15/25/31 KHz - arcade_15_25, arcade_15_31, arcade_15_25_31
- - VESA GTF - vesa_480, vesa_600, vesa_768, vesa_1024
- - PC monitor 120 Hz - pc_31_120, pc_70_120
- - Hantarex - h9110, polo, pstar
- - Wells Gardner - k7000, k7131, d9200, d9400, d9800
- - Makvision - m2929
- - Wei-Ya - m3129
- - Nanao - ms2930, ms929
- - Rodotron - r666b 
+These are the supported monitor profiles used in `switchres.ini`.  
+Each profile defines timings optimized for a specific CRT standard, arcade monitor, or PC display.
+
+---
+
+### 🎮 Generic CRT Standards (15kHz)
+
+| Profile         | Description                                                                 |
+|-----------------|-----------------------------------------------------------------------------|
+| `arcade_15`     | ✅ **Recommended** for most consumer CRT TVs — safe and widely compatible   |
+| `generic_15`    | ✅ **Recommended** fallback for general CRT use                              |
+| `ntsc`          | Only for CRT chassis that support **59.94Hz only** (rare)                   |
+| `pal`           | Only for CRT chassis that support **50.00Hz only** (rare)                   |
+
+---
+
+### 🕹️ Arcade CRT Profiles
+
+| Category                    | Profile Names                        | Notes                                                |
+|----------------------------|--------------------------------------|------------------------------------------------------|
+| Fixed Frequency (15kHz)    | `arcade_15`, `arcade_15ex`           | Common for arcade cabinets using 15kHz monitors      |
+| Fixed Frequency (25/31kHz) | `arcade_25`, `arcade_31`             | Used for mid- and high-res arcade monitors           |
+| Multisync (15/25/31kHz)    | `arcade_15_25`, `arcade_15_31`, `arcade_15_25_31` | For multisync arcade monitors supporting all bands |
+
+---
+
+### 🖥️ VESA & PC Monitor Profiles
+
+| Category        | Profile Names                       | Notes                                      |
+|----------------|-------------------------------------|--------------------------------------------|
+| VESA GTF Modes | `vesa_480`, `vesa_600`, `vesa_768`, `vesa_1024` | Mimics standard VESA timings (non-CRT safe) |
+| 120Hz PC Modes | `pc_31_120`, `pc_70_120`             | For PC CRT monitors capable of 120Hz       |
+
+---
+
+### 🧰 Manufacturer-Specific Arcade Monitors
+
+| Manufacturer     | Models (Profile Names)                            |
+|------------------|---------------------------------------------------|
+| **Hantarex**     | `h9110`, `polo`, `pstar`                          |
+| **Wells Gardner**| `k7000`, `k7131`, `d9200`, `d9400`, `d9800`       |
+| **Makvision**    | `m2929`                                           |
+| **Wei-Ya**       | `m3129`                                           |
+| **Nanao**        | `ms2930`, `ms929`                                 |
+| **Rodotron**     | `r666b`                                           |
+
+---
+
+### 🔎 More Info
+
+- 📖 [ArcadeControls Forum Thread – Monitor Timings & Switchres](https://forum.arcadecontrols.com/index.php/topic,116023.0/all.html)
+- 🌐 You can also search online for your specific monitor model for compatibility tips and timing suggestions.
+
 
 ## ❗ GPU Compatibility for CRT Output (15kHz)
 
