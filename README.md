@@ -117,7 +117,7 @@ Each profile defines timings optimized for a specific CRT standard, arcade monit
 
 | Category        | Profile Names                       | Notes                                      |
 |----------------|-------------------------------------|--------------------------------------------|
-| VESA GTF Modes | `vesa_480`, `vesa_600`, `vesa_768`, `vesa_1024` | Mimics standard VESA timings (non-CRT safe) |
+| VESA GTF Modes | `vesa_480`, `vesa_600`, `vesa_768`, `vesa_1024` | Mimics standard VESA timings  |
 | 120Hz PC Modes | `pc_31_120`, `pc_70_120`             | For PC CRT monitors capable of 120Hz       |
 
 ---
