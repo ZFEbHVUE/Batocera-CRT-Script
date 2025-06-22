@@ -189,6 +189,9 @@ Batocera supports **NVIDIA Maxwell architecture** (GeForce GTX 750 through GTX 9
 > ℹ️ This is the **only NVIDIA setup officially supported**, and it works by chance — not by design.  
 There is **no guarantee** future NVIDIA driver updates will preserve this compatibility.
 
+🔗 A curated list of **supported NVIDIA Maxwell architecture** is available in the wiki:  
+➡️ [Supported NVIDIA Maxwell Cards](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/Supported-NVIDIA-Maxwell-Cards-%28Proprietary-Driver%29)
+
 #### ⚠️ Older cards using open-source `nouveau`
 Some NVIDIA GPUs (pre-Maxwell) **may appear to work** with CRT output using the open-source `nouveau` driver, but:
 - There is **no support from the 15kHz patchset**
