@@ -1,4 +1,13 @@
+⚠️ **Warning: Unsupported Scan Rates & CRT Hardware Safety**
 
+During BIOS boot-up or when using unsupported video signals (e.g., out‑of‑range horizontal scan rates), CRT can experience **hard stress** on its deflection circuitry. In some older or lower-quality CRT displays, this may result in:
+
+- **Overheated or saturated flyback transformer**, horizontal deflection coil, or driver transistor  
+- Potential **component burnout** (deflection ICs, coils, capacitors)
+
+➡️ **To minimize risk**:
+- Keep the CRT **powered off** or switched to another input during BIOS/boot sequences  
+- Avoid feeding **non-CRT-safe signals** until Batocera has properly initialized safe modelines via Switchres
 
 ## ✅ Post-Installation Steps (Important!)
 
