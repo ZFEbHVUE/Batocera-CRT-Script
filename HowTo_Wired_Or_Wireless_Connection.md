@@ -108,6 +108,10 @@ If you're using an **AMD R9 380** or similar card that doesn’t initially detec
 
 ✅ After this, you can begin setting up your CRT resolutions, display modes, and video profiles normally.
 
+> 🔧 **Post-Installation Reminder**  
+After installing the CRT Script via the terminal (`curl` method), **please follow the post-installation steps** to ensure everything works correctly — especially if you're setting up a wired or wireless network connection.
+
+📄 [Post-Installation Steps – Important](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md#-post-installation-steps-important)
 ---
 
 ## 📦 Manual Installation
