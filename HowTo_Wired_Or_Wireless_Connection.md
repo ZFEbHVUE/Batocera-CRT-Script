@@ -9,60 +9,6 @@ During BIOS boot-up or when using unsupported video signals (e.g., out‑of‑ra
 - Keep the CRT **powered off** or switched to another input during BIOS/boot sequences  
 - Avoid feeding **non-CRT-safe signals** until Batocera has properly initialized safe modelines via Switchres
 
-## ✅ Post-Installation Steps (Important!)
-
-Once the installation completes, follow these steps carefully to avoid potential overlay issues and signal damage to your CRT:
-
-### 🔌 1. Proper Shutdown After Script Installation
-
-After installation finishes, type the following in the terminal:
-
-```
-shutdown -h now
-```
-
-This ensures Batocera saves the changes properly before powering off.  
-Failing to do this may cause script installation errors due to the overlay not committing changes correctly.
-
-Once the system has shut down completely, **power it back on to continue** with the setup.
-
-> ⚠️ **Important for CRT users:**  
-Avoid having your CRT powered on or set to the same input **during BIOS/post boot**, especially if you're using a **15kHz-only CRT**. The default output sends **unsafe 31kHz signals** during early BIOS/post boot.
-
----
-
-### 🔁 2. First Boot After Installation – Setup Instructions
-
-Once your system is rebooted **with the CRT Script installed**, you must do the following:
-
-1. Go to:  
-   `MAIN MENU → SYSTEM SETTINGS → HARDWARE`
-
-2. Set these values:
-
-   - **VIDEO OUTPUT:**  
-     Set this to the correct connected output. There should only be one listed.
-
-   - **VIDEO MODE:**  
-     Set this based on your chosen profile:
-
-#### For 15kHz CRT Profiles
-
-| Output Resolution | Recommended Video Mode Setting |
-|-------------------|--------------------------------|
-| 640×480           | `Boot_480i 1.0:0:0 15KHz 60Hz`  |
-| 768×576           | `Boot_576i 1.0:0:0 15KHz 50Hz`  |
-
-#### For 31kHz (VGA) Profiles
-
-| Output Resolution | Recommended Video Mode Setting |
-|-------------------|--------------------------------|
-| 640×480           | `Boot_480i 1.0:0:0 31KHz 60Hz`  |
-
-> 📝 All profiles will have a `Boot_` prefix in the list.  
-> 📝 Make sure the **Boot_** entry you select matches the **exact resolution** you picked during installation.
-
----
 
 ## 🧠 Important Information:
 
@@ -197,3 +143,60 @@ chmod 755 Batocera-CRT-Script-v41.sh
 
 You'll be greeted with a welcome message.  
 Press Enter and follow the onscreen instructions.
+
+## ✅ Post-Installation Steps (Important!)
+
+Once the installation completes, follow these steps carefully to avoid potential overlay issues and signal damage to your CRT:
+
+### 🔌 1. Proper Shutdown After Script Installation
+
+After installation finishes, type the following in the terminal:
+
+```
+shutdown -h now
+```
+
+This ensures Batocera saves the changes properly before powering off.  
+Failing to do this may cause script installation errors due to the overlay not committing changes correctly.
+
+Once the system has shut down completely, **power it back on to continue** with the setup.
+
+> ⚠️ **Important for CRT users:**  
+Avoid having your CRT powered on or set to the same input **during BIOS/post boot**, especially if you're using a **15kHz-only CRT**. The default output sends **unsafe 31kHz signals** during early BIOS/post boot.
+
+---
+
+### 🔁 2. First Boot After Installation – Setup Instructions
+
+Once your system is rebooted **with the CRT Script installed**, you must do the following:
+
+1. Go to:  
+   `MAIN MENU → SYSTEM SETTINGS → HARDWARE`
+
+2. Set these values:
+
+   - **VIDEO OUTPUT:**  
+     Set this to the correct connected output. There should only be one listed.
+
+   - **VIDEO MODE:**  
+     Set this based on your chosen profile:
+
+#### For 15kHz CRT Profiles
+
+| Output Resolution | Recommended Video Mode Setting |
+|-------------------|--------------------------------|
+| 640×480           | `Boot_480i 1.0:0:0 15KHz 60Hz`  |
+| 768×576           | `Boot_576i 1.0:0:0 15KHz 50Hz`  |
+
+#### For 31kHz (VGA) Profiles
+
+| Output Resolution | Recommended Video Mode Setting |
+|-------------------|--------------------------------|
+| 640×480           | `Boot_480i 1.0:0:0 31KHz 60Hz`  |
+
+> 📝 All profiles will have a `Boot_` prefix in the list.  
+> 📝 Make sure the **Boot_** entry you select matches the **exact resolution** you picked during installation.
+
+---
+
+
