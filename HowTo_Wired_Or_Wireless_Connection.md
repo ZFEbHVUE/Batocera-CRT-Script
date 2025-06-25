@@ -95,7 +95,7 @@ You can install the script using **either** of the commands below.
 
 > 📌 **Don't forget:** After installing the CRT Script, check the  
 [🔗 Post-Installation Steps](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md#-post-installation-steps-important)  
-to complete your setuP.
+to complete your setup.
 
 ---
 
