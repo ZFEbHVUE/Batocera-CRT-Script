@@ -122,30 +122,45 @@ You **don’t need a second PC for this**—your mobile phone or laptop can be u
 
 ---
 
-### 🌀 Using curl (Command Line)
+### 🌀 Install the CRT Script via Terminal (curl method)
 
-**v41**
+**Latest version: v41**
 
-- **bit.ly**
-  ```
+You can install the script using **either** of the commands below.  
+🟰 They are functionally identical — just different URLs pointing to the same script.
+
+- **Option 1 – bit.ly (short link):**
+  ```bash
   bash <(curl -Ls https://bit.ly/batocera-crt-script | sed 's/\r$//')
   ```
 
-- **Pastebin**
-  ```
+- **Option 2 – Pastebin (direct link):**
+  ```bash
   bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')
   ```
 
-- **QR Code for Mobile:**  
-  ![](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/wiki_page/bit.ly_batocera-crt-script_small.png)
+- **Optional: Scan QR Code from your phone to open the script link:**
 
-> This command chain downloads the latest version, extracts its contents, moves the folder, sets script permissions, preserves backups (if any), and finally executes the script.
+![QR Code for Mobile Installation](https://raw.githubusercontent.com/Redemp/Redemp-Batocera-CRT-Script-wiki-repository/main/wiki_page/bit.ly_batocera-crt-script_small.png)
 
-**Note:** If your graphics card is an **R9 380**, rerun the setup after first boot:
+> 🛠️ This command chain downloads the latest version, extracts its contents, moves the folder, sets script permissions, preserves backups (if any), and finally executes the script.
 
-```bash
-/userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/./Batocera-CRT-Script-v41.sh
-```
+---
+
+### 🔁 Special Instructions for R9 380 and Similar AMD GPUs
+
+If you're using an **AMD R9 380** or similar card that doesn’t initially detect analog outputs:
+
+1. **Run the script once** using one of the commands above.
+   - This will re-enable analog output functionality (e.g., DVI-I/VGA).
+   - You’ll be asked to **reboot your system** after the patch is applied.
+
+2. **After reboot**, rerun the script again to continue with full CRT setup:
+   ```bash
+   /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/./Batocera-CRT-Script-v41.sh
+   ```
+
+✅ After this, you can begin setting up your CRT resolutions, display modes, and video profiles normally.
 
 ---
 
