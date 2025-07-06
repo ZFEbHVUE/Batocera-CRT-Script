@@ -60,50 +60,51 @@ f_usage() {
 }
 
 f_minTomaxResolution() {
-    #xrandr --output "${PSCREEN}" --auto # reinit the screen (in case it was off)
     
+    if [ -z "$1" ]; then
+        # reinit the screen (in case it was off)
+        echo "No specific resolution requested, re-initializing screen with --auto" >> "$log"
+        xrandr --output "${PSCREEN}" --auto
+    fi
+    
+    CURRENT_RESOLUTION=$(xrandr --currentResolution "${PSCREEN}")
+    CURRENTWIDTH=$(echo "${CURRENT_RESOLUTION}" | cut -d x -f 1)
+    CURRENTHEIGHT=$(echo "${CURRENT_RESOLUTION}" | cut -d 'x' -f 2)
+    CURRENTRATE=$(xrandr --listModes "${PSCREEN}" | grep -E '\*$' | sed -E 's/.* ([0-9]+\.[0-9]+)\*?.*/\1/')
     CURRENT_ROTATION=$(xrandr --currentRotation "${PSCREEN}" | cut -c1)
+    echo "Current resolution: $CURRENTWIDTH x $CURRENTHEIGHT @ $CURRENTRATE Hz" >> "$log"
+    echo "Current rotation: ${CURRENT_ROTATION}" >> "$log"
+    
     BOOTRESOLUTION="$(batocera-settings-get -f "$BOOTCONF" es.resolution)"
     MWIDTH=$(echo "$1"x | tr -d [[:blank:]] | cut -dx -f1) # the final added x is for compatibility with v29
     MHEIGHT=$(echo "$1"x | tr -d [[:blank:]] | cut -dx -f2)
 
-    ## Find the best resolution
-    # Get the sorted list of modes, excluding interlaced ones
-    echo "Get ideal resolution from this sorted list..." >> "$log"
-    MODES=$(xrandr --listModes "${PSCREEN}" | grep -v 'i' | sort -t'x' -k1,1nr -k2,2nr -k4,4nr)
-    echo "${MODES}" >> "$log"
-    # Find the ideal mode
-    IDEAL_MODE_FILE=$(mktemp)
-    IDEAL_MODE=""
-    echo "$MODES" | while read -r mode; do
-        MODE_RESOLUTION=$(echo "$mode" | awk '{print $1}')
-        echo "Trying with resolution: $MODE_RESOLUTION" >> "$log"
-        MODE_RATE=$(echo "$MODE_RESOLUTION" | sed 's/^[^0-9]*\([0-9]*x[0-9]*\)\.\([0-9]*\.[0-9]*\)$/\2/')
-        
-        is_valid_rate=$(printf "%.2f\n" "$MODE_RATE" | awk '{if ($1 >= 50.00) print 1; else print 0}')
-        if [ "$is_valid_rate" = "1" ]; then
-            echo "$mode" > "$IDEAL_MODE_FILE"
-            break
-        fi
-    done
+    # This logic finds the highest resolution with the highest refresh rate >= 59Hz.
+    IDEAL_MODE_INFO=$(xrandr --listModes "${PSCREEN}" | \
+        grep -oE '[0-9]+x[0-9]+[[:space:]]+[0-9]+\.[0-9]+' | \
+        # Keep only modes with a refresh rate of 59Hz or higher
+        awk '$2 >= 59 {print $0}' | \
+        awk '{ split($1, res, "x"); print res[1], res[2], $2 }' | \
+        # sort the resolutions and rates
+        sort -k1,1nr -k2,2nr -k3,3nr | \
+        # Get the top-most (best) result
+        head -n 1)
 
-    if [ -s "$IDEAL_MODE_FILE" ]; then
-        IDEAL_MODE=$(cat "$IDEAL_MODE_FILE")
-        rm "$IDEAL_MODE_FILE"
-        IDEAL_RESOLUTION=$(echo "$IDEAL_MODE" | awk '{print $1}')
-        IDEAL_WIDTH=$(echo "$IDEAL_RESOLUTION" | awk -F'x' '{print $1}')
-        IDEAL_HEIGHT=$(echo "$IDEAL_RESOLUTION" | awk -F'x' '{print $2}' | cut -d'.' -f1)
-        IDEAL_RATE=$(echo "$IDEAL_RESOLUTION" | sed 's/^[^0-9]*\([0-9]*x[0-9]*\)\.\([0-9]*\.[0-9]*\)$/\2/')
-        echo "Ideal resolution: ${IDEAL_WIDTH} x ${IDEAL_HEIGHT} @ ${IDEAL_RATE} Hz" >> "$log"
+    if [ -n "$IDEAL_MODE_INFO" ]; then
+        IDEAL_WIDTH=$(echo "$IDEAL_MODE_INFO" | awk '{print $1}')
+        IDEAL_HEIGHT=$(echo "$IDEAL_MODE_INFO" | awk '{print $2}')
+        IDEAL_RATE=$(echo "$IDEAL_MODE_INFO" | awk '{print $3}')
+        echo "Auto-detected ideal mode: ${IDEAL_WIDTH}x${IDEAL_HEIGHT} @ ${IDEAL_RATE}Hz" >> "$log"
     else
-        echo "No suitable resolution found with rate >= 50.00 Hz." >> "$log"
+        echo "Could not find any ideal mode with a refresh rate >= 59Hz." >> "$log"
     fi
     
+    # Priority 1: An argument was passed to the script
     if [ -n "$MWIDTH" ] && [ -n "$MHEIGHT" ] && [ "$MWIDTH" -ne 0 ] && [ "$MHEIGHT" -ne 0 ]; then
         echo "Requested $MWIDTH x $MHEIGHT" >> "$log"
         MAXWIDTH="$MWIDTH"
         MAXHEIGHT="$MHEIGHT"
-    # check if a resolution is set
+    # Priority 2: A resolution is set in the boot configuration
     elif [ -n "${BOOTRESOLUTION}" ]; then
         RESOLUTION=$(echo "$BOOTRESOLUTION" | sed 's/max-//;s/\..*//')
         MAXWIDTH=$(echo "$RESOLUTION" | cut -d 'x' -f 1)
@@ -115,12 +116,23 @@ f_minTomaxResolution() {
         else
             echo "Using ES resolution setting of $MAXWIDTH x $MAXHEIGHT" >> "$log"
         fi
-    elif [ -n "$IDEAL_MODE" ]; then
-        echo "Using ideal resolution: $IDEAL_WIDTH x $IDEAL_HEIGHT @ $IDEAL_RATE Hz" >> "$log"
-        MAXWIDTH=$IDEAL_WIDTH
-        MAXHEIGHT=$IDEAL_HEIGHT
-        MAXRATE=$IDEAL_RATE
-    # otherwise grab the value from the mpv.log if it exists (last resort)
+    # Priority 3: No user setting, so we use our calculated ideal mode
+    elif [ -n "$IDEAL_WIDTH" ]; then
+        # Check if the current refresh rate is already ~60Hz.
+        ROUNDED_CURRENTRATE=$(printf "%.0f\n" "${CURRENTRATE}")
+        if [ "$ROUNDED_CURRENTRATE" -eq 60 ]; then
+            echo "Current refresh rate is ${CURRENTRATE}Hz (~60Hz). Keeping current resolution." >> "$log"
+            MAXWIDTH=$CURRENTWIDTH
+            MAXHEIGHT=$CURRENTHEIGHT
+            MAXRATE=$CURRENTRATE
+        else
+            # The current rate is NOT ~60Hz, so we proceed with using the ideal mode.
+            echo "Using ideal resolution: $IDEAL_WIDTH x $IDEAL_HEIGHT @ $IDEAL_RATE Hz" >> "$log"
+            MAXWIDTH=$IDEAL_WIDTH
+            MAXHEIGHT=$IDEAL_HEIGHT
+            MAXRATE=$IDEAL_RATE
+        fi
+    # Priority 4: Last resort, grab the value from the mpv.log if it exists
     else
         if [ -f "$mpvlog" ]; then
             selected_mode=$(grep -oE '\[.*\] Selected mode: .* \(([^)]+)\)' "$mpvlog" | awk -F '[()]' '{print $2}')
@@ -131,13 +143,6 @@ f_minTomaxResolution() {
         fi
     fi
     
-    CURRENT_RESOLUTION=$(xrandr --currentResolution "${PSCREEN}")
-    CURRENTWIDTH=$(echo "${CURRENT_RESOLUTION}" | cut -d x -f 1)
-    CURRENTHEIGHT=$(echo "${CURRENT_RESOLUTION}" | cut -d 'x' -f 2)
-    # get the refresh rate - very important
-    CURRENTRATE=$(xrandr --listModes "${PSCREEN}" | grep -E '\*$' | sed -E 's/.*\.([0-9]+\.[0-9]+) .*/\1/')
-    echo "Current resolution: $CURRENTWIDTH x $CURRENTHEIGHT @ $CURRENTRATE Hz" >> "$log"
-
     # did we set a resolution?
     if [ -n "$MAXWIDTH" ] && [ -n "$MAXHEIGHT" ] && [ "$MAXWIDTH" -ne 0 ] && [ "$MAXHEIGHT" -ne 0 ]; then
         if [ -n "$MAXRATE" ]; then
@@ -146,14 +151,23 @@ f_minTomaxResolution() {
             echo "Resolution to use: $MAXWIDTH x $MAXHEIGHT" >> "$log"
         fi
     else
-        echo "No resolution set, nothing to do..." >> "$log"
+        echo "No resolution set, nothing to do..." >> $log
         exit 0
+    fi
+    
+    # If rotated left/right, the target width/height are swapped.
+    TARGET_WIDTH=$MAXWIDTH
+    TARGET_HEIGHT=$MAXHEIGHT
+    if [ "${CURRENT_ROTATION}" = "1" ] || [ "${CURRENT_ROTATION}" = "3" ]; then
+        TARGET_WIDTH=$MAXHEIGHT
+        TARGET_HEIGHT=$MAXWIDTH
     fi
 
     # check if there is any change required
-    if [ "$CURRENTWIDTH" -eq "$MAXWIDTH" ] && [ "$CURRENTHEIGHT" -eq "$MAXHEIGHT" ]; then
-        if [ -z "$MAXRATE" ] || [ "$CURRENTRATE" = "$MAXRATE" ]; then
-            echo "We have a match, nothing to do..." >> "$log"
+    if [ "$CURRENTWIDTH" -eq "$TARGET_WIDTH" ] && [ "$CURRENTHEIGHT" -eq "$TARGET_HEIGHT" ]; then
+        if [ -z "$MAXRATE" ] || [ "$(printf "%.2f" "${CURRENTRATE}")" = "$(printf "%.2f" "${MAXRATE}")" ]; then
+            echo "We have a match, nothing to do..." >> $log
+            # Still re-apply rotation just in case it was lost
             if [ "${CURRENT_ROTATION}" != "0" ]; then
                 batocera-resolution --screen "${PSCREEN}" setRotation "${CURRENT_ROTATION}"
             fi
@@ -372,9 +386,10 @@ case "${ACTION}" in
 
     "setMode_CVT")
         MODE=$1
+        echo "setMode: ${MODE}" >> $log
         if echo "${MODE}" | grep -qE 'max-' # special max-widthxheight
         then
-            CURRENT_ROTATION=$(xrandr --currentRotation)
+            CURRENT_ROTATION=$(xrandr --currentRotation "${PSCREEN}" | cut -c1)
             if test "${CURRENT_ROTATION}" = 1 -o "${CURRENT_ROTATION}" = 3
             then
                 SPMODE=$(echo "${MODE}" | sed -e s+"^max-([0-9]*)x([0-9]*)$"+"\2x\1"+)
@@ -384,8 +399,8 @@ case "${ACTION}" in
             echo "f_minTomaxResolution: $SPMODE" >> $log
             f_minTomaxResolution "${SPMODE}"
         else # normal mode
-            OUTPUT=$(xrandr --listConnectedOutputs | grep -E '\*$' | sed -e s+'*$'++ | head -1)
-	    OUTPUT="$PSCREEN"
+            CURRENT_ROTATION=$(xrandr --currentRotation "${PSCREEN}" | cut -c1)
+            OUTPUT=${PSCREEN}
             if [ -z "$OUTPUT" ]; then
                 echo "No connected output detected" >> $log
                 exit 1
@@ -396,9 +411,15 @@ case "${ACTION}" in
                 PARTHZ=$(echo "${MODE}" | cut -d'.' -f2-)
                 echo "setMode: Output: ${OUTPUT} Resolution: ${PARTRES} Rate: ${PARTHZ}" >> $log
                 xrandr --output "${OUTPUT}" --mode "${PARTRES}" --rate "${PARTHZ}"
+                if [ "${CURRENT_ROTATION}" != "0" ]; then
+                    batocera-resolution --screen "${PSCREEN}" setRotation "${CURRENT_ROTATION}"
+                fi
             else
                 echo "setMode: Output: ${OUTPUT} Mode: ${MODE}" >> $log
                 xrandr --output "${OUTPUT}" --mode "${MODE}"
+                if [ "${CURRENT_ROTATION}" != "0" ]; then
+                    batocera-resolution --screen "${PSCREEN}" setRotation "${CURRENT_ROTATION}"
+                fi
             fi
             # check if there was an error setting the mode
             if [ $? -ne 0 ]; then
@@ -407,7 +428,7 @@ case "${ACTION}" in
             fi
         fi
     ;;
-    
+       
     "currentMode")
 	xrandr --listModes "${PSCREEN}" | grep -E '\*$' | sed -e s+'\*$'++ -e s+'^\([^ ]*\) .*$'+"\1"+
     ;;
