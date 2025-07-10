@@ -51,6 +51,7 @@ Batocera does not natively support CRT displays — this script adds the full su
 ---
 
 ### ✅ Key Features
+- 🕹️ **RetroArch** (Libretro cores) and **GroovyMAME** are preconfigured to use the **Switchres API** for automatic resolution switching.
 
 - 🔁 **Modeline Switching**  
   Fully integrates the [Switchres tool](https://github.com/antonioginer/switchres/blob/master/README.md) (not the API) to handle resolution switching — *bypassing xrandr*.
