@@ -10,7 +10,7 @@ Read the Wiki for detailed usage and configuration:
 
 💬 **Need Help?**  
 Join the discussion on Discord:  
-🔗 [Discord: #pc-x86_64-support](https://discord.com/invite/JXhfRTr)
+🔗 [Discord: ##crt-x86_64 ](https://discord.com/invite/JXhfRTr)
 
 ---
 
