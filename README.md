@@ -41,6 +41,10 @@ This project would not have been possible without the help of many skilled and p
 ### 🎨 Special Thanks
 - **krahsdevil** – Created EmulationStation artwork and assets
 
+### 📖 Wiki Readers & Fact Checkers
+
+- **MarcoRetro** – Provided key insights on RGB mod behavior and adapter compatibility 
+
 ---
  
 ## 🖥️ CRT Setup Script Overview
