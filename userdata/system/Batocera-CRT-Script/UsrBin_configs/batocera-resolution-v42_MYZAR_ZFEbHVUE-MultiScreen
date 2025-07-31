@@ -355,11 +355,11 @@ case "${ACTION}" in
 
 	;;
 	
-    "defineMode")   
+    "defineMode")
 	MODE=$1
 
-        #version /bash
-        read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
+	#version /bash
+	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
 
 	#version /sh
 	#WIDTH=$(echo $MODE | awk -F'[x.]' '{print $1}')
@@ -370,16 +370,13 @@ case "${ACTION}" in
 	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
 	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
 	DOTCLOCK_MIN_SWITCHRES=0
-	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
-	MODE_xrandr=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -i switchres.ini -c) #> /dev/null 2>/dev/null
-	#MODE_xrandr=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ}) #> /dev/null 2>/dev/null
+
+        sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	MODE_switchres=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -i switchres.ini -c) #> /dev/null 2>/dev/null
 	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
 
-	MODELINE_CUSTOM=$(echo "$MODE_xrandr" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')
-	OUTPUT=$(xrandr --listConnectedOutputs | grep -E '\*$' | sed -e s+'*$'++ | head -1)
-	OUTPUT="$PSCREEN"
-       	xrandr -display :0.0 --newmode ${RES_MODE} ${MODELINE_CUSTOM}
-	xrandr -display :0.0 --addmode ${OUTPUT} ${RES_MODE}
+	MODELINE_CUSTOM="\"${RES_MODE}\" $(echo "$MODE_switchres" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
+	sed -i  "s/.*Modeline.*/    Modeline            $MODELINE_CUSTOM/" 	/userdata/system/99-nvidia.conf
     ;;
     
 
