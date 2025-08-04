@@ -397,8 +397,6 @@ case "${ACTION}" in
 	xrandr -display :0.0 --addmode ${OUTPUT} ${RES_MODE}
     ;;
     
-
-
     "setMode_CVT")
         MODE=$1
         echo "setMode: ${MODE}" >> $log
