@@ -2134,7 +2134,7 @@ read
 # Create files for adjusting your CRT
 #######################################################################################
 cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ /userdata/roms/
-cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt_v42.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
+cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg
 chmod 755 /userdata/roms/crt/es_adjust_tool.sh
