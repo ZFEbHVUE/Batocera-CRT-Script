@@ -1,55 +1,108 @@
 #!/bin/bash
 # Event hook script used by Batocera on game START or STOP
 
-# Set logfile location and filename (optional)
-logfile=/tmp/scriptlog.txt
+##############################################################################
+# Logging — fresh file per session, robust on gameStop
+##############################################################################
+LOG_DIR="/userdata/system/logs"   # persistent in Batocera
+mkdir -p "$LOG_DIR"
+LOGFILE="$LOG_DIR/game_START_and_STOP.log"
 
-case $1 in
-	gameStart)
+ACTION="$1"
 
-		# Store emulator context
-		echo $2 > /dev/shm/sysname.txt
-		echo $3 > /dev/shm/emulator.txt
-		echo $4 > /dev/shm/core.txt
-		echo $5 > /dev/shm/args.txt
+# Truncate on gameStart, append otherwise (so stop logs aren't wiped)
+if [ "$ACTION" = "gameStart" ]; then
+  exec >"$LOGFILE" 2>&1      # truncate + capture stdout/stderr
+else
+  exec >>"$LOGFILE" 2>&1      # append + capture stdout/stderr
+fi
 
-		if [[ "$3" == "libretro" ]]; then
-			# Disable VSync for libretro emulators (RetroArch)
-			export vblank_mode=0 # TearFree removed — modesetting driver doesn't support it
+# Always log exit status, even if killed
+trap 'rc=$?; echo "$(date -Iseconds) [$$] EXIT action=$ACTION status=$rc"; sync' EXIT
 
-			if [[ "$2" == "fbneo" ]]; then
-				xrandr -display :0.0 -o [display_fbneo_rotation]
-			else
-				xrandr -display :0.0 -o [display_libretro_rotation]
-			fi
+# Small logger helper with timestamp
+log(){ printf '%s [%s] %s\n' "$(date -Iseconds)" "$ACTION" "$*"; }
 
-		elif [[ "$3" == "mame" ]]; then
-			# Disable VSync for standalone MAME
-			export vblank_mode=0
+# Header for this invocation
+echo "===== $(date -Iseconds) | $0 invoked with: $* (pid $$) ====="
+echo "ENV: DISPLAY=${DISPLAY:-:0.0} PWD=$PWD"
 
-			# Optional: manual resolution override
-			#MYZAR
-			#batocera-resolution setMode 640x480.60.00
-			#ZFEbHVUE
-			#batocera-resolution defineMode "640x480.60.0"
-			#batocera-resolution setMode_CVT "640x480.60.0"
+# Optional ultra-verbose command tracing:
+# Enable by running with DEBUG=1 (or set DEBUG=1 below)
+DEBUG=${DEBUG:-0}
+if [ "$DEBUG" -eq 1 ]; then
+  PS4='+ $(date -Iseconds) [${BASH_SOURCE##*/}:${LINENO}] '
+  set -x
+fi
 
-			xrandr -display :0.0 -o [display_mame_rotation]
+##############################################################################
+# Script
+##############################################################################
 
-		elif [[ "$3" == "fpinball" ]]; then
-			xrandr -display :0.0 -o [display_ES_rotation]
+case "$ACTION" in
+  gameStart)
+    log "gameStart: sys=$2 emu=$3 core=$4 args=$5"
 
-		else
-			xrandr -display :0.0 -o [display_standalone_rotation]
-		fi
-	;;
+    # Store emulator context
+    echo "$2" > /dev/shm/sysname.txt
+    echo "$3" > /dev/shm/emulator.txt
+    echo "$4" > /dev/shm/core.txt
+    echo "$5" > /dev/shm/args.txt
 
-	gameStop)
+    # Disable VSync for libretro emulators (RetroArch)
+    if [[ "$3" == "libretro" ]]; then
+      export vblank_mode=0
+      log "Set vblank_mode=0 for libretro (RetroArch)"
 
-		# Restore rotation to ES default and resolution
-		xrandr -display :0.0 -o [display_ES_rotation]
-		xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
+      # xrandr rotation for libretro fbneo (RetroArch)
+      if [[ "$2" == "fbneo" ]]; then
+        log "xrandr rotation for libretro fbneo (RetroArch): [display_fbneo_rotation]"
+        xrandr -display :0.0 -o [display_fbneo_rotation]
+      else
+        log "xrandr rotation for libretro (RetroArch): [display_libretro_rotation]"
+        xrandr -display :0.0 -o [display_libretro_rotation]
+      fi
 
-		# No need to unset vblank_mode here — it's per-process and dies with the emulator
-	;;
+    # Disable VSync for standalone MAME (GroovyMame)
+    elif [[ "$3" == "mame" ]]; then
+      export vblank_mode=0
+      log "Set vblank_mode=0 for MAME"
+      # Optional manual resolution overrides (commented)
+      # batocera-resolution setMode 640x480.60.00
+      # batocera-resolution defineMode "640x480.60.0"
+      # batocera-resolution setMode_CVT "640x480.60.0"
+
+      # xrandr rotation for standalone MAME (GroovyMame)
+      log "xrandr rotation for MAME: [display_mame_rotation]"
+      xrandr -display :0.0 -o [display_mame_rotation]
+
+    # xrandr rotation for fpinball
+    elif [[ "$3" == "fpinball" ]]; then
+      log "xrandr rotation for fpinball: [display_ES_rotation]"
+      xrandr -display :0.0 -o [display_ES_rotation]
+
+    else
+      log "xrandr rotation for standalone: [display_standalone_rotation]"
+      xrandr -display :0.0 -o [display_standalone_rotation]
+    fi
+  ;;
+
+  gameStop)
+    # Restore Rotation to EmulationStation and Resolution
+    log "gameStop: Restoring EmulationStation Rotation + Resolution"
+    log "xrandr rotation emulationstation: [display_ES_rotation]"
+    xrandr -display :0.0 -o [display_ES_rotation]
+    log "xrandr display output: [card_display]"
+    log "EmulationStation Resolution: [es_resolution]"
+    xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
+    # No need to unset vblank_mode — it's per-process
+  ;;
+
+  *)
+    log "Unknown action '$ACTION' (expected gameStart|gameStop)"
+  ;;
 esac
+
+log "Done."
+[ "$DEBUG" -eq 1 ] && set +x
+
