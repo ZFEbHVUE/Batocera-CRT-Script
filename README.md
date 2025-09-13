@@ -1,12 +1,16 @@
 ## 🚀 Installation Instructions
 
-📥 **Install the Script**  
-Follow the full setup guide here:  
-🔗 [Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
+⚠️ **Before you proceed with installation, please make sure your hardware is supported.**  
+Check the [💻 Hardware Compatibility](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki#-hardware-compatibility) list to confirm that your dGPU, APU, and setup are compatible with the CRT Script.  
+Attempting to install on unsupported hardware may result in display issues or failure to output a proper CRT signal.
 
 📚 **Full Documentation**  
 Read the Wiki for detailed usage and configuration:  
 🔗 [Batocera-CRT-Script Wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
+
+📥 **Install the Script**  
+Follow the full setup guide here:  
+🔗 [Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
 
 💬 **Need Help?**  
 Join the discussion on Discord:  
