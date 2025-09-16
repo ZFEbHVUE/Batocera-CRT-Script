@@ -8,6 +8,10 @@ Attempting to install on unsupported hardware may result in display issues or fa
 Read the Wiki for detailed usage and configuration:  
 🔗 [Batocera-CRT-Script Wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
 
+➡️ **Using a PC CRT Monitor?**  
+If you are setting up Batocera with a **PC CRT (31 kHz VGA/SVGA)**, follow this guide instead of the full 15 kHz workflow:  
+🔗 [PC CRT's & Setup Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/Pc-CRT's-&-Setup-Instructions)
+
 📥 **Install the Script**  
 Follow the full setup guide here:  
 🔗 [Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
