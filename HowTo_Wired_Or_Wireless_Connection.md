@@ -10,24 +10,35 @@ During BIOS boot-up or when using unsupported video signals (e.g., out‑of‑ra
 - Avoid feeding **non-CRT-safe signals** until Batocera has properly initialized safe modelines via Switchres
 
 
-## 🧠 Important Information:
+## ⚠️ Important Information
 
-The reason multiple monitors cannot be connected during setup is that Batocera's current implementation of multi-screen support can interfere with detecting the correct output.  
+When installing and running the CRT Script, you **must** use the **same output port** that will be connected to your CRT.  
+Do **not** run the setup using a different connector (for example HDMI or DVI-D) and then switch to VGA or DVI-I later. This will break the configuration.  
 
-To avoid this, all outputs except the one in use must be disabled. It's essential that the output port you use during setup is the same one you will use for CRT output. **Following this step is crucial for proper configuration.**  
+### Why?
+- **HDMI and DVI-D are digital-only outputs.** They cannot send the low-frequency analog 15 kHz signal required by CRTs.  
+- **VGA and DVI-I are analog-capable outputs.** These are the most common and recommended for CRTs.  
+- **DisplayPort can also be used**, but only on supported AMD dGPUs and APUs when paired with a compatible DAC (see [Analog-to-digital (DAC)](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/Analog-to-digital-(DAC) ).  
+- If you install the script while connected to an unsupported digital-only port, Batocera will configure the system for digital video. Switching later to analog output will then result in corruption or no picture at all.  
 
-That said, you can still install the script locally using an LCD/OLED monitor, but it must be connected to the same output you plan to use for the CRT.  
+### Common symptoms if setup was done on the wrong port:
+- Splash or logo screen appears split into several pieces  
+- Image looks scrambled like a non-15 kHz signal (similar to BIOS output)  
+- Video cuts out completely after the intro  
+- CRT shows "no signal"  
 
-**Guidelines for Specific Outputs:**  
-- **VGA Output:**  
-  * Use a VGA-to-VGA cable to connect an LCD/OLED monitor.  
-  * Alternatively, use a VGA-to-HDMI or VGA-to-DP converter.  
+### ✅ Correct procedure:
+- **Always recommended:** Run the CRT Script installation from **SSH on another PC**.  
+- This way you do not need a temporary digital screen and avoid all port mismatch issues.  
+- If not using SSH, make sure the script runs **directly on the same port** that will be connected to the CRT (VGA, DVI-I, or supported DisplayPort with DAC).  
+- Never mix inputs or outputs during setup. Always use the final CRT connection from the very beginning.  
+- You may also use an EDID emulator, sometimes called a dummy plug or headless display adapter, on VGA, DVI-I, or DisplayPort outputs to simplify setup.  
 
-- **DVI-I Output:**  
-  * Use a DVI-I-to-DVI-I cable to connect an LCD/OLED monitor.  
-  * Alternatively, use a DVI-I-to-HDMI or DVI-I-to-DP converter.  
-
-You may also use an EDID emulator (also known as a dummy plug or headless display adapter) for VGA, DVI-I, or DP outputs to simplify setup.
+**Remember:**  
+- Digital-only outputs (HDMI, DVI-D) are not for CRT  
+- Analog outputs (VGA, DVI-I) are required for CRT  
+- DisplayPort works only with supported AMD GPUs and a proper DAC
+ 
 
 ---
 
