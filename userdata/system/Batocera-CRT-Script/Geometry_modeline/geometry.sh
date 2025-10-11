@@ -269,13 +269,51 @@ if [[ $output == *"Aborted!"* ]]; then
     clear_terminal
 fi
 
-# Extract the final crt_range value from the output
-crt_range_value=$(echo "$output" | grep -oP 'Final crt_range: \K.*')
+# Extract the final crt_range value from the output (POSIX-safe)
+crt_range_value="$(printf "%s
+" "$output" | awk -F': ' '/^[[:space:]]*Final crt_range:/ {print $2; found=1; exit} END{ if(!found) exit 1 }')"
 
-# Update switchres.ini
-sed -i "s/^\s*monitor\s*\(generic_15\|ntsc\|pal\|arcade_15\|arcade_15ex\|arcade_25\|arcade_31\|arcade_15_25\|arcade_15_25_31\|vesa_480\|vesa_600\|vesa_768\|vesa_1024\|pc_31_120\|pc_70_120\|h9110\|polo\|pstar\|k7000\|k7131\|d9200\|d9800\|d9400\|m2929\|m3129\|ms2930\|ms929\|r666b\|custom\|lcd\)\s*$/     monitor                   custom/" /etc/switchres.ini
-sed -i 's/^\s*crt_range0\s*.*/crt_range0 '"$crt_range_value"'/' /etc/switchres.ini
-sed -i 's/^\s*crt_range0\s*.*/    crt_range0                '"$crt_range_value"'/' /etc/switchres.ini
+# Fallback extraction if above fails
+if [ -z "$crt_range_value" ]; then
+    crt_range_value="$(printf "%s
+" "$output" | awk '
+        /Final[[:space:]]+crt_range[:=]/ {val=$0}
+        /crt_range[[:space:]]*[:=]/      {val=$0}
+        END{
+            sub(/^.*(Final[[:space:]]+)?crt_range[:=][[:space:]]*/,"",val);
+            gsub(/[[:space:]]+$/,"",val);
+            print val
+        }')"
+fi
+
+swini="/etc/switchres.ini"
+[ -f "$swini" ] || touch "$swini"
+
+# Atomically rewrite switchres.ini keeping all other content:
+awk -v newrange="$crt_range_value" '
+BEGIN {
+    seen_monitor=0; seen_crt0=0;
+}
+{
+    # Replace the first monitor line with the canonical "monitor custom"
+    if (!seen_monitor && $0 ~ /^[[:space:]]*monitor[[:space:]]+/) {
+        print "     monitor                   custom";
+        seen_monitor=1;
+        next;
+    }
+    # Replace the first crt_range0 line with the new range
+    if (!seen_crt0 && $0 ~ /^[[:space:]]*crt_range0[[:space:]]+/) {
+        print "    crt_range0                " newrange;
+        seen_crt0=1;
+        next;
+    }
+    # Otherwise pass through unchanged
+    print $0;
+}
+END {
+    if (!seen_monitor) print "     monitor                   custom";
+    if (!seen_crt0)   print "    crt_range0                " newrange;
+}' "$swini" > "${swini}.tmp" && mv "${swini}.tmp" "$swini"
 
 dialog --title "Success" \
        --msgbox "switchres.ini updated successfully." 10 40
