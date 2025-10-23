@@ -172,7 +172,13 @@ while [ -e "${REBOOT_FLAG}" ]; do
 	    read screenoffset_x screenoffset_y <<< "$screenoffset_values"    
 	    display_rotate="$(/usr/bin/batocera-settings-get-master display.rotate)"
 	    read WIDTH HEIGHT PARTHZ <<< $(echo ${bootresolution} | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
-	    RES="${WIDTH}x${HEIGHT}"
+	    
+        if [ $(( WIDTH % 10 % 2 )) -eq 0 ]; then
+	    	WIDTH=$(( WIDTH + 1 ))
+	    fi
+
+ 	    RES="${WIDTH}x${HEIGHT}"
+	    bootresolution="${RES}.${PARTHZ}"
 
 	    file="/userdata/system/es.arg.override"
 	    if [ -f "$file" ]; then
