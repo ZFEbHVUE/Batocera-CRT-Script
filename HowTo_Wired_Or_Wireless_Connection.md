@@ -81,7 +81,7 @@ You **don’t need a second PC for this**—your mobile phone or laptop can be u
 
 ### 🌀 Install the CRT Script via Terminal (curl method)
 
-**Latest version: v41**
+**Latest version: v42**
 
 You can install the script using **either** of the commands below.  
 🟰 They are functionally identical — just different URLs pointing to the same script.
