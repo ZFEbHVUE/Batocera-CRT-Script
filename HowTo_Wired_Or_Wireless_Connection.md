@@ -138,7 +138,7 @@ to complete your setup.
 
 ---
 
-## 📦 Manual Installation
+## 📦 Manual Installation            **⚠️ Not Recommended** 
 
 Use this if installing via wired or wireless network manually.
 
