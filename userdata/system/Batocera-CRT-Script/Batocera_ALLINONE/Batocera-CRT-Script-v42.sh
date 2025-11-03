@@ -300,6 +300,18 @@ BASE_DIR="/userdata/Batocera-CRT-Script-Backup"
 CHECK_FILE="$BASE_DIR/backup.file"
 BACKUP_ROOT="$BASE_DIR/BACKUP"
 
+# Ensure backup dirs exist and migrate any legacy backup flag
+LEGACY_DIR="/userdata/system/Batocera-CRT-Script"
+LEGACY_FILE="$LEGACY_DIR/backup.file"
+
+mkdir -p "$BASE_DIR" "$BACKUP_ROOT"
+
+# If old flag exists and new one doesn't, migrate it
+if [ -f "$LEGACY_FILE" ] && [ ! -f "$CHECK_FILE" ]; then
+  mv -f "$LEGACY_FILE" "$CHECK_FILE"
+  echo "Migrated legacy backup flag to $CHECK_FILE" >> "$LOG_FILE"
+fi
+
 # Files to backup/restore (absolute)
 FILES_TO_HANDLE=(
   "/boot/batocera-boot.conf"
@@ -712,11 +724,29 @@ maybe_install_boot_custom_sh() {
 # Call this AFTER GPU preflight (e.g., after the R9 380/380X block).
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Minimal, conservative resolver WITH logging
-# - Exact alias match wins (e.g., DVI-I-1 -> DVI-I-1, HDMI-1 -> HDMI-A-1)
-# - Else family+index fallback (e.g., DVI-1 -> prefer DVI-I > DVI-D > DVI-A)
-# - Strongly prefers the preferred card (arg $2 or $AMD_CARD_INDEX)
-# - No "connected" tie-break is used here.
+# Deterministic XR ↔ DRM resolver with logging
+#
+# Behavior:
+# 1) Deterministic path: read CONNECTOR_ID for the given XRandR output via `xrandr --prop`,
+#    then find the matching /sys/class/drm/card*-*/connector_id with the same value.
+#    This gives a true 1:1 mapping on amdgpu, i915, and nouveau.
+# 2) Fallback: if CONNECTOR_ID is missing or not found in sysfs, use the original heuristic
+#    (alias match first, then family+index with DVI-I > DVI-D > DVI-A).
+#
+# Card preference:
+# - If a preferred card is provided (arg $2 or $AMD_CARD_INDEX), search is constrained to that card.
+#
+# Notes:
+# - Does not use "connected" status as a tie-breaker, so disconnected outputs still resolve.
+# - NVIDIA proprietary is not supported by the deterministic path; the fallback may still work
+#   but is not guaranteed to be correct on that driver.
+#
+# Args:
+#   $1 = XRandR output name (e.g., DP-1, HDMI-2, DVI-I-1)
+#   $2 = optional preferred card index (e.g., 0). If empty, all cards are scanned.
+#
+# Returns:
+#   DRM connector token without the "cardX-" prefix (e.g., DP-1, HDMI-A-1, DVI-I-1).
 map_xrandr_to_drm() {
   local xr="$1"
   local pref_card="${2:-${AMD_CARD_INDEX:-}}"
@@ -729,6 +759,64 @@ map_xrandr_to_drm() {
 
   _log "------------------------------------------------------------"
   _log "XR input='${xr}'  pref_card='${pref_card:-*}'"
+
+  # ------------------------------------------------------------
+  # 1) Deterministic path: CONNECTOR_ID join (amdgpu/i915/nouveau)
+  #     xrandr --prop -> CONNECTOR_ID -> /sys/class/drm/.../connector_id 
+  # ------------------------------------------------------------
+
+  local cid=""
+  if command -v xrandr >/dev/null 2>&1; then
+	cid="$(DISPLAY=${DISPLAY:-:0} xrandr --prop 2>/dev/null | awk -v o="$xr" '
+	$1==o {f=1}
+	f && /CONNECTOR_ID:/ {print $2; exit}
+	# end section if we hit another connector header
+	f && /^[A-Za-z0-9-]+[[:space:]]+(connected|disconnected)/ && $1!=o {exit}
+	')"
+
+    if [[ "$cid" =~ ^[0-9]+$ ]]; then
+      local search_glob match=""
+      if [ -n "$pref_card" ]; then
+        search_glob="/sys/class/drm/card${pref_card}-*/connector_id"
+      else
+        search_glob="/sys/class/drm/card*-*/connector_id"
+      fi
+
+      shopt -s nullglob
+      for f in $search_glob; do
+        if [ -r "$f" ] && [ "$(cat "$f" 2>/dev/null)" = "$cid" ]; then
+          match="${f%/connector_id}"
+          break
+        fi
+      done
+      shopt -u nullglob
+
+      if [ -n "$match" ]; then
+        local base card_idx drm_out
+        base="$(basename -- "$match")"
+        if [[ "$base" =~ ^card([0-9]+)-(.+)$ ]]; then
+          card_idx="${BASH_REMATCH[1]}"
+          drm_out="${BASH_REMATCH[2]}"
+          _log "CID match: XR='${xr}' CID=${cid} -> ${base} (card=${card_idx})"
+          printf '%s\n' "$drm_out"
+          return 0
+        fi
+      else
+        _log "CID not found in sysfs for XR='${xr}' CID=${cid}; falling back to heuristic."
+      fi
+    else
+      _log "No CONNECTOR_ID for XR='${xr}'; falling back to heuristic."
+    fi
+  else
+    _log "xrandr not available; falling back to heuristic."
+  fi
+
+  # ------------------------------------------------------------
+  # 2) Fallback: original heuristic from this script
+  #     - Exact alias match (e.g., HDMI-1 == HDMI-A-1, DVI-I-1 stays DVI-I-1)
+  #     - Else family+index with DVI-I > DVI-D > DVI-A
+  #     - Honors preferred card if provided
+  # ------------------------------------------------------------
 
   # --- Parse XR (keep subtype + full index chain, supports MST like 1-1) ---
   local xr_type_full xr_index_chain
@@ -743,25 +831,24 @@ map_xrandr_to_drm() {
       ;;
   esac
 
-  # Normalize XR to family
-  local xr_simple="$xr_type_full"
+  # Canonicalize some user-facing tokens to families we recognize
+  # DisplayPort -> DP, USB-C -> DP, HDMI -> HDMI/HDMI-A (handled later)
   case "$xr_type_full" in
-    DisplayPort) xr_simple="DP" ;;
-    HDMI-A|HDMI) xr_simple="HDMI" ;;
-    USB-C|USBC|Type-C|USB) xr_simple="DP" ;; # common alt-mode
+    DisplayPort) xr_type_full="DP" ;;
+    USB-C|USBC|Type-C|USB) xr_type_full="DP" ;;
+    HDMI-A|HDMI) : ;;
+    DVI-I|DVI-D|DVI-A|DVI) : ;;
+    eDP|LVDS|VGA) : ;;
+    *) : ;;
   esac
 
-  _log "Parsed: xr_type_full='${xr_type_full}'  xr_simple='${xr_simple}'  xr_index_chain='${xr_index_chain}'"
+  # Snapshot all DRM connectors; prefer pref_card if set
+  local best_exact="" best_exact_card=""
+  local best_family="" best_family_card="" best_family_rank=99
 
-  # DVI subtype rank: I (3) > D (2) > A (1)
-  dvi_rank() { case "$1" in DVI-I) echo 3;; DVI-D) echo 2;; DVI-A) echo 1;; *) echo 0;; esac; }
-
-  local best_exact=""    best_exact_card=""
-  local best_family=""   best_family_card="" best_family_rank=0
-
+  # sysfs walk: /sys/class/drm/cardX-<connector>
   shopt -s nullglob
   for p in /sys/class/drm/card*-*; do
-    local b card_idx drm_name drm_type drm_idx_chain alias1 alias2
     b="$(basename "$p")" || continue
     [[ "$b" =~ ^card([0-9]+)-(.+)$ ]] || continue
     card_idx="${BASH_REMATCH[1]}"
@@ -777,113 +864,71 @@ map_xrandr_to_drm() {
       drm_idx_chain="${drm_name#${drm_type}-}" # e.g., "1" or "1-1"
     fi
 
-	# Only consider known connector families (expanded) — log unknowns once per hit
-	case "$drm_type" in
-	DP|HDMI|HDMI-A|DVI-I|DVI-D|DVI-A|eDP|LVDS|VGA|TV|DIN|Composite|Component)
-		: ;;  # allowed; do nothing
-	*)
-		echo "map_xrandr_to_drm: Unknown DRM family '${drm_type}' (drm_name='${drm_name}')" >> "$_LOG"
-		continue
-		;;
-	esac
+    # Generate XR-style aliases we consider "exact" for this sysfs entry
+    # e.g. card0-HDMI-A-1 => exact alias: HDMI-A-1 and HDMI-1
+    exact1="${drm_name}"
+    case "$drm_type" in
+      DP)                alias2="DisplayPort-${drm_idx_chain}" ;;
+      HDMI|HDMI-A)       alias2="HDMI-${drm_idx_chain}" ;;
+      DVI-I|DVI-D|DVI-A) alias2="DVI-${drm_idx_chain}" ;;
+      *)                 alias2="" ;;
+    esac
 
+    # Card preference gate (if set, ignore other cards)
+    if [ -n "$pref_card" ] && [ "$card_idx" != "$pref_card" ]; then
+      continue
+    fi
 
-	# Build XR aliases this DRM port could present as
-	alias1=""; alias2=""
-	case "$drm_type" in
-	DP)                alias1="DisplayPort-${drm_idx_chain}"; alias2="DP-${drm_idx_chain}" ;;
-	HDMI|HDMI-A)       alias1="HDMI-${drm_idx_chain}";        alias2="HDMI-A-${drm_idx_chain}" ;;
-	DVI-I|DVI-D|DVI-A) alias1="${drm_type}-${drm_idx_chain}"; alias2="DVI-${drm_idx_chain}" ;;
-	eDP|LVDS|VGA|TV|DIN|Composite|Component) alias1="${drm_type}-${drm_idx_chain}" ;;
-	esac
-
-	# --- 0-based XR compatibility shim (for stacks that label XR ports starting at 0) ---
-	# If the DRM index is a plain integer (not MST like "1-1"), also generate XR aliases with (index-1).
-	local alias3="" alias4=""
-	if [[ "$drm_idx_chain" =~ ^[0-9]+$ ]]; then
-	local _zb=$(( drm_idx_chain - 1 ))
-	if (( _zb >= 0 )); then
-		case "$drm_type" in
-		DP)                alias3="DisplayPort-${_zb}"; alias4="DP-${_zb}" ;;
-		HDMI|HDMI-A)       alias3="HDMI-${_zb}";        alias4="HDMI-A-${_zb}" ;;
-		DVI-I|DVI-D|DVI-A) alias3="${drm_type}-${_zb}"; alias4="DVI-${_zb}" ;;
-		eDP|LVDS|VGA|TV|DIN|Composite|Component)
-                         alias3="${drm_type}-${_zb}" ;;
-		esac
-	fi
-	fi
-
-	(( MAP_LOG_VERBOSE )) && _log "Consider: card${card_idx}-${drm_name}  (alias1='${alias1}', alias2='${alias2}'${alias3:+, alias3='${alias3}'}${alias4:+, alias4='${alias4}'})"
-
-    # Exact alias match?
-    if [[ "$xr" == "$alias1" || "$xr" == "$alias2" || "$xr" == "$alias3" || "$xr" == "$alias4" ]]; then
-      _log "  -> exact-alias match"
-      # Prefer the requested card index immediately
-      if [[ -n "$pref_card" && "$card_idx" == "$pref_card" ]]; then
-        _log "  -> choosing exact on pref card: '${drm_name}'"
-        printf '%s\n' "$drm_name"; shopt -u nullglob; return 0
-      fi
-      # Otherwise remember first exact (use it if we don't find one on pref_card)
-      if [ -z "$best_exact" ]; then
-        best_exact="$drm_name"; best_exact_card="$card_idx"
-        _log "  -> remember exact on card${card_idx}: '${best_exact}'"
+    # 2.1) exact alias match on either exact1 or alias2
+    if [ "$xr" = "$exact1" ] || [ -n "$alias2" ] && [ "$xr" = "$alias2" ]; then
+      best_exact="$drm_name"
+      best_exact_card="$card_idx"
+      _log "EXACT alias: XR='${xr}' -> '${drm_name}' (card${card_idx})"
+      # don't break; we still want to ensure we prefer the preferred card if multiple
+      if [ -n "$pref_card" ]; then
+        # already constrained by card, so we can finish
+        printf '%s\n' "$best_exact"
+        return 0
       fi
       continue
     fi
 
-    # Family+index match (XR gave family-only like HDMI-1, DVI-1)
-    if [[ "$drm_idx_chain" == "$xr_index_chain" ]]; then
-      case "$xr_simple" in
-        DP)
-          if [[ "$drm_type" == "DP" ]]; then
-            if [[ -n "$pref_card" && "$card_idx" == "$pref_card" ]]; then
-              best_family="$drm_name"; best_family_card="$card_idx"; best_family_rank=0
-              _log "  -> family match DP on pref card: '${best_family}'"
-            elif [ -z "$best_family" ]; then
-              best_family="$drm_name"; best_family_card="$card_idx"; best_family_rank=0
-              _log "  -> family match DP on card${card_idx}: '${best_family}'"
-            fi
-          fi
-          ;;
-        HDMI)
-          if [[ "$drm_type" == "HDMI-A" || "$drm_type" == "HDMI" ]]; then
-            if [[ -n "$pref_card" && "$card_idx" == "$pref_card" ]]; then
-              best_family="$drm_name"; best_family_card="$card_idx"; best_family_rank=0
-              _log "  -> family match HDMI on pref card: '${best_family}'"
-            elif [ -z "$best_family" ]; then
-              best_family="$drm_name"; best_family_card="$card_idx"; best_family_rank=0
-              _log "  -> family match HDMI on card${card_idx}: '${best_family}'"
-            fi
-          fi
-          ;;
-        DVI)
-          if [[ "$drm_type" == DVI-* ]]; then
-            local rank; rank=$(dvi_rank "$drm_type")
-            if [[ -n "$pref_card" && "$card_idx" == "$pref_card" ]]; then
-              if (( rank >= best_family_rank )); then
-                best_family="$drm_name"; best_family_card="$card_idx"; best_family_rank=$rank
-                _log "  -> family match DVI on pref card, rank=${rank}: '${best_family}'"
-              fi
-            else
-              if (( rank > best_family_rank )) || [ -z "$best_family" ]; then
-                best_family="$drm_name"; best_family_card="$card_idx"; best_family_rank=$rank
-                _log "  -> family match DVI on card${card_idx}, rank=${rank}: '${best_family}'"
-              fi
-            fi
-          fi
-          ;;
-        eDP|LVDS|VGA)
-          if [[ "$drm_type" == "$xr_simple" ]]; then
-            if [[ -n "$pref_card" && "$card_idx" == "$pref_card" ]]; then
-              best_family="$drm_name"; best_family_card="$card_idx"
-              _log "  -> family match ${xr_simple} on pref card: '${best_family}'"
-            elif [ -z "$best_family" ]; then
-              best_family="$drm_name"; best_family_card="$card_idx"
-              _log "  -> family match ${xr_simple} on card${card_idx}: '${best_family}'"
-            fi
-          fi
-          ;;
-      esac
+    # 2.2) Family+index (ranked)
+    # Map XR family to DRM family token and choose rank for DVI variants
+    family_rank=99
+    case "$xr_type_full" in
+      DP)
+        if [ "$drm_type" = "DP" ] && [ "$drm_idx_chain" = "$xr_index_chain" ]; then
+          family_rank=0
+        fi
+        ;;
+      HDMI|HDMI-A)
+        if { [ "$drm_type" = "HDMI-A" ] || [ "$drm_type" = "HDMI" ]; } \
+           && [ "$drm_idx_chain" = "$xr_index_chain" ]; then
+          family_rank=0
+        fi
+        ;;
+      DVI|DVI-I|DVI-D|DVI-A)
+        if [[ "$drm_type" =~ ^DVI-(I|D|A)$ ]] && [ "$drm_idx_chain" = "$xr_index_chain" ]; then
+          case "$drm_type" in
+            DVI-I) family_rank=0 ;;
+            DVI-D) family_rank=1 ;;
+            DVI-A) family_rank=2 ;;
+          esac
+        fi
+        ;;
+      eDP|LVDS|VGA)
+        if [ "$drm_type" = "$xr_type_full" ] && [ "$drm_idx_chain" = "$xr_index_chain" ]; then
+          family_rank=0
+        fi
+        ;;
+    esac
+
+    if [ "$family_rank" -lt "$best_family_rank" ]; then
+      best_family="$drm_name"
+      best_family_card="$card_idx"
+      best_family_rank="$family_rank"
+      _log "FAMILY candidate: XR='${xr}' -> '${drm_name}' (card${card_idx} rank=${family_rank})"
     fi
   done
   shopt -u nullglob
@@ -914,6 +959,7 @@ map_xrandr_to_drm() {
   printf '%s\n' "$guess"
   return 0
 }
+
 # Snapshot of DRM connectors → XR-style aliases (logged for debugging)
 log_drm_map_snapshot() {
   echo "---- DRM connector snapshot (pref card: ${AMD_CARD_INDEX:-*}) ----" >> "$LOG_FILE"
@@ -946,7 +992,7 @@ output_detection_and_persist() {
 
   CONF_DIR="/etc/X11/xorg.conf.d"
   CONF_FILE="$CONF_DIR/10-monitor.conf"
-  FLAG_FILE="/userdata/system/Batocera-CRT-Script/backup.file"
+  FLAG_FILE="$CHECK_FILE"
 
   die() { echo "ERROR: $*" >&2; exit 1; }
   timestamp() { date +"%Y.%m.%d,%H.%M.%S"; }
@@ -960,10 +1006,11 @@ output_detection_and_persist() {
   ALL_OUTS=()
   CONN_OUTS=()
   for attempt in 1 2 3 4 5; do
-    if DISPLAY=:0 xrandr --query >/dev/null 2>&1; then
-		mapfile -t XR <<< "$(DISPLAY=:0 xrandr --query \
-		  | awk '/^[^ ]+[[:space:]]+(connected|disconnected)/ {print $1, $2}' \
-		  | grep -Eiv '^(Writeback|Virtual|VIRTUAL)')"
+	if DISPLAY=${DISPLAY:-:0} xrandr --query >/dev/null 2>&1; then
+	mapfile -t XR < <(DISPLAY=${DISPLAY:-:0} xrandr --query 2>/dev/null \
+		| awk '/^[^ ]+[[:space:]]+(connected|disconnected)/ {print $1, $2}' \
+		| grep -Eiv '^(Writeback|Virtual|VIRTUAL)')
+
       ALL_OUTS=()
       CONN_OUTS=()
       for ln in "${XR[@]}"; do
@@ -1027,9 +1074,9 @@ output_detection_and_persist() {
 
   # --- Quick, one-shot rescan via xrandr (no retries, no sleeps) ---
   quick_rescan_outputs() {
-    mapfile -t XR <<< "$(DISPLAY=:0 xrandr --query \
-      | awk '/^[^ ]+[[:space:]]+(connected|disconnected)/ {print $1, $2}' \
-      | grep -Eiv '^(Writeback|Virtual|VIRTUAL)')"
+	mapfile -t XR < <(DISPLAY=${DISPLAY:-:0} xrandr --query 2>/dev/null \
+	  | awk '/^[^ ]+[[:space:]]+(connected|disconnected)/ {print $1, $2}' \
+	  | grep -Eiv '^(Writeback|Virtual|VIRTUAL)')
 
     ALL_OUTS=()
     CONN_OUTS=()
@@ -1193,7 +1240,7 @@ BOOT_RESOLUTION_ES=1
 ZFEbHVUE=1
 
 
-clear
+echo
 echo "[$(date +"%H:%M:%S")]: BUILD_15KHz_Batocera START" > /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 ########################################################################################
@@ -1248,7 +1295,7 @@ printf "\n"
 
 center_plain "Press ENTER to continue…"
 read -r
-clear
+echo
 ########################################################################################
 #####################        SERGI CLARA "NEW DEDICATION" End #        #################
 ########################################################################################
@@ -1337,7 +1384,7 @@ plain="$(printf "%b" "$msg" | sed 's/\x1B\[[0-9;]*[A-Za-z]//g')"
 pad=$(( (BOXW - ${#plain}) / 2 ))
 printf "%*s%b" "$pad" "" "$msg"
 read -r
-clear
+echo
 
 ########################################################################################
 #####################            New Welcome Message End               #################
@@ -2417,7 +2464,7 @@ if [ ! -f "/etc/switchres.ini.bak" ];then
 	cp /etc/switchres.ini /etc/switchres.ini.bak
 fi
 
-clear
+echo
 #########################################################################################
 declare -a type_of_monitor=( 	"generic_15" "ntsc" "pal" "arcade_15" "arcade_15ex" "arcade_25" "arcade_31" \
 				"arcade_15_25" "arcade_15_31" "arcade_15_25_31" "vesa_480" "vesa_600" "vesa_768" "vesa_1024" \
@@ -2721,7 +2768,7 @@ boot_resolution="e"
 ################################################################################################################################
 echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "
 read
-clear
+echo
 echo ""
 echo "#######################################################################"
 echo "##                          ROTATING SCREEN                          ##"
@@ -2893,30 +2940,30 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	if [[ "$video_output" == *"DP"* ]]; then
 		term_dp="DP"
 		term_displayport="DisplayPort"
-		video_display=${video_output/$term_dp/$term_displayport}
+		video_display=$video_output
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_modeline=$term_displayport-$((nbr-1))
+		video_modeline=$video_output_xrandr
 	elif [[ $video_output == *"DVI"* ]]; then
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
 	
   		term_DVI=DVI-I
 		if [ "$R9_380" == "YES" ]; then
-			video_modeline=$term_DVI-$((nbr))
+			video_modeline=$video_output_xrandr
 		else
-			video_modeline=$term_DVI-$((nbr-1))
+			video_modeline=$video_output_xrandr
 		fi	
   
 	elif [[ "$video_output" == *"VGA"* ]]; then
 		term_VGA=VGA
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
-		video_modeline=$term_VGA-$((nbr-1))
+		video_modeline=$video_output_xrandr
 	elif [[ "$video_output" == *"HDMI"* ]] ; then
 		term_HDMI=HDMI-A
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
- 		video_modeline=$term_HDMI-$((nbr-1))
+ 		video_modeline=$video_output_xrandr
 		dotclock_min=25.0
 		dotclock_min_mame=$dotclock_min
 		super_width=3840
@@ -2929,7 +2976,7 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 		term_displayport="DisplayPort"
 		video_display=$video_output 
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_modeline=$term_dp-$((nbr))   
+		video_modeline=$video_output_xrandr   
 		dotclock_min=0
 		dotclock_min_mame=$dotclock_min
 		super_width=1920
@@ -2938,7 +2985,7 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 		term_VGA="VGA"
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
-		video_modeline=$term_VGA-$((nbr))
+		video_modeline=$video_output_xrandr
 		dotclock_min=25.0
 		dotclock_min_mame=$dotclock_min
 		super_width=1920
@@ -2953,20 +3000,20 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
-				video_modeline=$term_dp-$((nbr)) 
+				video_modeline=$video_output_xrandr
 				dotclock_min=0
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			else
-				video_modeline=$term_dp-$((nbr-1)) 
+				video_modeline=$video_output_xrandr 
 				dotclock_min=0
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			fi
 		else	
-			video_modeline=$term_dp-$((nbr)) 
+			video_modeline=$video_output_xrandr 
 			dotclock_min=0
 			super_width=3840
 			super_width_mame=$super_width
@@ -2977,20 +3024,20 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
-				video_modeline=$term_DVI-$((nbr-1))
+				video_modeline=$video_output_xrandr
 				dotclock_min=25
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			else
-				video_modeline=$term_DVI-$((nbr-1))
+				video_modeline=$video_output_xrandr
 				dotclock_min=0
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			fi
 		else
-			video_modeline=$term_DVI-$((nbr))
+			video_modeline=$video_output_xrandr
 			dotclock_min=25
 			dotclock_min_mame=$dotclock_min
 			super_width=3840
@@ -3002,20 +3049,20 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then	
-				video_modeline=$term_HDMI-$((nbr-1))
+				video_modeline=$video_output_xrandr
 				dotclock_min=25.0
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			else
-				video_modeline=$term_HDMI-$((nbr-1))
+				video_modeline=$video_output_xrandr
 			 	dotclock_min=25.0
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			fi
 		else
-			video_modeline=$term_HDMI-$((nbr))
+			video_modeline=$video_output_xrandr
 			dotclock_min=25.0
 			dotclock_min_mame=$dotclock_min
 			super_width=3840
@@ -3027,20 +3074,20 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then	
-				video_modeline=$term_VGA-$((nbr-1))
+				video_modeline=$video_output_xrandr
 				dotclock_min=25.0
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			else
-				video_modeline=$term_VGA-$((nbr-1))
+				video_modeline=$video_output_xrandr
 				dotclock_min=25.0
 				dotclock_min_mame=$dotclock_min
 				super_width=3840
 				super_width_mame=$super_width
 			fi
 		else
-			video_modeline=$term_VGA-$((nbr))
+			video_modeline=$video_output_xrandr
 			dotclock_min=0.0
 			dotclock_min_mame=$dotclock_min
 			super_width=3840
@@ -3059,7 +3106,7 @@ fi
 #######################################################################
 echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "
 read
-clear
+echo
 echo "#######################################################################"
 echo "##                                                                   ##"
 echo "##                      ADVANCED CONFIGURATION                       ##"
@@ -3103,7 +3150,7 @@ fi
 if [ "$DT_SR_Choice" == "YES" ] ; then
 	echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "
 	read
-	clear
+	echo
 	echo ""
 	echo "#######################################################################"
 	echo "##                                                                   ##"
@@ -3467,7 +3514,7 @@ TMP_SYS="/tmp/syslinux.cfg.new"
 sed -e "s/\[amdgpu_drivers\]/$drivers_amd/g" \
     -e "s/\[card_output\]/$video_output/g" \
     -e "s/\[monitor\]/$monitor_firmware.bin/g" \
-    -e "s/\[card_display\]/$video_display/g" \
+    -e "s|\[card_display\]|$video_output|g" \
     -e "s/\[usb_polling\]/$polling_rate/g" \
     -e "s/\[boot_resolution\]/$boot_resolution/g" \
     /userdata/system/Batocera-CRT-Script/Boot_configs/syslinux.cfg-generic-Batocera \
