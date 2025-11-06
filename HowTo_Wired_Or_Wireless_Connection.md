@@ -125,7 +125,7 @@ If you're using an **AMD R9 380** or similar card that doesn’t initially detec
 
 2. **After reboot**, rerun the script again to continue with full CRT setup:
    ```bash
-   /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/./Batocera-CRT-Script-v41.sh
+   /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE/./Batocera-CRT-Script-v42.sh
    ```
 
 ✅ After this, you can begin setting up your CRT resolutions, display modes, and video profiles normally.
