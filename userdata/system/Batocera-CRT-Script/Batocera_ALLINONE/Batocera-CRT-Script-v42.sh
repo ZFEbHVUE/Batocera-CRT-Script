@@ -2244,12 +2244,12 @@ if use_connector_env "$video_output"; then
   OUT_VERSION="${OUT_VERSION:-$DISPLAY_VERSION}"
 
   # Fallback: if pre-scan/env didn’t set these, compute them now for the chosen AMD card
-  if [ -z "${DISPLAY_ENGINE:-}" ] || [ -z "${DISPLAY_VERSION:-}" ]; then
+  if [ -z "${DISPLAY_ENGINE:-}" ]; then
     if command -v read_engine_anywhere >/dev/null 2>&1; then
       # Prefer the per-card detector (most accurate)
       read_engine_anywhere "${AMD_CARD_INDEX:-}"
-      DISPLAY_ENGINE="${OUT_ENGINE:-${PARSED_ENGINE:-unknown}}"
-      DISPLAY_VERSION="${OUT_VERSION:-${PARSED_VERSION:-}}"
+      DISPLAY_ENGINE="${OUT_ENGINE:-${DISPLAY_ENGINE:-${PARSED_ENGINE:-unknown}}}"
+      DISPLAY_VERSION="${OUT_VERSION:-${DISPLAY_VERSION:-${PARSED_VERSION:-}}}"
     else
       # Generic aggregate (last resort)
       {
@@ -2258,8 +2258,8 @@ if use_connector_env "$video_output"; then
         done
         dmesg
       } | parse_display_engine_from_text
-      DISPLAY_ENGINE="${PARSED_ENGINE:-unknown}"
-      DISPLAY_VERSION="${PARSED_VERSION:-}"
+      DISPLAY_ENGINE="${DISPLAY_ENGINE:-${PARSED_ENGINE:-unknown}}"
+      DISPLAY_VERSION="${DISPLAY_VERSION:-${PARSED_VERSION:-}}"
     fi
 
     # Keep OUT_* in sync if we just populated them
