@@ -644,7 +644,7 @@ maybe_install_boot_custom_sh() {
   case "$choice_up" in
     NVIDIA_DRIVERS) proprietary_nvidia=1 ;;   # explicit proprietary
     NOUVEAU)        proprietary_nvidia=0 ;;   # explicit nouveau
-    *)  # unknown — use fallbacks
+    *)  # unknown - use fallbacks
         if [ -f /userdata/system/99-nvidia.conf ]; then
           proprietary_nvidia=1
         elif lsmod 2>/dev/null | grep -q '^nvidia'; then
@@ -678,6 +678,23 @@ maybe_install_boot_custom_sh() {
     box_hash
     return 0
   fi
+
+  # --- Skip for 31 kHz / multisync profiles ---------------------------------
+  # Only install boot-custom.sh for 15-25 kHz workflows.
+  # Profiles to SKIP:
+  # arcade_31 arcade_15_31 arcade_15_25_31 m2929 d9200 d9400 d9800 m3129
+  # pstar ms2930 r666b pc_31_120 pc_70_120 vesa_480 vesa_600 vesa_768 vesa_1024
+  local sel="${monitor_firmware:-}"
+  case "$sel" in
+    arcade_31|arcade_15_31|arcade_15_25_31|m2929|d9200|d9400|d9800|m3129| \
+    pstar|ms2930|r666b|pc_31_120|pc_70_120|vesa_480|vesa_600|vesa_768|vesa_1024)
+      echo "boot-custom: SKIP (profile=${sel})" >> "$LOG_FILE"
+      box_hash
+      box_center "Skipping ${BLUE}boot-custom.sh${NOCOLOR} (profile: ${sel})."
+      box_hash
+      return 0
+      ;;
+  esac
 
   # --- Proceed for AMD or NVIDIA (nouveau) -----------------------------------
   if [ ! -f "$SRC" ]; then
@@ -717,6 +734,7 @@ maybe_install_boot_custom_sh() {
   return 0
 }
 # ----------------------------------------------------------------------------- end
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
