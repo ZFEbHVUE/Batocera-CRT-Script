@@ -165,8 +165,8 @@ Before running the script:
 
 ```
 cd /userdata/system/Batocera-CRT-Script/Batocera_ALLINONE
-chmod 755 Batocera-CRT-Script-v41.sh
-./Batocera-CRT-Script-v41.sh
+chmod 755 Batocera-CRT-Script-v42.sh
+./Batocera-CRT-Script-v42.sh
 ```
 
 You'll be greeted with a welcome message.  
@@ -176,18 +176,15 @@ Press Enter and follow the onscreen instructions.
 
 Once the installation completes, follow these steps carefully to avoid potential overlay issues and signal damage to your CRT:
 
-### 🔌 1. Proper Shutdown After Script Installation
+### 🔌 1. Proper Reboot After Script Installation
 
-After installation finishes, type the following in the terminal:
+After installation finishes, Press Enter to Reboot the system.
 
-```
-shutdown -h now
-```
 
-This ensures Batocera saves the changes properly before powering off.  
+This ensures Batocera saves the changes properly.  
 Failing to do this may cause script installation errors due to the overlay not committing changes correctly.
 
-Once the system has shut down completely, **power it back on to continue** with the setup.
+Once the system has rebooted correctly, **continue** with the setup.
 
 > ⚠️ **Important for CRT users:**  
 Avoid having your CRT powered on or set to the same input **during BIOS/post boot**, especially if you're using a **15kHz-only CRT**. The default output sends **unsafe 31kHz signals** during early BIOS/post boot.
