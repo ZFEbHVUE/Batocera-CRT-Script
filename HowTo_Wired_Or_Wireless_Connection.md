@@ -92,11 +92,13 @@ You can install the script using **either** of the commands below.
 🟰 They are functionally identical — just different URLs pointing to the same script.
 
 - **Option 1 – bit.ly (short link):**
+- **Press copy here :point_down: and paste into you SSH client**
   ```bash
   bash <(curl -Ls https://bit.ly/batocera-crt-script | sed 's/\r$//')
   ```
 
 - **Option 2 – Pastebin (direct link):**
+- **Press copy here :point_down: and paste into you SSH client**
   ```bash
   bash <(curl -s https://pastebin.com/raw/iC21J0W6 | sed 's/\r$//')
   ```
