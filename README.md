@@ -26,9 +26,14 @@ Join the discussion on Discord:
 
 This project would not have been possible without the help of many skilled and passionate individuals:
 
-### 👨‍💻 Core Developers & Contributors
+### 👨‍💻 Core Developers
 - **ZFEbHVUE** – Lead developer and main tester  
 - **Rion** – CRT wizard and 15kHz support guru  
+
+### 👥 Contributors
+- **Sirmagb** – Geometry tool idea's`  
+- **Yavimaya** – Code contributions  
+- **[fishcu](https://github.com/fishcu)** – Shader author for `pixel_aa_xform.slangp` and `box_filter_aa_xform.slangp`
 - **myzar** – NVIDIA driver and compatibility insights  
 - **jfroco** – Early CRT output work for Batocera  
 - **rtissera** – His knowledge, enthusiasm, and willingness made it possible to add 15kHz patches into Batocera
@@ -37,14 +42,10 @@ This project would not have been possible without the help of many skilled and p
 - **D0023R (Doozer)** – Maintains the [linux_kernel_15khz](https://github.com/D0023R/linux_kernel_15khz) repository, ensuring Calamity’s patches stay up-to-date with the latest Linux kernel versions
 - **dmanlcf** – Maintains 15kHz kernel patches for Batocera
 
-### 👥 Contributors
-- **Sirmagb** – Geometry tool idea used in `crt.sh`  
-- **Yavimaya** – Code contributions  
-- **[fishcu](https://github.com/fishcu)** – Shader author for `pixel_aa_xform.slangp` and `box_filter_aa_xform.slangp`
-
 ### 🧪 Testers
 - **GecKoTDF** – Hands-on CRT hardware testing  
 - **Sirmagb** – Continued validation and feedback
+- **net_terminal_gene** – Steam Deck Tester 
 
 ### 🎨 Special Thanks
 - **krahsdevil** – Created EmulationStation artwork and assets
