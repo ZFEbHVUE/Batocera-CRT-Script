@@ -31,7 +31,7 @@ This project would not have been possible without the help of many skilled and p
 - **Rion** – CRT wizard and 15kHz support guru  
 
 ### 👥 Contributors
-- **Sirmagb** – Geometry tool idea's`  
+- **Sirmagb** – Geometry tool idea's  
 - **Yavimaya** – Code contributions  
 - **[fishcu](https://github.com/fishcu)** – Shader author for `pixel_aa_xform.slangp` and `box_filter_aa_xform.slangp`
 - **myzar** – NVIDIA driver and compatibility insights  
