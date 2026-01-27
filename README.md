@@ -29,6 +29,7 @@ This project would not have been possible without the help of many skilled and p
 ### 👨‍💻 Core Developers
 - **ZFEbHVUE** – Lead developer and main tester  
 - **Rion** – CRT wizard and 15kHz support guru  
+- **net_terminal_gene** – Code contributions, Steam Deck Tester, Arcade Guru
 
 ### 👥 Contributors
 - **Sirmagb** – Geometry tool idea's  
@@ -45,8 +46,7 @@ This project would not have been possible without the help of many skilled and p
 ### 🧪 Testers
 - **GecKoTDF** – Hands-on CRT hardware testing  
 - **Sirmagb** – Continued validation and feedback
-- **net_terminal_gene** – Steam Deck Tester 
-
+ 
 ### 🎨 Special Thanks
 - **krahsdevil** – Created EmulationStation artwork and assets
 
