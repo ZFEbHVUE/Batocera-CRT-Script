@@ -1,0 +1,79 @@
+# Dark theme for dialog - clean, no shadows
+use_shadow = OFF
+use_colors = ON
+separate_widget = ""
+
+# Screen (background)
+screen_color = (WHITE,BLACK,OFF)
+
+# Shadow - disabled
+shadow_color = (BLACK,BLACK,OFF)
+
+# Dialog box
+dialog_color = (WHITE,BLACK,OFF)
+
+# Title
+title_color = (CYAN,BLACK,ON)
+
+# Border
+border_color = (CYAN,BLACK,OFF)
+border2_color = (CYAN,BLACK,OFF)
+
+# Button (inactive)
+button_inactive_color = (WHITE,BLACK,OFF)
+
+# Button (active/selected)
+button_active_color = (GREEN,BLACK,ON)
+
+# Button label
+button_label_inactive_color = (WHITE,BLACK,OFF)
+button_label_active_color = (GREEN,BLACK,ON)
+
+# Button key (hotkey)
+button_key_inactive_color = (WHITE,BLACK,OFF)
+button_key_active_color = (GREEN,BLACK,ON)
+
+# Input box
+inputbox_color = (WHITE,BLACK,OFF)
+inputbox_border_color = (CYAN,BLACK,OFF)
+inputbox_border2_color = (CYAN,BLACK,OFF)
+
+# Search box
+searchbox_color = (WHITE,BLACK,OFF)
+searchbox_title_color = (CYAN,BLACK,ON)
+searchbox_border_color = (CYAN,BLACK,OFF)
+searchbox_border2_color = (CYAN,BLACK,OFF)
+
+# Menu box
+menubox_color = (WHITE,BLACK,OFF)
+menubox_border_color = (CYAN,BLACK,OFF)
+menubox_border2_color = (CYAN,BLACK,OFF)
+
+# Menu item
+item_color = (WHITE,BLACK,OFF)
+item_selected_color = (GREEN,BLACK,ON)
+
+# Tag (menu item prefix)
+tag_color = (CYAN,BLACK,OFF)
+tag_selected_color = (GREEN,BLACK,ON)
+tag_key_color = (WHITE,BLACK,OFF)
+tag_key_selected_color = (GREEN,BLACK,ON)
+
+# Form
+form_active_text_color = (BLACK,WHITE,OFF)
+form_text_color = (WHITE,BLACK,OFF)
+form_item_readonly_color = (CYAN,BLACK,OFF)
+
+# Position indicator
+position_indicator_color = (CYAN,BLACK,OFF)
+
+# Gauge
+gauge_color = (CYAN,BLACK,ON)
+
+# Check/Radio list
+check_color = (WHITE,BLACK,OFF)
+check_selected_color = (BLACK,WHITE,OFF)
+
+# Uarrow / Darrow (scroll indicators)
+uarrow_color = (CYAN,BLACK,OFF)
+darrow_color = (CYAN,BLACK,OFF)
