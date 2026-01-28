@@ -6,6 +6,8 @@
 # - If monitor is NOT custom (e.g., arcade_15/25/31...), we derive one range for the mode
 #   and apply it to ALL crt_range0..9 during the run so switchres can't mix ranges; then we restore.
 # - Geometry from videomodes.conf (-g) is honored because we avoid conflicting range mixes.
+# - currentMode: Returns full videomodes.conf ID (e.g., 769x576.50.00060) instead of
+#   truncated xrandr format, allowing ES to correctly display VIDEO MODE selection.
 #
 # NOTE: defineMode path kept as-is (no temp ini injection) per user's request to handle later.
 
@@ -470,7 +472,36 @@ fi
     ;;
 
     "currentMode")
-        xrandr --listModes "${PSCREEN}" | grep -E '\*$' | sed -e 's/\*$//' -e 's/^\([^ ]*\) .*/\1/'
+        # Get the xrandr mode name (e.g., "769x576.50.00")
+        XRANDR_MODE=$(xrandr --listModes "${PSCREEN}" | grep -E '\*$' | sed -e 's/\*$//' -e 's/^\([^ ]*\) .*/\1/')
+        
+        # Try to find the full mode ID in videomodes.conf (needed for ES VIDEO MODE display)
+        VMFILE=""
+        for f in /userdata/system/videomodes.conf /userdata/system/configs/videomodes.conf; do
+            [ -s "$f" ] && VMFILE="$f" && break
+        done
+        
+        if [ -n "$VMFILE" ] && [ -n "$XRANDR_MODE" ]; then
+            # Look for entry where mode ID (minus last 3 chars) matches xrandr mode
+            # Hardened: Skip empty lines, comments, and guard substr() for short mode_ids
+            FULL_MODE=$(awk -F: -v xm="$XRANDR_MODE" '
+                NF && $0 !~ /^[[:space:]]*#/ {  # Skip empty lines and comments
+                    mode_id=$1
+                    # Guard substr() call - only if mode_id length > 3
+                    if (length(mode_id) > 3) {
+                        short_id=substr(mode_id, 1, length(mode_id)-3)
+                        if (short_id == xm) {print mode_id; exit}
+                    }
+                }' "$VMFILE")
+            
+            if [ -n "$FULL_MODE" ]; then
+                echo "$FULL_MODE"
+            else
+                echo "$XRANDR_MODE"  # Fallback to xrandr mode
+            fi
+        else
+            echo "$XRANDR_MODE"  # Fallback to xrandr mode
+        fi
     ;;
 
     "refreshRate")

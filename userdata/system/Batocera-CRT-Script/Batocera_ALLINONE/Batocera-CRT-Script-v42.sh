@@ -517,6 +517,16 @@ restore_all() {
   box_empty
   for f in "${FILES_TO_HANDLE[@]}"; do restore_file_from_backup "$f"; done
 
+  # Remove mode switcher first-run flag so warning shows again after restore
+  box_empty
+  box_center "Cleaning up mode switcher flags…"
+  box_empty
+  local mode_switcher_flag="/userdata/system/Batocera-CRT-Script/Geometry_modeline/.mode_switcher_first_run"
+  if [ -f "$mode_switcher_flag" ]; then
+    rm -f "$mode_switcher_flag"
+    box_center "Mode switcher first-run flag removed"
+  fi
+
   # Footer
   box_hash
   box_center "${GREEN}Restore complete.${NOCOLOR} A reboot is required."
@@ -4047,6 +4057,45 @@ chmod 0644 /userdata/roms/crt/geometry.sh.keys
 chmod 755 /userdata/roms/crt/grid_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/grid_tool.sh
 chmod 0644 /userdata/roms/crt/grid_tool.sh.keys
+
+#######################################################################################
+# Create Mode Switcher for HD/CRT Mode switching
+#######################################################################################
+if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh" ]; then
+    # Ensure main script exists and is executable
+    if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/mode_switcher.sh" ]; then
+        chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/mode_switcher.sh
+    fi
+    
+    # Copy mode switcher wrapper to CRT Tools (wrapper launches main script in xterm)
+    cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh /userdata/roms/crt/mode_switcher.sh
+    chmod 755 /userdata/roms/crt/mode_switcher.sh
+    # Copy .keys file for controller support
+    if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys" ]; then
+        cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys /userdata/roms/crt/mode_switcher.sh.keys
+        chmod 644 /userdata/roms/crt/mode_switcher.sh.keys
+    fi
+    
+    # Copy gamelist.xml to make Mode Switcher visible in EmulationStation
+    if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml" ]; then
+        cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml /userdata/roms/crt/gamelist.xml
+        chmod 644 /userdata/roms/crt/gamelist.xml
+    fi
+    
+    # Create mode backup directories
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/crt_mode
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/boot_configs
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/emulator_configs
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/video_settings
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/crt_mode/boot_configs
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/crt_mode/emulator_configs
+    mkdir -p /userdata/Batocera-CRT-Script-Backup/mode_backups/crt_mode/video_settings
+    
+    echo "Mode Switcher installed successfully."
+else
+    echo "Mode Switcher script not found. Skipping installation."
+fi
 
 #######################################################################################
 # Create geometryForVideomodes.sh  for adjusting resoltuion in videomodes.conf for your CRT
