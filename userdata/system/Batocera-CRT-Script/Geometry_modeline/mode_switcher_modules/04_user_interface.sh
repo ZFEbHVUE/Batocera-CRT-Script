@@ -99,14 +99,26 @@ show_success_message() {
     local target_mode="$1"
     local target_display=$(get_mode_display_name "$target_mode")
     
-    if [ "$target_mode" = "crt" ]; then
-        # Switched to CRT Mode
+    if [ "$target_mode" = "crt" ] && is_dualboot_system; then
+        # Switched to CRT Mode (dual-boot: Wayland→X11, requires poweroff)
+        dialog --title "Mode Switch Complete" \
+               --backtitle "HD/CRT Mode Switcher" \
+               --msgbox "Successfully saved CRT Mode configs\n\nThe system will now SHUT DOWN.\n\nPress the POWER BUTTON to boot into\nCRT Mode.\n\nREMEMBER:\n- Keep monitor OFF during BIOS boot\n- Turn on your monitor AFTER CRT Mode\n  has fully booted" \
+               16 55
+    elif [ "$target_mode" = "crt" ]; then
+        # Switched to CRT Mode (single-boot: X11→X11)
         dialog --title "Mode Switch Complete" \
                --backtitle "HD/CRT Mode Switcher" \
                --msgbox "Successfully saved CRT Mode configs\n\nREMEMBER:\n- Keep monitor OFF during BIOS boot\n- Turn on your monitor AFTER CRT Mode has been initialized and AFTER Batocera has fully booted\n\nSystem will reboot now..." \
                14 65
+    elif is_dualboot_system; then
+        # Switched to HD Mode (dual-boot)
+        dialog --title "Mode Switch Complete" \
+               --backtitle "HD/CRT Mode Switcher" \
+               --msgbox "Successfully saved HD Mode configs\n\nThe system will now SHUT DOWN.\n\nPress the POWER BUTTON to boot into\nWayland HD Mode." \
+               12 50
     else
-        # Switched to HD Mode
+        # Switched to HD Mode (single-boot)
         dialog --title "Mode Switch Complete" \
                --backtitle "HD/CRT Mode Switcher" \
                --msgbox "Successfully saved HD Mode configs\n\nSystem will reboot now..." \

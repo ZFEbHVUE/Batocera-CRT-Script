@@ -193,7 +193,7 @@ main() {
             sync 2>/dev/null || true
             # Double sync to ensure everything is written
             sync 2>/dev/null || true
-            if grep -q "emulatorlauncher" /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null; then
+            if grep -qE "emulatorlauncher|crt-launcher" /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null; then
                 echo "[$(date +"%H:%M:%S")]: FINAL VERIFICATION PASSED: es_systems_crt.cfg is correct" >> "$LOG_FILE"
             else
                 echo "[$(date +"%H:%M:%S")]: FINAL VERIFICATION FAILED: es_systems_crt.cfg is INCORRECT!" >> "$LOG_FILE"
@@ -203,8 +203,14 @@ main() {
         # Small delay to ensure all file operations complete before reboot
         sleep 2
         
-        # Reboot
-        reboot
+        if is_dualboot_system; then
+            # Dual-boot: full shutdown required for any cross-kernel transition.
+            # Warm reboots leave stale DRM/KMS state in GPU hardware registers,
+            # causing black screens when the new kernel initializes its display stack.
+            poweroff
+        else
+            reboot
+        fi
     done
 }
 

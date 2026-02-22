@@ -48,3 +48,11 @@ check_crt_script_installed() {
     return 1
 }
 
+# Function: is_dualboot_system
+# Purpose: Detect whether this is a Wayland/X11 dual-boot install
+#          (separate /boot/crt/ kernel + initrd alongside /boot/boot/ Wayland)
+# Returns: 0 if dual-boot, 1 if single-boot
+is_dualboot_system() {
+    [ -f "/boot/crt/linux" ] && [ -f "/boot/crt/initrd-crt.gz" ]
+}
+

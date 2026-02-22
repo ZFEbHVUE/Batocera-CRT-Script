@@ -538,6 +538,15 @@ get_boot_display_name() {
             return 0
         fi
     done
+    # Prefix fallback: currentMode reports lower precision (e.g. 769x576.50.00)
+    # than videomodes.conf stores (e.g. 769x576.50.00060). Match if either is a
+    # prefix of the other — they represent the same physical mode.
+    for i in "${!BOOT_MODE_IDS[@]}"; do
+        if [[ "${BOOT_MODE_IDS[$i]}" == "${mode_id}"* ]] || [[ "$mode_id" == "${BOOT_MODE_IDS[$i]}"* ]]; then
+            echo "${BOOT_MODES[$i]}"
+            return 0
+        fi
+    done
     echo ""
     return 1
 }
@@ -763,11 +772,37 @@ run_mode_switch_ui() {
     local boot_mode_id=$(get_boot_mode_id "$working_boot")
     echo "[$(date +"%H:%M:%S")]: Converting boot mode - input: '$working_boot', output: '$boot_mode_id'" >> "$LOG_FILE"
     
-    if [ -n "$boot_mode_id" ]; then
-        echo "global.videomode=$boot_mode_id" > "${MODE_BACKUP_DIR}/crt_mode/video_settings/video_mode.txt"
-        echo "[$(date +"%H:%M:%S")]: Saved boot mode ID: $boot_mode_id (display: $working_boot)" >> "$LOG_FILE"
+    # When currently in CRT mode, use the actual mode string from batocera-resolution
+    # instead of the videomodes.conf lookup.  videomodes.conf stores high-precision
+    # refresh rates (e.g. 769x576.50.00060) but currentMode reports lower precision
+    # (e.g. 769x576.50.00).  emulatorlauncher compares global.videomode with
+    # currentMode — a mismatch triggers changeMode() which breaks the CRT display.
+    local current_detected
+    current_detected=$(detect_current_mode 2>/dev/null)
+    
+    if [ "$current_detected" = "crt" ] && command -v batocera-resolution >/dev/null 2>&1; then
+        local synced_mode
+        synced_mode=$(batocera-resolution currentMode 2>/dev/null)
+        if [ -n "$synced_mode" ]; then
+            echo "global.videomode=${synced_mode}" > "${MODE_BACKUP_DIR}/crt_mode/video_settings/video_mode.txt"
+            echo "[$(date +"%H:%M:%S")]: Saved synced CRT mode: $synced_mode (from currentMode, display: $working_boot)" >> "$LOG_FILE"
+        elif [ -n "$boot_mode_id" ]; then
+            echo "global.videomode=$boot_mode_id" > "${MODE_BACKUP_DIR}/crt_mode/video_settings/video_mode.txt"
+            echo "[$(date +"%H:%M:%S")]: Saved boot mode ID: $boot_mode_id (currentMode unavailable)" >> "$LOG_FILE"
+        else
+            echo "global.videomode=$working_boot" > "${MODE_BACKUP_DIR}/crt_mode/video_settings/video_mode.txt"
+            echo "[$(date +"%H:%M:%S")]: WARNING: Could not convert '$working_boot' to mode ID, saved as-is" >> "$LOG_FILE"
+        fi
+    elif [ -n "$boot_mode_id" ]; then
+        # Not in CRT mode (HD→CRT switch): preserve existing backup if available,
+        # otherwise use the videomodes.conf lookup
+        if [ -s "${MODE_BACKUP_DIR}/crt_mode/video_settings/video_mode.txt" ]; then
+            echo "[$(date +"%H:%M:%S")]: Preserving existing CRT video_mode.txt from prior backup" >> "$LOG_FILE"
+        else
+            echo "global.videomode=$boot_mode_id" > "${MODE_BACKUP_DIR}/crt_mode/video_settings/video_mode.txt"
+            echo "[$(date +"%H:%M:%S")]: Saved boot mode ID: $boot_mode_id (display: $working_boot)" >> "$LOG_FILE"
+        fi
     else
-        # Fallback - if working_boot is already a mode ID, use it directly
         echo "global.videomode=$working_boot" > "${MODE_BACKUP_DIR}/crt_mode/video_settings/video_mode.txt"
         echo "[$(date +"%H:%M:%S")]: WARNING: Could not convert '$working_boot' to mode ID, saved as-is" >> "$LOG_FILE"
     fi

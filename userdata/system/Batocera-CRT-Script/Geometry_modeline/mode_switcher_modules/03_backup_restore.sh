@@ -16,6 +16,33 @@ create_backup_directory_structure() {
     mkdir -p "${backup_dir}/overlay"
 }
 
+# Function: set_syslinux_boot_default
+# Purpose: In dual-boot systems, change the DEFAULT line in all syslinux.cfg
+#          files without restoring the entire file (preserves dual-boot structure)
+# Parameters: $1 - target label ("batocera" or "crt")
+set_syslinux_boot_default() {
+    local target_label="$1"
+    mount -o remount,rw /boot 2>/dev/null || true
+    for f in /boot/EFI/batocera/syslinux.cfg \
+             /boot/boot/syslinux.cfg \
+             /boot/boot/syslinux/syslinux.cfg; do
+        [ -f "$f" ] || continue
+        sed -i "s/^DEFAULT .*/DEFAULT ${target_label}/" "$f"
+        sed -i '/^[[:space:]]*MENU DEFAULT[[:space:]]*$/d' "$f"
+        sed -i "/^LABEL ${target_label}\$/a\\\\tMENU DEFAULT" "$f"
+        echo "[$(date +"%H:%M:%S")]: Set DEFAULT=${target_label} in $f" >> "$LOG_FILE"
+    done
+    local grub_cfg="/boot/EFI/BOOT/grub.cfg"
+    if [ -f "$grub_cfg" ]; then
+        if [ "$target_label" = "batocera" ]; then
+            sed -i 's/set default="[0-9]*"/set default="0"/' "$grub_cfg"
+        else
+            sed -i 's/set default="[0-9]*"/set default="1"/' "$grub_cfg"
+        fi
+    fi
+    mount -o remount,ro /boot 2>/dev/null || true
+}
+
 # Function: backup_overlay_file
 # Purpose: Backup current overlay file to mode backup directory
 # Parameters: $1 - mode ("hd" or "crt")
@@ -220,7 +247,22 @@ backup_video_settings() {
         
         # Extract VIDEO MODE setting (only if not already set by UI)
         if [ ! -s "${backup_dir}/video_mode.txt" ]; then
-            grep "^global.videomode" /userdata/system/batocera.conf > "${backup_dir}/video_mode.txt" 2>/dev/null || true
+            if [ "$mode" = "crt" ] && command -v batocera-resolution >/dev/null 2>&1; then
+                # For CRT: use the actual current mode string from batocera-resolution.
+                # batocera.conf may store a higher-precision refresh rate (e.g. 769x576.50.00060)
+                # than what batocera-resolution currentMode reports (e.g. 769x576.50.00).
+                # If these don't match, emulatorlauncher triggers a spurious video mode change
+                # every time a CRT tool launches, which disrupts the display pipeline.
+                local current_mode
+                current_mode=$(batocera-resolution currentMode 2>/dev/null)
+                if [ -n "$current_mode" ]; then
+                    echo "global.videomode=${current_mode}" > "${backup_dir}/video_mode.txt"
+                else
+                    grep "^global.videomode" /userdata/system/batocera.conf > "${backup_dir}/video_mode.txt" 2>/dev/null || true
+                fi
+            else
+                grep "^global.videomode" /userdata/system/batocera.conf > "${backup_dir}/video_mode.txt" 2>/dev/null || true
+            fi
         fi
         
         # Query available outputs and modes (always update these)
@@ -367,47 +409,53 @@ backup_mode_files() {
     
     #############################################################################
     # BOOT CONFIGS (Only syslinux.cfg - needed for EDID and output forcing)
+    # Dual-boot: skip syslinux backup — the install script manages the
+    # multi-entry structure; mode_switcher only flips the DEFAULT line.
     #############################################################################
     
-    mount -o remount,rw /boot 2>/dev/null || true
-    
-    # For HD Mode: Use CRT Script factory backup as source
-    if [ "$mode" = "hd" ]; then
-        if [ -d "$CRT_BACKUP_DIR" ]; then
-            if [ -f "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" ]; then
+    if is_dualboot_system; then
+        echo "[$(date +"%H:%M:%S")]: Dual-boot: skipping syslinux.cfg backup (managed by install script)" >> "$LOG_FILE"
+    else
+        mount -o remount,rw /boot 2>/dev/null || true
+        
+        # For HD Mode: Use CRT Script factory backup as source
+        if [ "$mode" = "hd" ]; then
+            if [ -d "$CRT_BACKUP_DIR" ]; then
+                if [ -f "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" ]; then
+                    mkdir -p "${backup_dir}/boot_configs/boot"
+                    cp -a "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" "${backup_dir}/boot_configs/boot/syslinux.cfg" 2>/dev/null || true
+                    echo "[$(date +"%H:%M:%S")]: HD Mode: Backed up factory syslinux.cfg" >> "$LOG_FILE"
+                fi
+                # Backup other syslinux variants
+                for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
+                    if [ -f "${CRT_BACKUP_DIR}/boot/${syslinux_path}" ]; then
+                        mkdir -p "${backup_dir}/boot_configs/$(dirname "$syslinux_path")"
+                        cp -a "${CRT_BACKUP_DIR}/boot/${syslinux_path}" "${backup_dir}/boot_configs/${syslinux_path}" 2>/dev/null || true
+                    fi
+                done
+            fi
+        fi
+        
+        # For CRT Mode: Backup current syslinux.cfg (with EDID parameters)
+        if [ "$mode" = "crt" ]; then
+            if [ -f "/boot/boot/syslinux.cfg" ]; then
                 mkdir -p "${backup_dir}/boot_configs/boot"
-                cp -a "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" "${backup_dir}/boot_configs/boot/syslinux.cfg" 2>/dev/null || true
-                echo "[$(date +"%H:%M:%S")]: HD Mode: Backed up factory syslinux.cfg" >> "$LOG_FILE"
+                cp -a "/boot/boot/syslinux.cfg" "${backup_dir}/boot_configs/boot/syslinux.cfg" 2>/dev/null || true
+                echo "[$(date +"%H:%M:%S")]: CRT Mode: Backed up syslinux.cfg with EDID parameters" >> "$LOG_FILE"
             fi
             # Backup other syslinux variants
             for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
-                if [ -f "${CRT_BACKUP_DIR}/boot/${syslinux_path}" ]; then
+                if [ -f "/boot/${syslinux_path}" ]; then
                     mkdir -p "${backup_dir}/boot_configs/$(dirname "$syslinux_path")"
-                    cp -a "${CRT_BACKUP_DIR}/boot/${syslinux_path}" "${backup_dir}/boot_configs/${syslinux_path}" 2>/dev/null || true
+                    cp -a "/boot/${syslinux_path}" "${backup_dir}/boot_configs/${syslinux_path}" 2>/dev/null || true
                 fi
             done
-        fi
-    fi
-    
-    # For CRT Mode: Backup current syslinux.cfg (with EDID parameters)
-    if [ "$mode" = "crt" ]; then
-        if [ -f "/boot/boot/syslinux.cfg" ]; then
-            mkdir -p "${backup_dir}/boot_configs/boot"
-            cp -a "/boot/boot/syslinux.cfg" "${backup_dir}/boot_configs/boot/syslinux.cfg" 2>/dev/null || true
-            echo "[$(date +"%H:%M:%S")]: CRT Mode: Backed up syslinux.cfg with EDID parameters" >> "$LOG_FILE"
-        fi
-        # Backup other syslinux variants
-        for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
-            if [ -f "/boot/${syslinux_path}" ]; then
-                mkdir -p "${backup_dir}/boot_configs/$(dirname "$syslinux_path")"
-                cp -a "/boot/${syslinux_path}" "${backup_dir}/boot_configs/${syslinux_path}" 2>/dev/null || true
+            
+            # Backup boot-custom.sh if present
+            if [ -f "/boot/boot-custom.sh" ]; then
+                cp -a "/boot/boot-custom.sh" "${backup_dir}/boot_configs/boot-custom.sh" 2>/dev/null || true
+                echo "[$(date +"%H:%M:%S")]: CRT Mode: Backed up boot-custom.sh" >> "$LOG_FILE"
             fi
-        done
-        
-        # Backup boot-custom.sh if present
-        if [ -f "/boot/boot-custom.sh" ]; then
-            cp -a "/boot/boot-custom.sh" "${backup_dir}/boot_configs/boot-custom.sh" 2>/dev/null || true
-            echo "[$(date +"%H:%M:%S")]: CRT Mode: Backed up boot-custom.sh" >> "$LOG_FILE"
         fi
     fi
     
@@ -454,9 +502,15 @@ backup_mode_files() {
     
     #############################################################################
     # OVERLAY FILE (Backup system overlay containing all /etc/ and /usr/ changes)
+    # Dual-boot: skip — each boot environment carries its own overlay
+    # (Wayland at /boot/boot/overlay, CRT at /boot/crt/overlay)
     #############################################################################
     
-    backup_overlay_file "$mode"
+    if is_dualboot_system; then
+        echo "[$(date +"%H:%M:%S")]: Dual-boot: skipping overlay backup (each kernel has its own overlay)" >> "$LOG_FILE"
+    else
+        backup_overlay_file "$mode"
+    fi
     
     #############################################################################
     # EMULATOR CONFIGS (Move entire folders between modes)
@@ -590,9 +644,29 @@ restore_mode_files() {
     #############################################################################
     # RESTORE OVERLAY FILE FIRST (Must be done before other operations)
     # Overlay contains all system-level changes (files in /etc/, /usr/, etc.)
+    # Dual-boot: skip — each boot environment carries its own overlay
     #############################################################################
     
-    restore_overlay_file "$mode"
+    if is_dualboot_system; then
+        if [ "$mode" = "hd" ]; then
+            # HD restore: delete /boot/boot/overlay so the Wayland kernel boots
+            # from factory squashfs.  batocera-save-overlay was patched to write
+            # CRT changes to /boot/crt/overlay, but any earlier contamination
+            # (or a first-run before the patch) must be cleaned here.
+            mount -o remount,rw /boot 2>/dev/null || true
+            if [ -f /boot/boot/overlay ]; then
+                rm -f /boot/boot/overlay
+                echo "[$(date +"%H:%M:%S")]: Dual-boot HD: deleted /boot/boot/overlay for clean Wayland boot" >> "$LOG_FILE"
+            else
+                echo "[$(date +"%H:%M:%S")]: Dual-boot HD: /boot/boot/overlay already absent" >> "$LOG_FILE"
+            fi
+            mount -o remount,ro /boot 2>/dev/null || true
+        else
+            echo "[$(date +"%H:%M:%S")]: Dual-boot CRT: overlay at /boot/crt/overlay managed by boot environment" >> "$LOG_FILE"
+        fi
+    else
+        restore_overlay_file "$mode"
+    fi
     
     #############################################################################
     # RESTORE BASED ON MODE
@@ -605,55 +679,58 @@ restore_mode_files() {
         
         echo "[$(date +"%H:%M:%S")]: HD Mode: Restoring factory/clean state" >> "$LOG_FILE"
         
-        # 1. RESTORE SYSLINUX.CFG (Factory version - no CRT kernel parameters)
+        # Determine whether to use CRT Script factory backup or HD mode backup
+        # (must be set before the syslinux gate so batocera.conf restore can use it)
         local use_crt_backup=false
-        # Check if boot_configs directory is empty or syslinux.cfg doesn't exist
-        # This is the critical check - if HD mode backup doesn't have syslinux.cfg, use factory backup
-        if [ ! -f "${backup_dir}/boot_configs/boot/syslinux.cfg" ] && [ -d "$CRT_BACKUP_DIR" ]; then
+        if [ ! -f "${backup_dir}/userdata_configs/batocera.conf" ] && [ -d "$CRT_BACKUP_DIR" ]; then
             use_crt_backup=true
-            echo "[$(date +"%H:%M:%S")]: HD Mode boot_configs empty or missing syslinux.cfg, using CRT Script factory backup" >> "$LOG_FILE"
+            echo "[$(date +"%H:%M:%S")]: HD Mode backup sparse, will use CRT Script factory backup for batocera.conf" >> "$LOG_FILE"
         fi
         
-        if [ "$use_crt_backup" = true ]; then
-            # Use CRT Script factory backup
-            if [ -f "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" ]; then
-                mkdir -p "/boot/boot"
-                if cp -a "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" "/boot/boot/syslinux.cfg" 2>/dev/null; then
-                    chmod 644 "/boot/boot/syslinux.cfg" 2>/dev/null || true
-                    echo "[$(date +"%H:%M:%S")]: Restored factory syslinux.cfg" >> "$LOG_FILE"
-                else
-                    echo "[$(date +"%H:%M:%S")]: ERROR: Failed to copy factory syslinux.cfg (boot partition may be read-only)" >> "$LOG_FILE"
-                    return 1
-                fi
-            fi
-            # Restore other syslinux variants
-            for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
-                if [ -f "${CRT_BACKUP_DIR}/boot/${syslinux_path}" ]; then
-                    mkdir -p "/boot/$(dirname "$syslinux_path")"
-                    cp -a "${CRT_BACKUP_DIR}/boot/${syslinux_path}" "/boot/${syslinux_path}" 2>/dev/null || true
-                    chmod 644 "/boot/${syslinux_path}" 2>/dev/null || true
-                fi
-            done
+        # 1. RESTORE SYSLINUX.CFG
+        if is_dualboot_system; then
+            # Dual-boot: just flip DEFAULT to batocera (preserves dual-boot structure)
+            set_syslinux_boot_default "batocera"
         else
-            # Use mode backup
-            if [ -f "${backup_dir}/boot_configs/boot/syslinux.cfg" ]; then
-                mkdir -p "/boot/boot"
-                if cp -a "${backup_dir}/boot_configs/boot/syslinux.cfg" "/boot/boot/syslinux.cfg" 2>/dev/null; then
-                    chmod 644 "/boot/boot/syslinux.cfg" 2>/dev/null || true
-                    echo "[$(date +"%H:%M:%S")]: Restored syslinux.cfg from HD Mode backup" >> "$LOG_FILE"
-                else
-                    echo "[$(date +"%H:%M:%S")]: ERROR: Failed to copy syslinux.cfg from HD Mode backup (boot partition may be read-only)" >> "$LOG_FILE"
-                    return 1
+            # Single-boot: restore entire factory syslinux.cfg
+            
+            if [ "$use_crt_backup" = true ]; then
+                if [ -f "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" ]; then
+                    mkdir -p "/boot/boot"
+                    if cp -a "${CRT_BACKUP_DIR}/boot/boot/syslinux.cfg" "/boot/boot/syslinux.cfg" 2>/dev/null; then
+                        chmod 644 "/boot/boot/syslinux.cfg" 2>/dev/null || true
+                        echo "[$(date +"%H:%M:%S")]: Restored factory syslinux.cfg" >> "$LOG_FILE"
+                    else
+                        echo "[$(date +"%H:%M:%S")]: ERROR: Failed to copy factory syslinux.cfg (boot partition may be read-only)" >> "$LOG_FILE"
+                        return 1
+                    fi
                 fi
+                for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
+                    if [ -f "${CRT_BACKUP_DIR}/boot/${syslinux_path}" ]; then
+                        mkdir -p "/boot/$(dirname "$syslinux_path")"
+                        cp -a "${CRT_BACKUP_DIR}/boot/${syslinux_path}" "/boot/${syslinux_path}" 2>/dev/null || true
+                        chmod 644 "/boot/${syslinux_path}" 2>/dev/null || true
+                    fi
+                done
+            else
+                if [ -f "${backup_dir}/boot_configs/boot/syslinux.cfg" ]; then
+                    mkdir -p "/boot/boot"
+                    if cp -a "${backup_dir}/boot_configs/boot/syslinux.cfg" "/boot/boot/syslinux.cfg" 2>/dev/null; then
+                        chmod 644 "/boot/boot/syslinux.cfg" 2>/dev/null || true
+                        echo "[$(date +"%H:%M:%S")]: Restored syslinux.cfg from HD Mode backup" >> "$LOG_FILE"
+                    else
+                        echo "[$(date +"%H:%M:%S")]: ERROR: Failed to copy syslinux.cfg from HD Mode backup (boot partition may be read-only)" >> "$LOG_FILE"
+                        return 1
+                    fi
+                fi
+                for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
+                    if [ -f "${backup_dir}/boot_configs/${syslinux_path}" ]; then
+                        mkdir -p "/boot/$(dirname "$syslinux_path")"
+                        cp -a "${backup_dir}/boot_configs/${syslinux_path}" "/boot/${syslinux_path}" 2>/dev/null || true
+                        chmod 644 "/boot/${syslinux_path}" 2>/dev/null || true
+                    fi
+                done
             fi
-            # Restore other syslinux variants
-            for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
-                if [ -f "${backup_dir}/boot_configs/${syslinux_path}" ]; then
-                    mkdir -p "/boot/$(dirname "$syslinux_path")"
-                    cp -a "${backup_dir}/boot_configs/${syslinux_path}" "/boot/${syslinux_path}" 2>/dev/null || true
-                    chmod 644 "/boot/${syslinux_path}" 2>/dev/null || true
-                fi
-            done
         fi
         
         # 2. RESTORE USERDATA SYSTEM CONFIGS
@@ -742,21 +819,161 @@ VNC_SCRIPT_EOF
         rm -f "/userdata/system/99-nvidia.conf" 2>/dev/null || true
         echo "[$(date +"%H:%M:%S")]: Removed CRT-only userdata files" >> "$LOG_FILE"
         
-        # Remove old boot-custom.sh and crt_theme_assets (CRT-only)
-        if mount -o remount,rw /boot 2>/dev/null; then
-            if [ -f "/boot/boot-custom.sh" ]; then
-                rm -f "/boot/boot-custom.sh" 2>/dev/null || true
-                echo "[$(date +"%H:%M:%S")]: Removed old /boot/boot-custom.sh (CRT-only)" >> "$LOG_FILE"
+        # Remove old boot-custom.sh and crt_theme_assets (single-boot only)
+        # Dual-boot: skip removal — boot-custom.sh is recreated below for theme asset persistence
+        if ! is_dualboot_system; then
+            if mount -o remount,rw /boot 2>/dev/null; then
+                if [ -f "/boot/boot-custom.sh" ]; then
+                    rm -f "/boot/boot-custom.sh" 2>/dev/null || true
+                    echo "[$(date +"%H:%M:%S")]: Removed old /boot/boot-custom.sh (CRT-only)" >> "$LOG_FILE"
+                fi
+                rm -rf "/boot/crt_theme_assets" 2>/dev/null || true
+                mount -o remount,ro /boot 2>/dev/null || true
+            else
+                echo "[$(date +"%H:%M:%S")]: ERROR: Failed to remount /boot as writable" >> "$LOG_FILE"
             fi
-            rm -rf "/boot/crt_theme_assets" 2>/dev/null || true
-            mount -o remount,ro /boot 2>/dev/null || true
-        else
-            echo "[$(date +"%H:%M:%S")]: ERROR: Failed to remount /boot as writable" >> "$LOG_FILE"
         fi
         
         # Create HD mode boot-custom.sh (copies CRT theme assets from /boot to /usr/share/ on boot)
-        # Copy theme assets to /boot during mode switch (always available), then copy from /boot to /usr/share/ on boot
-        if mount -o remount,rw /boot 2>/dev/null; then
+        # Runs via /etc/init.d/S00bootcustom before EmulationStation starts
+        if is_dualboot_system; then
+            # Dual-boot: create a unified boot-custom.sh that auto-detects the boot mode.
+            # In HD/Wayland mode: copies CRT theme assets to /usr/share/ (volatile).
+            # In CRT/X11 mode: generates /etc/X11/xorg.conf.d/15-crt-monitor.conf
+            #   (HorizSync/VertRefresh from EDID, DefaultModes=False) before X starts.
+            # Detection: kernel cmdline contains BOOT_IMAGE=/crt/ when in CRT mode.
+            if mount -o remount,rw /boot 2>/dev/null; then
+                mkdir -p /boot/crt_theme_assets 2>/dev/null || true
+                [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png" ] && \
+                    cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /boot/crt_theme_assets/CRT.png 2>/dev/null || true
+                [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg" ] && \
+                    cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /boot/crt_theme_assets/CRT.svg 2>/dev/null || true
+
+                if [ -f "/userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/x11vnc" ]; then
+                    chmod 755 /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/x11vnc 2>/dev/null || true
+                    cat > /boot/crt_theme_assets/vnc << 'VNC_DUALBOOT_EOF'
+#!/bin/bash
+export DISPLAY=:0
+export LD_LIBRARY_PATH="/userdata/system/Batocera-CRT-Script/install-vnc_server_batocera:${LD_LIBRARY_PATH}"
+fuser -k 5900/tcp 2>/dev/null || true
+/userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/x11vnc -forever -noxdamage -rfbport 5900 -shared
+VNC_DUALBOOT_EOF
+                    chmod 755 /boot/crt_theme_assets/vnc 2>/dev/null || true
+                fi
+
+                cat > /boot/boot-custom.sh << 'BOOTCUSTOM_DUALBOOT_EOF'
+#!/bin/bash
+# Dual-boot boot-custom.sh — auto-detects HD (Wayland) vs CRT (X11) mode
+# Runs via /etc/init.d/S00bootcustom very early in boot (before X/Wayland)
+
+copy_theme_assets() {
+  mkdir -p /usr/share/emulationstation/themes/es-theme-carbon/art/consoles 2>/dev/null || true
+  mkdir -p /usr/share/emulationstation/themes/es-theme-carbon/art/logos 2>/dev/null || true
+  [ -f "/boot/crt_theme_assets/CRT.png" ] && \
+    cp /boot/crt_theme_assets/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png 2>/dev/null && \
+    chmod 644 /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png 2>/dev/null || true
+  [ -f "/boot/crt_theme_assets/CRT.svg" ] && \
+    cp /boot/crt_theme_assets/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg 2>/dev/null && \
+    chmod 644 /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg 2>/dev/null || true
+}
+
+generate_crt_xorg_conf() {
+  local CONF="/etc/X11/xorg.conf.d/15-crt-monitor.conf"
+  local MON10="/etc/X11/xorg.conf.d/10-monitor.conf"
+
+  local OUT=""
+  if [ -f "$MON10" ]; then
+    OUT="$(awk '
+      BEGIN{s=0;id="";ign=0}
+      /^[[:space:]]*Section[[:space:]]+"Monitor"/ {s=1;id="";ign=0;next}
+      s && /^[[:space:]]*Identifier[[:space:]]+"/ {
+        match($0,/Identifier[[:space:]]*"[^\"]+"/)
+        if (RSTART) { id=substr($0,RSTART+length("Identifier \""),
+                  RLENGTH-length("Identifier \"")-1) }
+      }
+      s && /Option[[:space:]]+"Ignore"[[:space:]]+"true"/ { ign=1 }
+      s && /^[[:space:]]*EndSection/ { if (id!="" && ign==0) { print id; exit } s=0 }
+    ' "$MON10")"
+  fi
+  if [ -z "$OUT" ]; then
+    for d in /sys/class/drm/card*-*; do
+      [ -e "$d/status" ] || continue
+      if [ "$(cat "$d/status" 2>/dev/null)" = "connected" ]; then
+        OUT="${d##*/}"; OUT="${OUT#card[0-9]-}"
+        break
+      fi
+    done
+  fi
+  [ -z "$OUT" ] && return 0
+
+  local CMD="$(cat /proc/cmdline 2>/dev/null)"
+  local EDID_FILE_CMD="$(printf '%s\n' "$CMD" | sed -n 's/.*drm\.edid_firmware=[^ :]\+:edid\/\([^ ]\+\).*/\1/p' | head -n1)"
+  local EDID_BIN="" EDID_SRC=""
+
+  if [ -f "/lib/firmware/edid/custom.bin" ]; then
+    EDID_BIN="/lib/firmware/edid/custom.bin"; EDID_SRC="custom.bin"
+  elif [ -n "$EDID_FILE_CMD" ] && [ -f "/lib/firmware/edid/$EDID_FILE_CMD" ]; then
+    EDID_BIN="/lib/firmware/edid/$EDID_FILE_CMD"; EDID_SRC="$EDID_FILE_CMD"
+  else
+    EDID_BIN="$(ls /lib/firmware/edid/*.bin 2>/dev/null | head -n1)"
+    EDID_SRC="$(basename "$EDID_BIN" 2>/dev/null)"
+  fi
+
+  local VR="" HR=""
+  if [ -n "$EDID_BIN" ] && [ -f "$EDID_BIN" ]; then
+    local LINE="$(edid-decode "$EDID_BIN" 2>/dev/null | grep -m1 'Display Range Limits' || true)"
+    VR="$(printf '%s\n' "$LINE" | sed -n 's/.* \([0-9][0-9]*\)-\([0-9][0-9]*\) Hz V.*/\1-\2/p')"
+    HR="$(printf '%s\n' "$LINE" | sed -n 's/.* \([0-9][0-9]*\(\.[0-9]\)\?\)-\([0-9][0-9]*\(\.[0-9]\)\?\) kHz H.*/\1-\3/p')"
+  fi
+  [ -n "$VR" ] || VR="49-65"
+  [ -n "$HR" ] || HR="15-16.5"
+
+  mkdir -p /etc/X11/xorg.conf.d
+  cat > "$CONF" <<XEOF
+Section "Monitor"
+    Identifier  "CRT"
+    VendorName  "BATOCERA_CRT_SCRIPT"
+    HorizSync   $HR
+    VertRefresh $VR
+    Option      "DPMS" "False"
+    Option      "DefaultModes" "False"
+EndSection
+
+Section "Device"
+    Identifier "modesetting-amd-crt-bind"
+    Driver "modesetting"
+    Option "Monitor-$OUT" "CRT"
+EndSection
+XEOF
+}
+
+install_vnc() {
+  [ -f "/boot/crt_theme_assets/vnc" ] || return 0
+  cp /boot/crt_theme_assets/vnc /usr/bin/vnc 2>/dev/null && chmod 755 /usr/bin/vnc 2>/dev/null || true
+}
+
+main() {
+  [ "$1" = "start" ] || return 0
+
+  local CMD="$(cat /proc/cmdline 2>/dev/null)"
+  if echo "$CMD" | grep -q 'BOOT_IMAGE=/crt/'; then
+    generate_crt_xorg_conf
+    copy_theme_assets
+    install_vnc
+  else
+    copy_theme_assets
+  fi
+}
+
+main "$@"
+BOOTCUSTOM_DUALBOOT_EOF
+                chmod 755 /boot/boot-custom.sh 2>/dev/null || true
+                mount -o remount,ro /boot 2>/dev/null || true
+                echo "[$(date +"%H:%M:%S")]: Dual-boot: created unified boot-custom.sh (mode-aware: HD=theme-assets, CRT=xorg-conf+vnc)" >> "$LOG_FILE"
+            else
+                echo "[$(date +"%H:%M:%S")]: ERROR: Failed to remount /boot as writable (cannot create boot-custom.sh)" >> "$LOG_FILE"
+            fi
+        elif mount -o remount,rw /boot 2>/dev/null; then
             # Copy theme assets to /boot (persistent, always available on boot)
             mkdir -p /boot/crt_theme_assets 2>/dev/null || true
             if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png" ]; then
@@ -927,11 +1144,15 @@ BOOTCUSTOM_EOF
         fi
         
         # 4. DISABLE MULTISCREEN IN HD MODE
-        if [ -f "/userdata/system/batocera.conf" ]; then
-            sed -i '/^global\.videooutput2=/d' /userdata/system/batocera.conf 2>/dev/null || true
-            sed -i '/^global\.videooutput3=/d' /userdata/system/batocera.conf 2>/dev/null || true
-            echo "global.videooutput2=none" >> /userdata/system/batocera.conf
-            echo "[$(date +"%H:%M:%S")]: Disabled multiscreen for HD Mode" >> "$LOG_FILE"
+        # Dual-boot: skip — factory batocera.conf already has videooutput2=none
+        # and explicit global.videooutput breaks Wayland display auto-detection
+        if ! is_dualboot_system; then
+            if [ -f "/userdata/system/batocera.conf" ]; then
+                sed -i '/^global\.videooutput2=/d' /userdata/system/batocera.conf 2>/dev/null || true
+                sed -i '/^global\.videooutput3=/d' /userdata/system/batocera.conf 2>/dev/null || true
+                echo "global.videooutput2=none" >> /userdata/system/batocera.conf
+                echo "[$(date +"%H:%M:%S")]: Disabled multiscreen for HD Mode" >> "$LOG_FILE"
+            fi
         fi
         
     elif [ "$mode" = "crt" ]; then
@@ -1026,10 +1247,13 @@ BOOTCUSTOM_EOF
         fi
         
         # Remove CRT theme assets and VNC script from /boot (not needed in CRT mode - overlay contains files)
-        if mount -o remount,rw /boot 2>/dev/null; then
-            rm -rf "/boot/crt_theme_assets" 2>/dev/null || true
-            mount -o remount,ro /boot 2>/dev/null || true
-            echo "[$(date +"%H:%M:%S")]: Removed CRT theme assets and VNC script from /boot (CRT mode uses overlay)" >> "$LOG_FILE"
+        # Dual-boot: skip — /boot is shared, don't remove assets Wayland may need
+        if ! is_dualboot_system; then
+            if mount -o remount,rw /boot 2>/dev/null; then
+                rm -rf "/boot/crt_theme_assets" 2>/dev/null || true
+                mount -o remount,ro /boot 2>/dev/null || true
+                echo "[$(date +"%H:%M:%S")]: Removed CRT theme assets and VNC script from /boot (CRT mode uses overlay)" >> "$LOG_FILE"
+            fi
         fi
         
         # MAME folder
@@ -1062,38 +1286,54 @@ BOOTCUSTOM_EOF
         fi
         
         # 3. RESTORE BOOT-CUSTOM.SH (Creates X11 configs on boot)
-        if [ -f "${backup_dir}/boot_configs/boot-custom.sh" ]; then
-            cp -a "${backup_dir}/boot_configs/boot-custom.sh" "/boot/boot-custom.sh" 2>/dev/null || true
-            chmod 755 "/boot/boot-custom.sh" 2>/dev/null || true
-            echo "[$(date +"%H:%M:%S")]: Restored boot-custom.sh" >> "$LOG_FILE"
+        if ! is_dualboot_system; then
+            if [ -f "${backup_dir}/boot_configs/boot-custom.sh" ]; then
+                cp -a "${backup_dir}/boot_configs/boot-custom.sh" "/boot/boot-custom.sh" 2>/dev/null || true
+                chmod 755 "/boot/boot-custom.sh" 2>/dev/null || true
+                echo "[$(date +"%H:%M:%S")]: Restored boot-custom.sh" >> "$LOG_FILE"
+            fi
         fi
         
         # 4. RESTORE SYSLINUX.CFG (CRT kernel parameters for EDID override)
-        # Copy from backup - it already has the correct CRT kernel params from initial installation
-        if [ -f "${backup_dir}/boot_configs/boot/syslinux.cfg" ]; then
-            mkdir -p "/boot/boot"
-            cp -a "${backup_dir}/boot_configs/boot/syslinux.cfg" "/boot/boot/syslinux.cfg" 2>/dev/null || true
-            chmod 644 "/boot/boot/syslinux.cfg" 2>/dev/null || true
-            echo "[$(date +"%H:%M:%S")]: Restored syslinux.cfg from CRT Mode backup (with EDID params)" >> "$LOG_FILE"
-        fi
-        # Restore other syslinux variants (EFI)
-        for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
-            if [ -f "${backup_dir}/boot_configs/${syslinux_path}" ]; then
-                mkdir -p "/boot/$(dirname "$syslinux_path")"
-                cp -a "${backup_dir}/boot_configs/${syslinux_path}" "/boot/${syslinux_path}" 2>/dev/null || true
-                chmod 644 "/boot/${syslinux_path}" 2>/dev/null || true
-                echo "[$(date +"%H:%M:%S")]: Restored ${syslinux_path} from CRT Mode backup" >> "$LOG_FILE"
+        if is_dualboot_system; then
+            # Dual-boot: just flip DEFAULT to crt (preserves dual-boot structure)
+            set_syslinux_boot_default "crt"
+        else
+            # Single-boot: restore entire syslinux.cfg from backup
+            if [ -f "${backup_dir}/boot_configs/boot/syslinux.cfg" ]; then
+                mkdir -p "/boot/boot"
+                cp -a "${backup_dir}/boot_configs/boot/syslinux.cfg" "/boot/boot/syslinux.cfg" 2>/dev/null || true
+                chmod 644 "/boot/boot/syslinux.cfg" 2>/dev/null || true
+                echo "[$(date +"%H:%M:%S")]: Restored syslinux.cfg from CRT Mode backup (with EDID params)" >> "$LOG_FILE"
             fi
-        done
+            for syslinux_path in "EFI/batocera/syslinux.cfg" "EFI/BOOT/syslinux.cfg"; do
+                if [ -f "${backup_dir}/boot_configs/${syslinux_path}" ]; then
+                    mkdir -p "/boot/$(dirname "$syslinux_path")"
+                    cp -a "${backup_dir}/boot_configs/${syslinux_path}" "/boot/${syslinux_path}" 2>/dev/null || true
+                    chmod 644 "/boot/${syslinux_path}" 2>/dev/null || true
+                    echo "[$(date +"%H:%M:%S")]: Restored ${syslinux_path} from CRT Mode backup" >> "$LOG_FILE"
+                fi
+            done
+        fi
         
         
     fi
     
     #############################################################################
     # RESTORE VIDEO SETTINGS (Common to both modes)
+    # The overlay contamination that originally broke Wayland's display-checker
+    # when global.videooutput was set explicitly has been fixed (CRT overlay is
+    # now isolated to /boot/crt/overlay, factory batocera-resolution uses
+    # wlr-randr and correctly lists eDP-1).
     #############################################################################
     
     restore_video_settings "$mode"
+    
+    if is_dualboot_system && [ "$mode" = "hd" ]; then
+        if [ -f "/userdata/system/batocera.conf" ]; then
+            sed -i '/^display\.rotate=0$/d' /userdata/system/batocera.conf 2>/dev/null || true
+        fi
+    fi
     
     #############################################################################
     # REINSTALL CRT TOOLS (Ensure visibility matches mode)
@@ -1307,10 +1547,10 @@ BOOTCUSTOM_EOF
     # Step 11: Verify es_systems_crt.cfg
     echo "[$(date +"%H:%M:%S")]: Verifying es_systems_crt.cfg..." >> "$LOG_FILE"
     if [ -f "/userdata/system/configs/emulationstation/es_systems_crt.cfg" ]; then
-        if grep -q "emulatorlauncher" /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null; then
+        if grep -qE "emulatorlauncher|crt-launcher" /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null; then
             echo "[$(date +"%H:%M:%S")]: VERIFIED: es_systems_crt.cfg is correct" >> "$LOG_FILE"
         else
-            echo "[$(date +"%H:%M:%S")]: ERROR: es_systems_crt.cfg missing emulatorlauncher - RE-COPYING..." >> "$LOG_FILE"
+            echo "[$(date +"%H:%M:%S")]: ERROR: es_systems_crt.cfg missing launcher command - RE-COPYING..." >> "$LOG_FILE"
             if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg" ]; then
                 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null || true
                 chmod 644 /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null || true
