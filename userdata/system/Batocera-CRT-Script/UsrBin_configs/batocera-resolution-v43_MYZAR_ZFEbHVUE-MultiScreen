@@ -497,7 +497,7 @@ fi
             done
             # enable (in case of reboot of es)
             echo "set user output: ${MODE1} as primary" >&2 >> "$log"
-            xrandr --output "${MODE1}" --primary
+            xrandr --output "${MODE1}" --primary --auto
             PREVIOUS_SCREEN="${MODE1}"
 
             # screen 2
@@ -505,7 +505,7 @@ fi
             then
             if xrandr --listConnectedOutputs | sed -e s+"*$"++ | grep -qE "^${MODE2}$"; then # if there is at least the screen 2
                 echo "set user output: ${MODE2} as right of ${PREVIOUS_SCREEN}" >&2 >> "$log"
-                xrandr --output "${MODE2}" --right-of "${PREVIOUS_SCREEN}"
+                xrandr --output "${MODE2}" --right-of "${PREVIOUS_SCREEN}" --auto
                 PREVIOUS_SCREEN="${MODE2}"
             fi
             fi
@@ -515,7 +515,7 @@ fi
             then
             if xrandr --listConnectedOutputs | sed -e s+"*$"++ | grep -qE "^${MODE3}$"; then # if there is at least the screen 3
                 echo "set user output: ${MODE3} as right of ${PREVIOUS_SCREEN}" >&2 >> "$log"
-                xrandr --output "${MODE3}" --right-of "${PREVIOUS_SCREEN}"
+                xrandr --output "${MODE3}" --right-of "${PREVIOUS_SCREEN}" --auto
                 PREVIOUS_SCREEN="${MODE3}"
             fi
             fi
