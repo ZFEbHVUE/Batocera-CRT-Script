@@ -432,7 +432,7 @@ while [ -e "${REBOOT_FLAG}" ]; do
     cd /userdata # ES need a PWD
 
     # DBUS is required for the gio/gvfs/trash:///...
-     dbus-run-session -- emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed ${CUSTOMESOPTIONS}
+    SDL_AUDIODRIVER=pipewire dbus-run-session -- emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed ${CUSTOMESOPTIONS}
 
     if which batocera-backglass; then
         if [ -n "${settings_output2}" ]; then
