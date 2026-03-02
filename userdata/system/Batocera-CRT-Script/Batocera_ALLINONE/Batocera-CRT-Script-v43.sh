@@ -872,13 +872,15 @@ prompt_image_source() {
             # MD5_URL="${IMAGE_URL}.md5"
 
             # BETA: derive MD5 URL from user-pasted URL — remove this block when going official
-            if [ -z "${IMAGE_URL:-}" ]; then
-              echo ""
-              echo "  Paste the mirror URL for this image (ends with .img.gz or .img.gz.md5):"
-              echo ""
-              printf "  URL: "
-              read -r IMAGE_URL
-            fi
+            # MD5 disabled: skip mirror URL prompt when using local file
+            # if [ -z "${IMAGE_URL:-}" ]; then
+            #   echo ""
+            #   echo "  Paste the mirror URL for this image (ends with .img.gz or .img.gz.md5):"
+            #   echo ""
+            #   printf "  URL: "
+            #   read -r IMAGE_URL
+            # fi
+            IMAGE_URL="${IMAGE_URL:-}"
             sanitize_image_url
             # END BETA
             return 0
@@ -906,13 +908,15 @@ prompt_image_source() {
         read -r multi_choice
         if [ "$multi_choice" -ge 1 ] 2>/dev/null && [ "$multi_choice" -le "$count" ]; then
           IMAGE_PATH=$(echo "$IMAGE_CANDIDATES" | sed -n "${multi_choice}p")
-          if [ -z "${IMAGE_URL:-}" ]; then
-            echo ""
-            echo "  Paste the mirror URL for this image (ends with .img.gz or .img.gz.md5):"
-            echo ""
-            printf "  URL: "
-            read -r IMAGE_URL
-          fi
+          # MD5 disabled: skip mirror URL prompt when using local file
+          # if [ -z "${IMAGE_URL:-}" ]; then
+          #   echo ""
+          #   echo "  Paste the mirror URL for this image (ends with .img.gz or .img.gz.md5):"
+          #   echo ""
+          #   printf "  URL: "
+          #   read -r IMAGE_URL
+          # fi
+          IMAGE_URL="${IMAGE_URL:-}"
           sanitize_image_url
           return 0
         elif [ "$multi_choice" -eq $((count + 1)) ]; then
@@ -1394,7 +1398,7 @@ run_phase1() {
   prompt_image_source
 
   # Step 2: Validate checksum
-  validate_md5
+  # validate_md5
 
   # Step 3: Check disk space
   check_disk_space
