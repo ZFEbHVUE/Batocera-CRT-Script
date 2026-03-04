@@ -2566,7 +2566,7 @@ if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Dri
  
  
     # Parity must follow the display engine (Calamity): DCN => even, DCE/unknown => off
-    if [ "$TYPE_OF_CARD" = "AMD/ATI" ] && [ "${DISPLAY_ENGINE:-NONE}" = "DCN" ]; then
+    if [ "$TYPE_OF_CARD" = "AMD/ATI" ] && [ "${DISPLAY_ENGINE:-NONE}" = "DCN" ] && [ "$AMD_IS_APU" = "1" ]; then
        IFE=1
     else
        IFE=0
