@@ -28,6 +28,13 @@ MODE_BACKUP_DIR="/userdata/Batocera-CRT-Script-Backup/mode_backups"
 CRT_BACKUP_DIR="/userdata/Batocera-CRT-Script-Backup/BACKUP"
 CRT_BACKUP_CHECK="${CRT_BACKUP_DIR%/*}/backup.file"
 
+# Pin CRT tools to internal drive to avoid mergerfs scattering to external drives
+if [ -d "/userdata/.roms_base" ]; then
+  CRT_ROMS="/userdata/.roms_base"
+else
+  CRT_ROMS="/userdata/roms"
+fi
+
 # Log file
 LOG_FILE="/userdata/system/logs/BUILD_15KHz_Batocera.log"
 

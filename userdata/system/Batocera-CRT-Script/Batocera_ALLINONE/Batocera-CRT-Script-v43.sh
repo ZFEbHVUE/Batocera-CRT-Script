@@ -5069,20 +5069,26 @@ read
 #######################################################################################
 # Create files for adjusting your CRT
 #######################################################################################
-cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ /userdata/roms/
+# Pin CRT tools to internal drive to avoid mergerfs scattering to external drives
+if [ -d "/userdata/.roms_base" ]; then
+  CRT_ROMS="/userdata/.roms_base"
+else
+  CRT_ROMS="/userdata/roms"
+fi
+cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ "$CRT_ROMS/"
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt-launcher.sh
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg
-chmod 755 /userdata/roms/crt/es_adjust_tool.sh
-chmod 755 /userdata/roms/crt/geometry.sh
+chmod 755 "$CRT_ROMS/crt/es_adjust_tool.sh"
+chmod 755 "$CRT_ROMS/crt/geometry.sh"
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
-chmod 0644 /userdata/roms/crt/es_adjust_tool.sh.keys
-chmod 0644 /userdata/roms/crt/geometry.sh.keys
-chmod 755 /userdata/roms/crt/grid_tool.sh
+chmod 0644 "$CRT_ROMS/crt/es_adjust_tool.sh.keys"
+chmod 0644 "$CRT_ROMS/crt/geometry.sh.keys"
+chmod 755 "$CRT_ROMS/crt/grid_tool.sh"
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/grid_tool.sh
-chmod 0644 /userdata/roms/crt/grid_tool.sh.keys
+chmod 0644 "$CRT_ROMS/crt/grid_tool.sh.keys"
 
 #######################################################################################
 # Create Mode Switcher for HD/CRT Mode switching
@@ -5094,18 +5100,18 @@ if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switche
     fi
     
     # Copy mode switcher wrapper to CRT Tools (wrapper launches main script in xterm)
-    cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh /userdata/roms/crt/mode_switcher.sh
-    chmod 755 /userdata/roms/crt/mode_switcher.sh
+    cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh "$CRT_ROMS/crt/mode_switcher.sh"
+    chmod 755 "$CRT_ROMS/crt/mode_switcher.sh"
     # Copy .keys file for controller support
     if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys" ]; then
-        cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys /userdata/roms/crt/mode_switcher.sh.keys
-        chmod 644 /userdata/roms/crt/mode_switcher.sh.keys
+        cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys "$CRT_ROMS/crt/mode_switcher.sh.keys"
+        chmod 644 "$CRT_ROMS/crt/mode_switcher.sh.keys"
     fi
     
     # Copy gamelist.xml to make Mode Switcher visible in EmulationStation
     if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml" ]; then
-        cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml /userdata/roms/crt/gamelist.xml
-        chmod 644 /userdata/roms/crt/gamelist.xml
+        cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml "$CRT_ROMS/crt/gamelist.xml"
+        chmod 644 "$CRT_ROMS/crt/gamelist.xml"
     fi
     
     # Create mode backup directories
@@ -5214,10 +5220,10 @@ chmod +x /usr/bin/vnc-scaled
 #######################################################################################
 # Add Overlays and Overrides for handheld system Tool
 #######################################################################################
-cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh /userdata/roms/crt
-cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh.keys /userdata/roms/crt
-chmod 755 /userdata/roms/crt/overlays_overrides.sh
-chmod 644 /userdata/roms/crt/overlays_overrides.sh.keys
+cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh "$CRT_ROMS/crt"
+cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh.keys "$CRT_ROMS/crt"
+chmod 755 "$CRT_ROMS/crt/overlays_overrides.sh"
+chmod 644 "$CRT_ROMS/crt/overlays_overrides.sh.keys"
 chmod 755 /userdata/system/Batocera-CRT-Script/extra/overlays_overrides_script.sh
 
 #######################################################################################
@@ -5298,8 +5304,8 @@ chmod 755 /userdata/system/scripts/first_script.sh
 ######################################################################################
 sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/System_configs/First_script/1_GunCon2.sh-generic > /userdata/system/scripts/1_GunCon2.sh
 chmod 755 /userdata/system/scripts/1_GunCon2.sh
-sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh
-chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh
+sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic > "$CRT_ROMS/crt/GunCon2_Calibration.sh"
+chmod 755 "$CRT_ROMS/crt/GunCon2_Calibration.sh"
 
 
 #######################################################################################

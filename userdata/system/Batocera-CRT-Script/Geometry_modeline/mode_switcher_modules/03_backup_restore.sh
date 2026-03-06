@@ -178,8 +178,8 @@ get_video_output_xrandr() {
     local video_output=""
     
     # Method 1: Extract from existing GunCon2_Calibration.sh if it exists
-    if [ -f "/userdata/roms/crt/GunCon2_Calibration.sh" ]; then
-        video_output=$(grep '--output' /userdata/roms/crt/GunCon2_Calibration.sh 2>/dev/null | sed 's/.*--output \([^ ]*\).*/\1/' | head -1)
+    if [ -f "$CRT_ROMS/crt/GunCon2_Calibration.sh" ]; then
+        video_output=$(grep '--output' "$CRT_ROMS/crt/GunCon2_Calibration.sh" 2>/dev/null | sed 's/.*--output \([^ ]*\).*/\1/' | head -1)
         if [ -n "$video_output" ]; then
             echo "$video_output"
             return 0
@@ -494,8 +494,8 @@ backup_mode_files() {
     
     if [ "$mode" = "crt" ]; then
         mkdir -p "${backup_dir}/userdata_configs"
-        if [ -f "/userdata/roms/crt/GunCon2_Calibration.sh" ]; then
-            cp -a "/userdata/roms/crt/GunCon2_Calibration.sh" "${backup_dir}/userdata_configs/GunCon2_Calibration.sh" 2>/dev/null || true
+        if [ -f "$CRT_ROMS/crt/GunCon2_Calibration.sh" ]; then
+            cp -a "$CRT_ROMS/crt/GunCon2_Calibration.sh" "${backup_dir}/userdata_configs/GunCon2_Calibration.sh" 2>/dev/null || true
             echo "[$(date +"%H:%M:%S")]: Backed up GunCon2_Calibration.sh" >> "$LOG_FILE"
         fi
     fi
@@ -1342,72 +1342,72 @@ BOOTCUSTOM_EOF
     echo "[$(date +"%H:%M:%S")]: Reinstalling CRT Tools for $mode mode..." >> "$LOG_FILE"
     
     # Step 1: Create CRT Tools directory
-    mkdir -p /userdata/roms/crt 2>/dev/null || true
+    mkdir -p "$CRT_ROMS/crt" 2>/dev/null || true
     
     # Step 2: Copy CRT Tools based on mode
     if [ "$mode" = "hd" ]; then
         # HD Mode: Clean up CRT Tools directory first, then only install Mode Selector
         echo "[$(date +"%H:%M:%S")]: HD Mode: Installing Mode Selector only" >> "$LOG_FILE"
-        rm -rf /userdata/roms/crt/* 2>/dev/null || true
-        mkdir -p /userdata/roms/crt/images 2>/dev/null || true
+        rm -rf "$CRT_ROMS/crt/"* 2>/dev/null || true
+        mkdir -p "$CRT_ROMS/crt/images" 2>/dev/null || true
         
         if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh" ]; then
-            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh /userdata/roms/crt/mode_switcher.sh 2>/dev/null || true
-            chmod 755 /userdata/roms/crt/mode_switcher.sh 2>/dev/null || true
+            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh "$CRT_ROMS/crt/mode_switcher.sh" 2>/dev/null || true
+            chmod 755 "$CRT_ROMS/crt/mode_switcher.sh" 2>/dev/null || true
         fi
         if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys" ]; then
-            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys /userdata/roms/crt/mode_switcher.sh.keys 2>/dev/null || true
-            chmod 644 /userdata/roms/crt/mode_switcher.sh.keys 2>/dev/null || true
+            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh.keys "$CRT_ROMS/crt/mode_switcher.sh.keys" 2>/dev/null || true
+            chmod 644 "$CRT_ROMS/crt/mode_switcher.sh.keys" 2>/dev/null || true
         fi
         # Copy Mode Selector images (image, logo, thumb)
         if [ -d "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images" ]; then
-            mkdir -p /userdata/roms/crt/images 2>/dev/null || true
+            mkdir -p "$CRT_ROMS/crt/images" 2>/dev/null || true
             if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-image.png" ]; then
-                cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-image.png /userdata/roms/crt/images/ 2>/dev/null || true
+                cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-image.png "$CRT_ROMS/crt/images/" 2>/dev/null || true
             fi
             if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-logo.png" ]; then
-                cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-logo.png /userdata/roms/crt/images/ 2>/dev/null || true
+                cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-logo.png "$CRT_ROMS/crt/images/" 2>/dev/null || true
             fi
             if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-thumb.png" ]; then
-                cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-thumb.png /userdata/roms/crt/images/ 2>/dev/null || true
+                cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/images/hd_crt_switcher-thumb.png "$CRT_ROMS/crt/images/" 2>/dev/null || true
             fi
         fi
         # Copy gamelist.xml
         if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml" ]; then
-            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml /userdata/roms/crt/gamelist.xml 2>/dev/null || true
-            chmod 644 /userdata/roms/crt/gamelist.xml 2>/dev/null || true
+            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/gamelist.xml "$CRT_ROMS/crt/gamelist.xml" 2>/dev/null || true
+            chmod 644 "$CRT_ROMS/crt/gamelist.xml" 2>/dev/null || true
         fi
         # Copy CRT.svg and CRT.png (needed for EmulationStation system icon)
         if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg" ]; then
-            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /userdata/roms/crt/CRT.svg 2>/dev/null || true
-            chmod 644 /userdata/roms/crt/CRT.svg 2>/dev/null || true
+            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg "$CRT_ROMS/crt/CRT.svg" 2>/dev/null || true
+            chmod 644 "$CRT_ROMS/crt/CRT.svg" 2>/dev/null || true
         fi
         if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png" ]; then
-            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /userdata/roms/crt/CRT.png 2>/dev/null || true
-            chmod 644 /userdata/roms/crt/CRT.png 2>/dev/null || true
+            cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png "$CRT_ROMS/crt/CRT.png" 2>/dev/null || true
+            chmod 644 "$CRT_ROMS/crt/CRT.png" 2>/dev/null || true
         fi
     else
         # CRT Mode: Install all CRT Tools
         echo "[$(date +"%H:%M:%S")]: CRT Mode: Installing all CRT Tools" >> "$LOG_FILE"
-        rm -rf /userdata/roms/crt/* 2>/dev/null || true
-        mkdir -p /userdata/roms/crt 2>/dev/null || true
+        rm -rf "$CRT_ROMS/crt/"* 2>/dev/null || true
+        mkdir -p "$CRT_ROMS/crt" 2>/dev/null || true
         
         if [ -d "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt" ]; then
-            cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ /userdata/roms/ 2>/dev/null || true
+            cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ "$CRT_ROMS/" 2>/dev/null || true
         fi
         
         # Restore or recreate GunCon2_Calibration.sh
         # Method 1: Try to restore from backup first
         if [ -f "${backup_dir}/userdata_configs/GunCon2_Calibration.sh" ]; then
-            cp -a "${backup_dir}/userdata_configs/GunCon2_Calibration.sh" "/userdata/roms/crt/GunCon2_Calibration.sh" 2>/dev/null || true
-            chmod 755 "/userdata/roms/crt/GunCon2_Calibration.sh" 2>/dev/null || true
+            cp -a "${backup_dir}/userdata_configs/GunCon2_Calibration.sh" "$CRT_ROMS/crt/GunCon2_Calibration.sh" 2>/dev/null || true
+            chmod 755 "$CRT_ROMS/crt/GunCon2_Calibration.sh" 2>/dev/null || true
             echo "[$(date +"%H:%M:%S")]: Restored GunCon2_Calibration.sh from CRT Mode backup" >> "$LOG_FILE"
         else
             # Method 2: Recreate from template (like installation script does)
             local video_output_xrandr=$(get_video_output_xrandr)
             if [ -n "$video_output_xrandr" ] && [ -f "/userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic" ]; then
-                sed -e "s/\[card_display\]/$video_output_xrandr/g" /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic > /userdata/roms/crt/GunCon2_Calibration.sh 2>/dev/null || true
-                chmod 755 /userdata/roms/crt/GunCon2_Calibration.sh 2>/dev/null || true
+                sed -e "s/\[card_display\]/$video_output_xrandr/g" /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic > "$CRT_ROMS/crt/GunCon2_Calibration.sh" 2>/dev/null || true
+                chmod 755 "$CRT_ROMS/crt/GunCon2_Calibration.sh" 2>/dev/null || true
                 echo "[$(date +"%H:%M:%S")]: Recreated GunCon2_Calibration.sh from template with video output: $video_output_xrandr" >> "$LOG_FILE"
             else
                 echo "[$(date +"%H:%M:%S")]: WARNING: Could not restore or recreate GunCon2_Calibration.sh (video output: ${video_output_xrandr:-not found}, template: $(test -f /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic && echo 'found' || echo 'missing'))" >> "$LOG_FILE"
@@ -1484,15 +1484,15 @@ BOOTCUSTOM_EOF
     
     # Step 5: Set permissions (CRT Mode only)
     if [ "$mode" = "crt" ]; then
-        chmod 755 /userdata/roms/crt/es_adjust_tool.sh 2>/dev/null || true
-        chmod 755 /userdata/roms/crt/geometry.sh 2>/dev/null || true
+        chmod 755 "$CRT_ROMS/crt/es_adjust_tool.sh" 2>/dev/null || true
+        chmod 755 "$CRT_ROMS/crt/geometry.sh" 2>/dev/null || true
         chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh 2>/dev/null || true
         chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh 2>/dev/null || true
-        chmod 0644 /userdata/roms/crt/es_adjust_tool.sh.keys 2>/dev/null || true
-        chmod 0644 /userdata/roms/crt/geometry.sh.keys 2>/dev/null || true
-        chmod 755 /userdata/roms/crt/grid_tool.sh 2>/dev/null || true
+        chmod 0644 "$CRT_ROMS/crt/es_adjust_tool.sh.keys" 2>/dev/null || true
+        chmod 0644 "$CRT_ROMS/crt/geometry.sh.keys" 2>/dev/null || true
+        chmod 755 "$CRT_ROMS/crt/grid_tool.sh" 2>/dev/null || true
         chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/grid_tool.sh 2>/dev/null || true
-        chmod 0644 /userdata/roms/crt/grid_tool.sh.keys 2>/dev/null || true
+        chmod 0644 "$CRT_ROMS/crt/grid_tool.sh.keys" 2>/dev/null || true
     fi
     
     # Step 6: Ensure Mode Switcher is executable
@@ -1531,12 +1531,12 @@ BOOTCUSTOM_EOF
     # Step 9: Copy overlays_overrides.sh (CRT Mode only)
     if [ "$mode" = "crt" ]; then
         if [ -f "/userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh" ]; then
-            cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh /userdata/roms/crt/ 2>/dev/null || true
-            chmod 755 /userdata/roms/crt/overlays_overrides.sh 2>/dev/null || true
+            cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh "$CRT_ROMS/crt/" 2>/dev/null || true
+            chmod 755 "$CRT_ROMS/crt/overlays_overrides.sh" 2>/dev/null || true
         fi
         if [ -f "/userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh.keys" ]; then
-            cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh.keys /userdata/roms/crt/ 2>/dev/null || true
-            chmod 644 /userdata/roms/crt/overlays_overrides.sh.keys 2>/dev/null || true
+            cp /userdata/system/Batocera-CRT-Script/extra/overlays_overrides.sh.keys "$CRT_ROMS/crt/" 2>/dev/null || true
+            chmod 644 "$CRT_ROMS/crt/overlays_overrides.sh.keys" 2>/dev/null || true
         fi
     fi
     
@@ -1568,11 +1568,11 @@ BOOTCUSTOM_EOF
     fi
     
     # Verify CRT Tools directory
-    if [ ! -d "/userdata/roms/crt" ]; then
-        echo "[$(date +"%H:%M:%S")]: ERROR: /userdata/roms/crt does NOT exist!" >> "$LOG_FILE"
+    if [ ! -d "$CRT_ROMS/crt" ]; then
+        echo "[$(date +"%H:%M:%S")]: ERROR: $CRT_ROMS/crt does NOT exist!" >> "$LOG_FILE"
     else
-        echo "[$(date +"%H:%M:%S")]: VERIFIED: /userdata/roms/crt exists" >> "$LOG_FILE"
-        ls -la /userdata/roms/crt/*.sh 2>/dev/null | head -5 >> "$LOG_FILE" || true
+        echo "[$(date +"%H:%M:%S")]: VERIFIED: $CRT_ROMS/crt exists" >> "$LOG_FILE"
+        ls -la "$CRT_ROMS/crt/"*.sh 2>/dev/null | head -5 >> "$LOG_FILE" || true
     fi
     
     #############################################################################
