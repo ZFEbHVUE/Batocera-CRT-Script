@@ -402,20 +402,28 @@ case "${ACTION}" in
     ;;
 
     "defineMode")
-        MODE=$1
-        read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
-        RES_MODE="${WIDTH}x${HEIGHT}"
-        DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
-        DOTCLOCK_MIN_SWITCHRES=0
-        sed -i "s/.*dotclock_min        .*/     dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
-        MODE_xrandr=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -i switchres.ini -c)
-        sed -i "s/.*dotclock_min        .*/     dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+	MODE=$1
 
-        MODELINE_CUSTOM=$(echo "$MODE_xrandr" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')
-        OUTPUT="$PSCREEN"
-        xrandr -display :0.0 --newmode ${RES_MODE} ${MODELINE_CUSTOM}
-        xrandr -display :0.0 --addmode ${OUTPUT} ${RES_MODE}
-    ;;
+	#version /bash
+	read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
+
+	#version /sh
+	#WIDTH=$(echo $MODE | awk -F'[x.]' '{print $1}')
+        #HEIGHT=$(echo $MODE | awk -F'[x.]' '{print $2}')
+        #PARTHZ=$(echo $MODE | awk -F'[x.]' '{print $3 "." $4}')
+
+	RES_MODE="${WIDTH}x${HEIGHT}"
+	#### FORCED DOTCLOCK_MIN TO 0 TO USE SWITCHRES
+	DOTCLOCK_MIN=$(grep -v "^#" /etc/switchres.ini | grep "dotclock_min" | head -1 | awk '{print $2}')
+	DOTCLOCK_MIN_SWITCHRES=0
+
+        sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
+	MODE_switchres=$(switchres  ${WIDTH} ${HEIGHT} ${PARTHZ} -f ${WIDTH}x${HEIGHT}@${PARTHZ} -i switchres.ini -c) #> /dev/null 2>/dev/null
+	sed -i "s/.*dotclock_min        .*/	dotclock_min              $DOTCLOCK_MIN/" /etc/switchres.ini
+
+	MODELINE_CUSTOM="\"${RES_MODE}\" $(echo "$MODE_switchres" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
+	sed -i  "s/.*Modeline.*/    Modeline            $MODELINE_CUSTOM/" 	/userdata/system/99-nvidia.conf
+    ;;  
 
     "setMode_CVT")
         MODE=$1
