@@ -15,6 +15,8 @@ You only need to do a first calibration once
 			  
 * Exit the script and save the settings by pressing A or B</desc>
 		<image>./images/GunCon2_Calibration-image.png</image>
+		<marquee>./images/GunCon2_Calibration-logo.png</marquee>
+		<thumbnail>./images/GunCon2_Calibration-thumb.png</thumbnail>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
 		<playcount>23</playcount>
@@ -31,6 +33,8 @@ Always write down your default service menu values, save them on your phone, sti
 or keep them somewhere safe. Just don’t lose them. Preserving these values gives you more CRT range adjustments.
 If you push the CRT range too far in the geometry tool, you’ll have limited options for in-game adjustments later.</desc>
 		<image>./images/grid_tool-image.png</image>
+		<marquee>./images/grid_tool-logo.png</marquee>
+		<thumbnail>./images/grid_tool-thumb.png</thumbnail>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
 		<playcount>4</playcount>
@@ -46,6 +50,8 @@ which these operations within the service menu
 and CRT geometry tool do not produce a perfectly centered screen.		
 See Script wiki page for more information</desc>
 		<image>./images/es_adjust_tool-image.png</image>
+		<marquee>./images/es_adjust_tool-logo.png</marquee>
+		<thumbnail>./images/es_adjust_tool-thumb.png</thumbnail>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
 		<playcount>35</playcount>
@@ -61,6 +67,8 @@ With this utility you can create a custom monitor if the standard ones show the 
 Just follow the onscreen instructions to center grid using keyboard or gamepad.
 Next you need to adjust Emulationstation using the ES Centering &amp; Scaling Tool.</desc>
 		<image>./images/geometry-image.png</image>
+		<marquee>./images/geometry-logo.png</marquee>
+		<thumbnail>./images/geometry-thumb.png</thumbnail>
 		<manual>./manuals/CRT.sh-manual.pdf</manual>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
@@ -71,14 +79,36 @@ Next you need to adjust Emulationstation using the ES Centering &amp; Scaling To
 	</game>
 	<game>
 		<path>./overlays_overrides.sh</path>
-		<name>Overlays for Portable Systems</name>
-		<desc>Installer for Overlays for Portable Systems</desc>
+		<name>Scaling &amp; Overlays For Portable Systems</name>
+		<desc>Installer for Scaling &amp; Overlays For Portable Systems</desc>
 		<image>./images/overlays_overrides.png</image>
+		<marquee>./images/overlays_overrides-logo.png</marquee>
+		<thumbnail>./images/overlays_overrides-thumb.png</thumbnail>
 		<rating>0</rating>
 		<releasedate>19700101T010000</releasedate>
 		<playcount>9</playcount>
 		<lastplayed>20241116T170349</lastplayed>
 		<gametime>657</gametime>
+		<lang>en</lang>
+	</game>
+	<game>
+		<path>./mode_switcher.sh</path>
+		<name>HD/CRT Mode Switcher</name>
+		<desc>Switch between HD Mode (standard Batocera) and CRT Mode (CRT Script installed).
+
+This tool allows you to seamlessly switch between two Batocera configurations:
+- HD Mode: Standard Batocera settings for LCD/HDMI displays
+- CRT Mode: Batocera settings after CRT Script installation for CRT displays
+
+WARNING: Always turn off your monitor before switching modes. High frequencies during BIOS boot could damage your monitor!</desc>
+		<image>./images/hd_crt_switcher-image.png</image>
+		<marquee>./images/hd_crt_switcher-logo.png</marquee>
+		<thumbnail>./images/hd_crt_switcher-thumb.png</thumbnail>
+		<rating>0</rating>
+		<releasedate>19700101T010000</releasedate>
+		<playcount>0</playcount>
+		<lastplayed>19700101T010000</lastplayed>
+		<gametime>0</gametime>
 		<lang>en</lang>
 	</game>
 </gameList>
