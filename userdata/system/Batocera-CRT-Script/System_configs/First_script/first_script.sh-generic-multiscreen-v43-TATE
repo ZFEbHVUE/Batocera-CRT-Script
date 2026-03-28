@@ -1,0 +1,121 @@
+#!/bin/bash
+# Event hook script used by Batocera on game START or STOP
+
+##############################################################################
+# Logging — fresh file per session, robust on gameStop
+##############################################################################
+LOG_DIR="/userdata/system/logs"   # persistent in Batocera
+mkdir -p "$LOG_DIR"
+LOGFILE="$LOG_DIR/game_START_and_STOP.log"
+
+ACTION="$1"
+
+# Truncate on gameStart, append otherwise (so stop logs aren't wiped)
+if [ "$ACTION" = "gameStart" ]; then
+  exec >"$LOGFILE" 2>&1      # truncate + capture stdout/stderr
+else
+  exec >>"$LOGFILE" 2>&1      # append + capture stdout/stderr
+fi
+
+# Always log exit status, even if killed
+trap 'rc=$?; echo "$(date -Iseconds) [$$] EXIT action=$ACTION status=$rc"; sync' EXIT
+
+# Small logger helper with timestamp
+log(){ printf '%s [%s] %s\n' "$(date -Iseconds)" "$ACTION" "$*"; }
+
+# Header for this invocation
+echo "===== $(date -Iseconds) | $0 invoked with: $* (pid $$) ====="
+echo "ENV: DISPLAY=${DISPLAY:-:0.0} PWD=$PWD"
+
+# Optional ultra-verbose command tracing:
+# Enable by running with DEBUG=1 (or set DEBUG=1 below)
+DEBUG=${DEBUG:-0}
+if [ "$DEBUG" -eq 1 ]; then
+  PS4='+ $(date -Iseconds) [${BASH_SOURCE##*/}:${LINENO}] '
+  set -x
+fi
+
+##############################################################################
+# Script
+##############################################################################
+
+case "$ACTION" in
+  gameStart)
+    log "gameStart: sys=$2 emu=$3 core=$4 args=$5"
+
+    # Store emulator context
+    echo "$2" > /dev/shm/sysname.txt
+    echo "$3" > /dev/shm/emulator.txt
+    echo "$4" > /dev/shm/core.txt
+    echo "$5" > /dev/shm/args.txt
+
+    # Disable VSync for libretro emulators (RetroArch)
+    if [[ "$3" == "libretro" ]]; then
+      export vblank_mode=0
+      log "Set vblank_mode=0 for libretro (RetroArch)"
+
+      # xrandr rotation for libretro fbneo (RetroArch)
+      if [[ "$2" == "fbneo" ]]; then
+        log "xrandr rotation for libretro fbneo (RetroArch): [display_fbneo_rotation]"
+        xrandr -display :0.0 --output [card_display] --rotate  [display_fbneo_rotation]
+      else
+        log "xrandr rotation for libretro (RetroArch): [display_libretro_rotation]"
+        xrandr -display :0.0 --output [card_display] --rotate  [display_libretro_rotation]
+      fi
+
+    # Disable VSync for standalone MAME (GroovyMame)
+    elif [[ "$3" == "mame" ]]; then
+
+      export vblank_mode=0
+      xrandr -display :0.0 --output [card_display] --rotate [display_mame_rotation]
+
+      ROM=$(basename "${5%% *}" .zip)
+      ROTATE=$(/usr/bin/mame/mame -listxml "$ROM" 2>/dev/null | grep -oP 'rotate="\K[^"]+' | head -1)
+      log "ROM=${ROM} ROTATE=${ROTATE}"
+      if [ "$ROTATE" = "0" ] || [ -z "$ROTATE" ]; then
+    	log "Horizontal — rotate normal + delayed [card_display2] reposition"
+    
+    	(
+        sleep 6
+        OUTPUT_WIDTH=$(DISPLAY=:0.0 xrandr --query | grep "^[card_display] " | grep -oP '\d+x' | head -1 | tr -d 'x')
+        log "OUTPUT_WIDTH=${OUTPUT_WIDTH}"
+        xrandr -display :0.0 --output [card_display2] --mode [es_resolution2] --rate [Rate_resolution2] --right-of [card_display]
+        BG_ID=$(DISPLAY=:0.0 xdotool search --name "backglass" 2>/dev/null | tail -1)
+        [ -n "$BG_ID" ] && DISPLAY=:0.0 xdotool windowmove "$BG_ID" "${OUTPUT_WIDTH:-[H_RES2]}" 0
+        echo "$(date -Iseconds) [gameStart] backglass repositioned x=${OUTPUT_WIDTH}" >> "$LOGFILE"
+    	) &
+    	log "Delayed backglass reposition scheduled (bg pid $!)"
+     else
+    	log "TEST — Vertical détecté — ne toucherait rien" 	
+     fi
+    elif [[ "$3" == "fpinball" ]]; then
+      log "xrandr rotation for fpinball: [display_ES_rotation]"
+      xrandr -display :0.0 --output [card_display] --rotate [display_ES_rotation]
+
+    else
+      log "xrandr rotation for standalone: [display_standalone_rotation]"
+      xrandr -display :0.0 --output [card_display] --rotate [display_standalone_rotation]
+    fi
+  ;;
+
+  gameStop)
+     # Restore Rotation to EmulationStation and Resolution
+    log "gameStop: Restoring EmulationStation Rotation + Resolution"
+    log "xrandr rotation emulationstation: [display_ES_rotation]"
+    log "xrandr display output: [card_display]"
+    log "EmulationStation Resolution: [es_resolution]"
+
+    xrandr -display :0.0 --output [card_display] --rotate [display_ES_rotation]
+    xrandr -display :0.0 --output [card_display]  --mode "[es_resolution]"
+    # No need to unset vblank_mode — it's per-process
+  ;;
+
+  *)
+    log "Unknown action '$ACTION' (expected gameStart|gameStop)"
+  ;;
+esac
+
+log "Done."
+[ "$DEBUG" -eq 1 ] && set +x
+
+ 
