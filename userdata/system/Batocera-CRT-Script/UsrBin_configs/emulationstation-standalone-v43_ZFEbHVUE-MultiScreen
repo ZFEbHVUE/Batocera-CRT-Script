@@ -235,10 +235,11 @@ while [ -e "${REBOOT_FLAG}" ]; do
 		screensize_y=$HEIGHT
 	    fi
 
-	    sed -i "s/--mode \".*\"/--mode \"$RES\"/"    /userdata/system/scripts/first_script.sh
+        sed -i "s/\${OUTPUT_WIDTH:-[0-9]*}/\${OUTPUT_WIDTH:-${WIDTH}}/" /userdata/system/scripts/first_script.sh
+	    sed -i "/--output ${settings_output}/s/--mode \".*\"/--mode \"$RES\"/" /userdata/system/scripts/first_script.sh
 
-	    if ([ "$display_rotate" == "1" ] || [ "$display_rotate" == "3" ]); then
-		es_arg="es.customsargs=--screensize "$screensize_y" "$screensize_x" --screenoffset "$screenoffset_y" "$screenoffset_x""
+        if ([ "$display_rotate" == "1" ] || [ "$display_rotate" == "3" ]); then
+        es_arg="es.customsargs=--screensize "$screensize_y" "$screensize_x" --screenoffset "$screenoffset_y" "$screenoffset_x""
 	    else
 		es_arg="es.customsargs=--screensize "$screensize_x" "$screensize_y" --screenoffset "$screenoffset_x" "$screenoffset_y""
 	    fi
