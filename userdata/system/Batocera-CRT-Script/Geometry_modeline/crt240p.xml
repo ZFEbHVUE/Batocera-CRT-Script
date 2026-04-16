@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CRT 240p Layout (320x240)
+  Optimized for 15kHz CRT TVs viewed at 3-6 feet.
+  All font sizes target 12-16px at 240p for phosphor readability.
+-->
+<theme defaultView="gamecarousel">
+  <formatVersion>7</formatVersion>
+
+  <!-- MENU -->
+  <view name="menu">
+    <menuText name="menutitle">
+      <fontSize>0.044</fontSize>
+    </menuText>
+    <menuText name="menutext">
+      <fontSize>0.050</fontSize>
+    </menuText>
+    <menuText name="menufooter">
+      <fontSize>0.042</fontSize>
+    </menuText>
+    <menuTextSmall name="menutextsmall">
+      <fontSize>0.042</fontSize>
+    </menuTextSmall>
+    <menuGroup name="menugroup">
+      <fontSize>0.042</fontSize>
+    </menuGroup>
+  </view>
+
+  <!-- SCREEN (status bar) — keep clock, battery, controller activity -->
+  <view name="screen">
+    <text name="clock">
+      <fontSize>0.040</fontSize>
+      <pos>0.85 0.94</pos>
+      <size>0.14 0.058</size>
+    </text>
+    <controllerActivity name="controllerActivity">
+      <pos>0.015 0.028</pos>
+      <size>0.28 0.055</size>
+      <itemSpacing>0.006</itemSpacing>
+    </controllerActivity>
+  </view>
+
+  <!-- SYSTEM VIEW -->
+  <view name="system">
+    <carousel name="systemcarousel">
+      <color>FFFFFF00</color>
+      <colorEnd>FFFFFF00</colorEnd>
+    </carousel>
+    <text name="systemInfo">
+      <fontSize>0.058</fontSize>
+      <pos>0.05 0.75</pos>
+      <size>0.90 0.14</size>
+      <color>D0D0D0</color>
+      <alignment>center</alignment>
+    </text>
+    <text name="logoText">
+      <fontSize>0.075</fontSize>
+      <pos>0.02 0.08</pos>
+      <size>0.96 0.18</size>
+    </text>
+    <clock name="clock">
+      <fontSize>0.050</fontSize>
+    </clock>
+    <image name="ControllerOverlay" extra="true">
+      <pos>0.5 0.22</pos>
+      <maxSize>0.35 0.28</maxSize>
+    </image>
+    <image name="carousel-shadow" extra="true">
+      <visible>false</visible>
+    </image>
+    <image name="carousel-inner" extra="true">
+      <visible>false</visible>
+    </image>
+    <image name="CenterFade" extra="true">
+      <visible>false</visible>
+    </image>
+    <image name="BottomBar-shadow" extra="true">
+      <visible>false</visible>
+    </image>
+  </view>
+  <feature supported="manufacturer">
+    <view name="system">
+      <text name="manufacturerName" extra="static">
+        <fontSize>0.075</fontSize>
+        <pos>0.02 0.08</pos>
+        <size>0.96 0.10</size>
+      </text>
+      <text name="fullName" extra="true">
+        <fontSize>0.050</fontSize>
+        <pos>0.03 0.18</pos>
+        <size>0.94 0.08</size>
+      </text>
+      <text name="releaseYyear" extra="true">
+        <fontSize>0.050</fontSize>
+        <pos>0.03 0.27</pos>
+        <size>0.94 0.05</size>
+      </text>
+    </view>
+  </feature>
+
+  <!-- HELP SYSTEM -->
+  <view name="system, basic, detailed, grid, gamecarousel">
+    <helpsystem name="help">
+      <fontSize>0.042</fontSize>
+    </helpsystem>
+  </view>
+
+  <!-- COMMON (top bar for game views) -->
+  <view name="basic, detailed, grid, gamecarousel">
+    <text name="logoText">
+      <fontSize>0.067</fontSize>
+      <pos>0.02 0.01</pos>
+      <size>0.96 0.12</size>
+    </text>
+    <image name="logo">
+      <maxSize>0.30 0.11</maxSize>
+    </image>
+    <text name="folderpath">
+      <fontSize>0.042</fontSize>
+      <pos>0.05 0.12</pos>
+      <size>0.90 0.03</size>
+    </text>
+    <text name="filterInfo" extra="true">
+      <fontSize>0.042</fontSize>
+      <pos>0.05 0.12</pos>
+      <size>0.90 0.03</size>
+    </text>
+    <!-- Hide decorative overlays -->
+    <image name="top-shadow" extra="true">
+      <visible>false</visible>
+    </image>
+    <image name="bottom-shadow" extra="true">
+      <visible>false</visible>
+    </image>
+    <image name="consolebk" extra="true">
+      <visible>false</visible>
+    </image>
+    <image name="ControllerOverlay" extra="true">
+      <visible>false</visible>
+    </image>
+  </view>
+
+  <!-- BASIC VIEW — full-width text list -->
+  <view name="basic">
+    <textlist name="gamelist">
+      <pos>0.02 0.16</pos>
+      <size>0.96 0.77</size>
+      <fontSize>0.050</fontSize>
+      <lines>12</lines>
+      <horizontalMargin>0.005</horizontalMargin>
+    </textlist>
+  </view>
+
+  <!-- DETAILED VIEW — font size overrides only, stock layout with metadata -->
+  <view name="detailed">
+    <textlist name="gamelist">
+      <fontSize>0.050</fontSize>
+    </textlist>
+    <text name="md_description">
+      <fontSize>0.042</fontSize>
+    </text>
+    <text name="md_developer, md_genre, md_players">
+      <fontSize>0.042</fontSize>
+    </text>
+    <text name="md_lbl_players, md_lbl_releasedate, md_lbl_developer, md_lbl_publisher, md_lbl_genre, md_lbl_rating, md_lbl_playcount, md_lbl_lastplayed">
+      <fontSize>0.042</fontSize>
+    </text>
+    <datetime name="md_releasedate, md_lastplayed">
+      <fontSize>0.042</fontSize>
+    </datetime>
+  </view>
+
+  <!-- GRID VIEW — single item with large text fallback -->
+  <view name="grid">
+    <imagegrid name="gamegrid">
+      <autoLayout>1 1</autoLayout>
+      <pos>0.02 0.16</pos>
+      <size>0.96 0.77</size>
+      <scrollDirection>horizontal</scrollDirection>
+      <centerSelection>true</centerSelection>
+      <scrollLoop>true</scrollLoop>
+    </imagegrid>
+    <text name="gridtile">
+      <fontSize>0.050</fontSize>
+    </text>
+    <gridtile name="default">
+      <backgroundCornerSize>0 0</backgroundCornerSize>
+      <padding>0 0</padding>
+    </gridtile>
+    <gridtile name="selected">
+      <backgroundCornerSize>0 0</backgroundCornerSize>
+      <padding>0 0</padding>
+      <backgroundColor>00000000</backgroundColor>
+    </gridtile>
+  </view>
+
+  <!-- GAMECAROUSEL VIEW — slightly bumped fonts for CRT readability -->
+  <view name="gamecarousel">
+    <gamecarousel name="gamecarousel">
+      <logoSize>0.185 0.185</logoSize>
+      <logoScale>4.0</logoScale>
+    </gamecarousel>
+    <text name="md_description">
+      <fontSize>0.030</fontSize>
+      <pos>0.55 0.66</pos>
+      <size>0.43 0.22</size>
+    </text>
+    <text name="md_developer">
+      <fontSize>0.032</fontSize>
+      <size>0.40 0.05</size>
+    </text>
+    <text name="md_lbl_players, md_lbl_releasedate">
+      <fontSize>0.030</fontSize>
+    </text>
+    <text name="md_players">
+      <fontSize>0.030</fontSize>
+    </text>
+    <datetime name="md_releasedate">
+      <fontSize>0.030</fontSize>
+    </datetime>
+    <text name="md_genre">
+      <pos>1 1</pos>
+    </text>
+    <!-- Hide thumbnail while scrolling; fade in only after selection stops -->
+    <image name="md_thumbnail">
+      <storyboard event="activate">
+        <animation property="opacity" begin="1400" from="0" to="1" duration="400" mode="EaseOut"/>
+        <animation property="scale" begin="1400" from="0" to="1" duration="400" mode="bump"/>
+      </storyboard>
+      <storyboard event="scroll">
+        <animation property="opacity" to="0" duration="80" mode="EaseOut"/>
+        <animation property="scale" to="0" duration="80" mode="EaseOut"/>
+      </storyboard>
+      <storyboard event="deactivate">
+        <animation property="opacity" to="0" duration="80" mode="EaseOut"/>
+        <animation property="scale" to="0" duration="80" mode="EaseOut"/>
+      </storyboard>
+    </image>
+  </view>
+
+  <!-- CUSTOM VIEWS — force 1x1 grid, large text -->
+  <customView name="Tiles,Icons">
+    <imagegrid name="gamegrid">
+      <autoLayout>1 1</autoLayout>
+      <pos>0.02 0.16</pos>
+      <size>0.96 0.77</size>
+      <padding>0 0</padding>
+      <margin>0 0</margin>
+      <scrollDirection>horizontal</scrollDirection>
+    </imagegrid>
+    <text name="gridtile">
+      <fontSize>0.050</fontSize>
+    </text>
+    <gridtile name="default">
+      <backgroundCornerSize>0 0</backgroundCornerSize>
+      <padding>0 0</padding>
+    </gridtile>
+    <gridtile name="selected">
+      <backgroundCornerSize>0 0</backgroundCornerSize>
+      <padding>0 0</padding>
+    </gridtile>
+    <image name="gridtile.image">
+      <roundCorners>0</roundCorners>
+    </image>
+  </customView>
+
+  <!-- Carousel custom view is tinyScreen="false" in stock Carbon, so it won't appear at 240p/480p -->
+
+  <customView name="Boxes">
+    <imagegrid name="gamegrid">
+      <autoLayout>2 1</autoLayout>
+      <pos>0.02 0.16</pos>
+      <size>0.96 0.77</size>
+      <scrollDirection>horizontal</scrollDirection>
+    </imagegrid>
+    <text name="gridtile">
+      <fontSize>0.050</fontSize>
+    </text>
+  </customView>
+</theme>

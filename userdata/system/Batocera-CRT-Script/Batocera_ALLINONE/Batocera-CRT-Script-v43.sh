@@ -321,6 +321,7 @@ FILES_TO_HANDLE=(
   "/boot/EFI/batocera/syslinux.cfg"
   "/boot/EFI/BOOT/syslinux.cfg"
   "/userdata/system/batocera.conf"
+  "/usr/share/emulationstation/themes/es-theme-carbon/theme.xml"
 )
 
 # Extra files to delete on restore (if present)
@@ -341,6 +342,7 @@ EXTRA_DELETE_FILES=(
   "/boot/boot/overlay"
   "/boot/batocera-boot.conf.bak"
   "/boot/boot-custom.sh"
+  "/usr/share/emulationstation/themes/es-theme-carbon/layouts/crt240p.xml"
 )
 
 # Directories whose syslinux.cfg.bak / syslinux.cfg.initial should be purged if present
@@ -4088,6 +4090,55 @@ cp -a /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/ /userdata/roms
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.png /usr/share/emulationstation/themes/es-theme-carbon/art/consoles/CRT.png
 cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /usr/share/emulationstation/themes/es-theme-carbon/art/logos/CRT.svg
+
+#######################################################################################
+# Patch CRT 240p layout into stock Carbon theme
+#######################################################################################
+THEME_DIR="/usr/share/emulationstation/themes/es-theme-carbon"
+
+# Copy CRT 240p layout file
+cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/crt240p.xml \
+   "${THEME_DIR}/layouts/crt240p.xml"
+
+# Inject CRT 240p subset block into theme.xml (after optimizesmallscreens block)
+if ! grep -q 'name="crt240p"' "${THEME_DIR}/theme.xml"; then
+  sed -i '/name="optimizesmallscreens"/,/<\/subset>/{
+    /<\/subset>/a\
+\
+  <!-- CRT 240p optimization -->\
+  <subset name="crt240p" displayName="CRT 240p Mode">\
+    <include name="on" displayName="On">./layouts/crt240p.xml<\/include>\
+    <include name="off" displayName="Off"\/>\
+  <\/subset>
+  }' "${THEME_DIR}/theme.xml"
+fi
+
+#######################################################################################
+# Set CRT 240p theme preference based on boot resolution
+#######################################################################################
+ES_SETTINGS="/userdata/system/configs/emulationstation/es_settings.cfg"
+
+if [ "$V_RES_EDID" = "240" ]; then
+  CRT240P_VALUE="on"
+else
+  CRT240P_VALUE="off"
+fi
+
+if [ -f "$ES_SETTINGS" ]; then
+  if grep -q 'subset.es-theme-carbon.crt240p' "$ES_SETTINGS"; then
+    sed -i "s|subset.es-theme-carbon.crt240p\" value=\"[^\"]*\"|subset.es-theme-carbon.crt240p\" value=\"${CRT240P_VALUE}\"|" "$ES_SETTINGS"
+  else
+    sed -i "/<\/config>/i\\	<string name=\"subset.es-theme-carbon.crt240p\" value=\"${CRT240P_VALUE}\" />" "$ES_SETTINGS"
+  fi
+else
+  cat > "$ES_SETTINGS" <<ESEOF
+<?xml version="1.0"?>
+<config>
+	<string name="subset.es-theme-carbon.crt240p" value="${CRT240P_VALUE}" />
+</config>
+ESEOF
+fi
+
 chmod 755 /userdata/roms/crt/es_adjust_tool.sh
 chmod 755 /userdata/roms/crt/geometry.sh
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
