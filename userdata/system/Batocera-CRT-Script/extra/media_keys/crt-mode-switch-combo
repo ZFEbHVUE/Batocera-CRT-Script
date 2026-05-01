@@ -1,0 +1,372 @@
+#!/bin/bash
+#
+# Blind CRT -> HD mode switch (handheld chord: SELECT+START+L1+L2 on Steam Deck).
+#
+# Started by Batocera user service crt_mode_switch_watcher (evdev-only) or by
+# triggerhappy on boards where multimedia_keys.conf defines the BTN_* chord.
+# Single-instance flock is taken before the blind sleep so rapid chord spawns
+# cannot clobber each other. We still sleep 5 seconds after acquiring the lock.
+#
+# HD backup guard: requires a completed HD mode backup from the UI switcher
+# (mode_metadata.txt with MODE=hd). This avoids restoring into a sparse/factory
+# HD state when the user has never successfully saved HD mode.
+#
+# Haptic: best-effort rumble via python3 + evdev after the 5s blind wait (same
+# stack as Batocera configgen). Tries evdev nodes named "Steam Deck" first, then
+# other event* devices with FF_RUMBLE; hidraw fallback matches Deck gamepad HID uevent
+# names (e.g. Valve Software Steam Deck Controller). See ordered_paths() / uevent_is_deck_gamepad().
+#
+# DEBUG dry-run: optional empty file /userdata/system/crt-mode-switch-combo.debug
+# skips guards, backup/restore, and shutdown (use only while testing). Remove it
+# for production; the installer does not create this file.
+#
+# After HD files are restored on disk: dual-boot calls /sbin/poweroff, else /sbin/reboot.
+# Handheld QA checklist (run on device):
+# - Cold boot: chord fires combo (Deck: crt_mode_switch_watcher; others: thd if configured).
+# - After switch: machine powers off (dual-boot) or reboots (single-boot) into HD.
+# - DEBUG: touch /userdata/system/crt-mode-switch-combo.debug to skip HD restore entirely.
+# - All status lines go to /userdata/system/logs/crt-script-mode-switch.log (persists
+#   without batocera-save-overlay), BUILD_15KHz_Batocera.log, and the same legacy
+#   path as the watcher (crt-mode-switch-watcher.log) so one tail shows combo+haptic.
+# - Rumble felt on supported pads; switch works without rumble.
+
+set +e
+
+SCRIPT_DIR="/userdata/system/Batocera-CRT-Script"
+MODE_BACKUP_DIR="/userdata/Batocera-CRT-Script-Backup/mode_backups"
+CRT_BACKUP_DIR="/userdata/Batocera-CRT-Script-Backup/BACKUP"
+CRT_BACKUP_CHECK="${CRT_BACKUP_DIR%/*}/backup.file"
+
+if [ -d "/userdata/.roms_base" ]; then
+  CRT_ROMS="/userdata/.roms_base"
+else
+  CRT_ROMS="/userdata/roms"
+fi
+# CRT_ROMS used by sourced 03_backup_restore.sh (same as mode_switcher.sh).
+
+LOG_FILE="/userdata/system/logs/BUILD_15KHz_Batocera.log"
+CRT_SCRIPT_LOG="/userdata/system/logs/crt-script-mode-switch.log"
+CRT_WATCHER_LEGACY_LOG="/userdata/system/logs/crt-mode-switch-watcher.log"
+
+_crt_script_log() {
+  local body="crt-mode-switch-combo: $*"
+  local ts="[$(date +"%Y-%m-%d %H:%M:%S")] ${body}"
+  mkdir -p /userdata/system/logs 2>/dev/null || true
+  echo "$ts" >>"$CRT_SCRIPT_LOG" 2>/dev/null || true
+  echo "[$(date +"%H:%M:%S")]: ${body}" >>"$LOG_FILE" 2>/dev/null || true
+  echo "$ts" >>"$CRT_WATCHER_LEGACY_LOG" 2>/dev/null || true
+}
+
+MODULES_DIR="${SCRIPT_DIR}/Geometry_modeline/mode_switcher_modules"
+
+if [ ! -d "$MODULES_DIR" ]; then
+  _crt_script_log "skipped (missing MODULES_DIR ${MODULES_DIR})"
+  exit 0
+fi
+
+# shellcheck source=/dev/null
+source "${MODULES_DIR}/01_mode_detection.sh"
+# shellcheck source=/dev/null
+source "${MODULES_DIR}/03_backup_restore.sh"
+
+_combo_hd_backup_ok() {
+  local meta="${MODE_BACKUP_DIR}/hd_mode/mode_metadata.txt"
+  [ -f "$meta" ] || return 1
+  grep -q '^MODE=hd' "$meta" 2>/dev/null || return 1
+  return 0
+}
+
+_combo_haptic_ack() {
+  export CRT_COMBO_LOG_PATH="$CRT_SCRIPT_LOG"
+  export CRT_COMBO_LOG_LEGACY="$CRT_WATCHER_LEGACY_LOG"
+  _crt_script_log "haptic: invoking python (evdev FF_RUMBLE, hidraw fallback for Deck HID)"
+  python3 - <<'PY'
+import glob
+import os
+import struct
+import time
+
+try:
+    from evdev import InputDevice, ecodes
+    from evdev.ff import Effect
+except ImportError as _e:
+    _paths = (
+        os.environ.get("CRT_COMBO_LOG_PATH", ""),
+        os.environ.get("CRT_COMBO_LOG_LEGACY", ""),
+    )
+    _line = (
+        f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+        f"crt-mode-switch-combo: haptic python ImportError (no evdev): {_e!r}\n"
+    )
+    for _p in _paths:
+        if not _p:
+            continue
+        try:
+            os.makedirs(os.path.dirname(_p), exist_ok=True)
+            with open(_p, "a", encoding="utf-8", errors="replace") as _f:
+                _f.write(_line)
+        except OSError:
+            pass
+    raise SystemExit(2)
+
+
+def log_line(msg: str) -> None:
+    line = (
+        f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+        f"crt-mode-switch-combo: haptic {msg}\n"
+    )
+    for p in (
+        os.environ.get("CRT_COMBO_LOG_PATH", ""),
+        os.environ.get("CRT_COMBO_LOG_LEGACY", ""),
+    ):
+        if not p:
+            continue
+        try:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            with open(p, "a", encoding="utf-8", errors="replace") as f:
+                f.write(line)
+        except OSError:
+            pass
+
+
+def uevent_is_deck_gamepad(txt: str) -> bool:
+    """Kernel uevent HID_NAME is 'Steam Deck' or 'Valve Software Steam Deck Controller'. Skip Motion."""
+    hid = ""
+    for line in txt.splitlines():
+        if line.startswith("HID_NAME="):
+            hid = line.split("=", 1)[1].strip()
+            break
+    if not hid or "Motion" in hid:
+        return False
+    if hid == "Steam Deck":
+        return True
+    return "Steam Deck" in hid
+
+
+def find_steam_deck_hidraws() -> list[str]:
+    """hidraw nodes whose uevent HID_NAME is Deck gamepad (Steam Deck or Valve …). hid-steam 0xEB."""
+    out: list[str] = []
+    for uevent in sorted(glob.glob("/sys/class/hidraw/hidraw*/device/uevent")):
+        try:
+            txt = open(uevent, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        if not uevent_is_deck_gamepad(txt):
+            continue
+        parts = uevent.split("/")
+        if len(parts) >= 5 and parts[4].startswith("hidraw"):
+            out.append("/dev/" + parts[4])
+    return out
+
+
+def try_hidraw_rumble(hpath: str) -> bool:
+    """Match drivers/hid/hid-steam.c ID_TRIGGER_RUMBLE_CMD (0xEB), length byte 9."""
+    left = 0xFFFF
+    right = 0xFFFF
+    intensity = 0
+    left_gain = 2
+    right_gain = 0
+    rep = bytearray(11)
+    rep[0] = 0xEB
+    rep[1] = 9
+    rep[2] = 0
+    struct.pack_into("<H", rep, 3, intensity)
+    struct.pack_into("<H", rep, 5, left)
+    struct.pack_into("<H", rep, 7, right)
+    rep[9] = left_gain & 0xFF
+    rep[10] = right_gain & 0xFF
+    stop = bytearray(11)
+    stop[0] = 0xEB
+    stop[1] = 9
+    # Some kernels expect O_RDWR on hidraw.
+    for rep_bytes in (bytes(rep), b"\x00" + bytes(rep)):
+        try:
+            fd = os.open(hpath, os.O_RDWR)
+            try:
+                os.write(fd, rep_bytes)
+            finally:
+                os.close(fd)
+            log_line(f"hidraw wrote RUMBLE_CMD len={len(rep_bytes)} to {hpath}")
+            time.sleep(0.45)
+            fd2 = os.open(hpath, os.O_RDWR)
+            try:
+                os.write(fd2, bytes(stop) if len(rep_bytes) == len(rep) else b"\x00" + bytes(stop))
+            finally:
+                os.close(fd2)
+            log_line(f"hidraw sent rumble stop to {hpath}")
+            return True
+        except OSError as e:
+            log_line(f"hidraw {hpath} try len={len(rep_bytes)} failed: {e!r}")
+    return False
+
+
+def ordered_paths():
+    paths = sorted(glob.glob("/dev/input/event*"))
+    deck, rest = [], []
+    for path in paths:
+        try:
+            d = InputDevice(path)
+            n = (d.name or "").strip()
+            d.close()
+        except OSError:
+            continue
+        if n == "Steam Deck":
+            deck.append(path)
+        else:
+            rest.append(path)
+    return deck + rest
+
+
+def try_evdev_ff(path: str) -> bool:
+    try:
+        dev = InputDevice(path)
+    except OSError as e:
+        log_line(f"open {path} failed: {e!r}")
+        return False
+    name = (dev.name or "").strip()
+    caps = dev.capabilities()
+    ff_codes = caps.get(ecodes.EV_FF) or []
+    if ecodes.FF_RUMBLE not in ff_codes:
+        log_line(f"{path} ({name!r}) no FF_RUMBLE; EV_FF={ff_codes!r}")
+        try:
+            dev.close()
+        except OSError:
+            pass
+        return False
+    effect = Effect()
+    effect.type = ecodes.FF_RUMBLE
+    effect.id = -1
+    effect.direction = 0
+    effect.ff_trigger.button = 0
+    effect.ff_trigger.interval = 0
+    effect.ff_replay.length = 900
+    effect.ff_replay.delay = 0
+    _rum = getattr(effect.u, "rumble", None) or getattr(
+        effect.u, "ff_rumble_effect", None
+    )
+    if _rum is None:
+        log_line(f"{path} ({name!r}) evdev Effect.u has no rumble/ff_rumble_effect")
+        return False
+    _rum.strong_magnitude = 0xFFFF
+    _rum.weak_magnitude = 0xFFFF
+    try:
+        eid = dev.upload_effect(effect)
+        dev.write(ecodes.EV_FF, eid, 1)
+        try:
+            dev.syn()
+        except AttributeError:
+            pass
+        time.sleep(0.95)
+        dev.write(ecodes.EV_FF, eid, 0)
+        try:
+            dev.syn()
+        except AttributeError:
+            pass
+        dev.erase_effect(eid)
+        log_line(f"evdev FF_RUMBLE ok {path} ({name!r})")
+        return True
+    except (OSError, AttributeError, ValueError, TypeError) as e:
+        log_line(f"{path} ({name!r}) evdev play failed: {e!r}")
+        return False
+    finally:
+        try:
+            dev.close()
+        except Exception:
+            pass
+
+
+def main() -> None:
+    log_line("python haptic start (scan evdev then hidraw)")
+    for path in ordered_paths():
+        if try_evdev_ff(path):
+            return
+    for hp in find_steam_deck_hidraws():
+        if try_hidraw_rumble(hp):
+            return
+    log_line("no evdev FF_RUMBLE and no hidraw gamepad rumble (CONFIG_STEAM_FF / hid-steam)")
+
+
+if __name__ == "__main__":
+    main()
+PY
+  _haptic_py=$?
+  _crt_script_log "haptic: python finished (exit ${_haptic_py})"
+}
+
+# Single-instance lock BEFORE blind wait. Parallel spawns (rapid chord) used to
+# each sleep 5s then truncate this file with exec 9>, breaking flock and exiting silent.
+exec 9>/tmp/crt-mode-switch-combo.lock
+if ! flock -n 9; then
+  _crt_script_log "skipped (lock busy or another instance running)"
+  exit 0
+fi
+
+_crt_script_log "lock acquired; 5s blind wait then haptic"
+
+# Hold / blind-wait (see header).
+sleep 5
+
+_combo_haptic_ack
+
+# DEBUG: skip mode switch and reboot while tuning haptics (stay in CRT).
+if [ -f /userdata/system/crt-mode-switch-combo.debug ]; then
+  _crt_script_log "DEBUG dry-run: skipping guards backup/restore reboot (remove /userdata/system/crt-mode-switch-combo.debug for normal switch)"
+  exit 0
+fi
+
+if ! check_crt_script_installed; then
+  _crt_script_log "skipped (CRT install marker missing: ${CRT_BACKUP_CHECK})"
+  exit 0
+fi
+
+_current_mode="$(detect_current_mode 2>/dev/null | head -1 | tr -d '\r\n[:space:]')"
+if [ "$_current_mode" != "crt" ]; then
+  _crt_script_log "skipped (not CRT mode; detect_current_mode='${_current_mode}')"
+  exit 0
+fi
+
+if ! _combo_hd_backup_ok; then
+  _crt_script_log "no usable HD mode backup (need hd_mode/mode_metadata.txt MODE=hd)"
+  exit 0
+fi
+
+mkdir -p "$MODE_BACKUP_DIR" 2>/dev/null || true
+
+if ! backup_mode_files "crt"; then
+  _crt_script_log "backup_mode_files crt failed"
+  exit 0
+fi
+
+if ! restore_mode_files "hd"; then
+  _crt_script_log "restore_mode_files hd failed"
+  exit 0
+fi
+
+_crt_script_log "FINAL PRE-REBOOT VERIFICATION..."
+if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg" ]; then
+  mkdir -p /userdata/system/configs/emulationstation 2>/dev/null || true
+  cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_systems_crt.cfg /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null || true
+  chmod 644 /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null || true
+  touch /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null || true
+  sync 2>/dev/null || true
+  sync 2>/dev/null || true
+  if grep -qE "emulatorlauncher|crt-launcher" /userdata/system/configs/emulationstation/es_systems_crt.cfg 2>/dev/null; then
+    _crt_script_log "FINAL VERIFICATION PASSED: es_systems_crt.cfg"
+  else
+    _crt_script_log "FINAL VERIFICATION FAILED: es_systems_crt.cfg"
+  fi
+fi
+
+sleep 2
+
+# Use absolute paths: user services / Popen often have PATH without /sbin, so bare
+# "poweroff" can be missing and exit silently before the kernel acts.
+if is_dualboot_system; then
+  _crt_script_log "shutdown: dual-boot (/boot/crt/linux + initrd-crt.gz) -> /sbin/poweroff"
+  sync 2>/dev/null || true
+  /sbin/poweroff 2>/dev/null || /sbin/shutdown -P -h now 2>/dev/null || _crt_script_log "ERROR: poweroff failed (check root / PATH)"
+else
+  _crt_script_log "shutdown: single-boot -> /sbin/reboot"
+  sync 2>/dev/null || true
+  /sbin/reboot 2>/dev/null || /sbin/shutdown -r now 2>/dev/null || _crt_script_log "ERROR: reboot failed (check root / PATH)"
+fi

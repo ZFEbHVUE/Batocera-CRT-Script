@@ -1,0 +1,43 @@
+#!/bin/bash
+# Batocera user service: blind CRT to HD chord (SELECT+START+L1+L2) -> crt-mode-switch-combo (Steam Deck).
+# Installed to /userdata/system/services/crt_mode_switch_watcher and enabled via system.services.
+
+PIDFILE=/var/run/crt-mode-switch-watcher.pid
+
+case "$1" in
+start)
+	if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE" 2>/dev/null)" 2>/dev/null; then
+		exit 0
+	fi
+	WPY_UD="/userdata/system/Batocera-CRT-Script/extra/media_keys/crt-mode-switch-watcher.py"
+	WPY_SYS="/usr/bin/crt-mode-switch-watcher.py"
+	if [ -f "$WPY_UD" ]; then
+		# Touch /userdata/system/crt-mode-switch-watcher.debug to log every chord-key press/release.
+		[ -f /userdata/system/crt-mode-switch-watcher.debug ] && export CRT_MODE_SWITCH_WATCHER_DEBUG=1
+		/usr/bin/python3 "$WPY_UD" &
+	elif [ -f "$WPY_SYS" ]; then
+		[ -f /userdata/system/crt-mode-switch-watcher.debug ] && export CRT_MODE_SWITCH_WATCHER_DEBUG=1
+		/usr/bin/python3 "$WPY_SYS" &
+	else
+		exit 0
+	fi
+	echo $! >"$PIDFILE"
+	;;
+stop)
+	if [ -f "$PIDFILE" ]; then
+		kill "$(cat "$PIDFILE" 2>/dev/null)" 2>/dev/null || true
+		rm -f "$PIDFILE"
+	fi
+	pkill -f 'crt-mode-switch-watcher.py' 2>/dev/null || true
+	;;
+status)
+	if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE" 2>/dev/null)" 2>/dev/null; then
+		echo "crt_mode_switch_watcher: running pid=$(cat "$PIDFILE")"
+	else
+		echo "crt_mode_switch_watcher: stopped"
+	fi
+	;;
+*)
+	;;
+esac
+exit 0
