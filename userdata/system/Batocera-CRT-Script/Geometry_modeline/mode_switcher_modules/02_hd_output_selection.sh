@@ -368,68 +368,246 @@ show_boot_resolution_dialog() {
     done
 }
 
+#######################################################################################
+# Blind switch watcher (crt_mode_switch_watcher) - same HD backup gate as crt-mode-switch-combo.
+# Defined in this module with the other Mode Switch Configuration dialogs (EDIT_HD / EDIT_CRT / EDIT_BOOT).
+#######################################################################################
+_hd_backup_exists() {
+    local meta="/userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/mode_metadata.txt"
+    [ -f "$meta" ] && grep -q '^MODE=hd' "$meta" 2>/dev/null
+}
+
+_watcher_enabled() {
+    local svcs
+    svcs="$(/usr/bin/batocera-settings-get system.services 2>/dev/null)"
+    echo " ${svcs} " | grep -q ' crt_mode_switch_watcher '
+}
+
+_modeswitcher_watcher_status_label() {
+    if ! _hd_backup_exists; then
+        echo "UNAVAILABLE"
+    elif _watcher_enabled; then
+        echo "ON"
+    else
+        echo "OFF"
+    fi
+}
+
+# Function: show_watcher_page
+# Purpose: Blind switch watcher config using the same select-then-confirm pattern as boot/output dialogs
+# Returns: 0
+show_watcher_page() {
+    local selected_action=""
+    local default_item=""
+
+    if ! _hd_backup_exists; then
+        dialog --title "Blind Switch Watcher" \
+               --backtitle "HD/CRT Mode Switcher" \
+               --msgbox "Enables a background service that watches for a button\ncombo and switches to HD Mode without needing a display.\nUseful when you power on away from a CRT.\n\nCombo: SELECT + START + L1 + L2 held 5 seconds.\n\nNOT AVAILABLE YET\nYou must complete one full HD/CRT round trip using the\nmode switcher first. This saves the HD settings that\nthe blind switch restores." \
+               16 62
+        return 0
+    fi
+
+    local current_state="OFF"
+    _watcher_enabled && current_state="ON"
+
+    while true; do
+        local menu_items=()
+        local on_marker="" off_marker=""
+
+        if [ "$current_state" = "ON" ]; then
+            on_marker="  [CURRENT]"
+        else
+            off_marker="  [CURRENT]"
+        fi
+
+        if [ "$selected_action" = "ENABLE" ]; then
+            on_marker="  [SELECTED]"
+        elif [ "$selected_action" = "DISABLE" ]; then
+            off_marker="  [SELECTED]"
+        fi
+
+        menu_items+=("ENABLE" "Watcher ON$on_marker")
+        menu_items+=("DISABLE" "Watcher OFF$off_marker")
+        menu_items+=("--------" "─────────────────────────────")
+        menu_items+=("CONFIRM" "Apply selected setting")
+        menu_items+=("CANCEL" "Go back")
+
+        if [ -z "$default_item" ]; then
+            if [ "$current_state" = "ON" ]; then
+                default_item="ENABLE"
+            else
+                default_item="DISABLE"
+            fi
+        fi
+
+        local choice
+        choice=$(dialog --title "Blind Switch Watcher Setup" \
+                       --backtitle "HD/CRT Mode Switcher" \
+                       --default-item "$default_item" \
+                       --no-cancel \
+                       --no-ok \
+                       --menu "Enables a background service that watches for a button\ncombo and switches to HD Mode without needing a display.\nUseful when you power on away from a CRT.\n\nCombo: SELECT + START + L1 + L2 held 5 seconds.\nRequires one full HD/CRT round trip first." \
+                       18 62 5 \
+                       "${menu_items[@]}" \
+                       3>&1 1>&2 2>&3)
+
+        local exit_code=$?
+
+        if [ $exit_code -ne 0 ]; then
+            return 0
+        fi
+
+        if [ "$choice" = "--------" ]; then
+            default_item="CONFIRM"
+            continue
+        fi
+
+        if [ "$choice" = "CANCEL" ]; then
+            return 0
+        fi
+
+        if [ "$choice" = "CONFIRM" ]; then
+            if [ -z "$selected_action" ]; then
+                dialog --title "No Change Selected" \
+                       --backtitle "HD/CRT Mode Switcher" \
+                       --msgbox "Select ENABLE or DISABLE first, then CONFIRM." \
+                       7 55
+                default_item="ENABLE"
+                continue
+            fi
+
+            if [ "$selected_action" = "ENABLE" ] && [ "$current_state" = "ON" ]; then
+                return 0
+            fi
+            if [ "$selected_action" = "DISABLE" ] && [ "$current_state" = "OFF" ]; then
+                return 0
+            fi
+
+            if [ "$selected_action" = "ENABLE" ]; then
+                if /usr/bin/batocera-services enable crt_mode_switch_watcher 2>/dev/null && \
+                   /usr/bin/batocera-services start crt_mode_switch_watcher 2>/dev/null; then
+                    dialog --title "Blind Switch Watcher" \
+                           --backtitle "HD/CRT Mode Switcher" \
+                           --msgbox "Watcher enabled and started.\n\nWill auto-start on every boot." \
+                           8 50
+                else
+                    dialog --title "Error" \
+                           --backtitle "HD/CRT Mode Switcher" \
+                           --msgbox "Could not enable watcher. Try from SSH:\n  batocera-services enable crt_mode_switch_watcher\n  batocera-services start crt_mode_switch_watcher" \
+                           10 62
+                fi
+            else
+                /usr/bin/batocera-services stop crt_mode_switch_watcher 2>/dev/null || true
+                if /usr/bin/batocera-services disable crt_mode_switch_watcher 2>/dev/null; then
+                    dialog --title "Blind Switch Watcher" \
+                           --backtitle "HD/CRT Mode Switcher" \
+                           --msgbox "Watcher disabled and stopped.\n\nWill not start on next boot." \
+                           8 50
+                else
+                    dialog --title "Error" \
+                           --backtitle "HD/CRT Mode Switcher" \
+                           --msgbox "Could not disable watcher. Try from SSH:\n  batocera-services stop crt_mode_switch_watcher\n  batocera-services disable crt_mode_switch_watcher" \
+                           10 62
+                fi
+            fi
+            return 0
+        fi
+
+        selected_action="$choice"
+        default_item="CONFIRM"
+    done
+}
+
 # Function: show_config_summary_dialog
 # Purpose: Show summary of all configs with EDIT option
 # Parameters: $1 - target_mode, $2 - hd_output, $3 - crt_output, $4 - crt_boot
-# Returns: Action in SUMMARY_ACTION variable ("confirm", "edit_hd", "edit_crt", "edit_boot", "cancel")
+# Returns: Action in SUMMARY_ACTION variable ("confirm", "edit_hd", "edit_crt", "edit_boot", "edit_watcher", "cancel")
 show_config_summary_dialog() {
     local target_mode="$1"
     local hd_output="$2"
     local crt_output="$3"
     local crt_boot="$4"
-    
-    local menu_items=()
-    
-    # Build summary display
-    local hd_display="HD Output:   $hd_output"
-    local crt_display="CRT Output:  $crt_output"
-    local boot_display="CRT Boot:    $crt_boot"
-    
-    # Add markers for current mode
-    if [ "$target_mode" = "hd" ]; then
-        hd_display="$hd_display  << SWITCHING TO"
-    else
-        crt_display="$crt_display  << SWITCHING TO"
-    fi
-    
-    menu_items+=("CONFIRM" ">>> Switch to $(get_mode_display_name "$target_mode")")
-    
-    # Add all EDIT options
-    menu_items+=("EDIT_HD" "Edit HD Output ($hd_output)")
-    menu_items+=("EDIT_CRT" "Edit CRT Output ($crt_output)")
-    menu_items+=("EDIT_BOOT" "Edit CRT Boot Resolution")
-    
-    menu_items+=("--------" "─────────────────────────────")
-    menu_items+=("CANCEL" "Return to EmulationStation")
-    
-    local choice
-    choice=$(dialog --title "Mode Switch Configuration" \
-                   --backtitle "HD/CRT Mode Switcher" \
-                   --default-item "CONFIRM" \
-                   --no-cancel \
-                   --no-ok \
-                   --menu "Current Configuration:\n\n$hd_display\n$crt_display\n$boot_display\n\nSelect action:" \
-                   20 70 6 \
-                   "${menu_items[@]}" \
-                   3>&1 1>&2 2>&3)
-    
-    local exit_code=$?
-    
-    if [ $exit_code -ne 0 ]; then
-        SUMMARY_ACTION="cancel"
-        return 1
-    fi
-    
-    case "$choice" in
-        "CONFIRM") SUMMARY_ACTION="confirm" ;;
-        "EDIT_HD") SUMMARY_ACTION="edit_hd" ;;
-        "EDIT_CRT") SUMMARY_ACTION="edit_crt" ;;
-        "EDIT_BOOT") SUMMARY_ACTION="edit_boot" ;;
-        "CANCEL"|"--------") SUMMARY_ACTION="cancel"; return 1 ;;
-        *) SUMMARY_ACTION="cancel"; return 1 ;;
-    esac
-    
-    return 0
+
+    while true; do
+        local menu_items=()
+
+        # Build summary display
+        local hd_display="HD Output:   $hd_output"
+        local crt_display="CRT Output:  $crt_output"
+        local boot_display="CRT Boot:    $crt_boot"
+        local watcher_display="Blind Switch Watcher:   $(_modeswitcher_watcher_status_label)"
+
+        # Add markers for current mode
+        if [ "$target_mode" = "hd" ]; then
+            hd_display="$hd_display  << SWITCHING TO"
+        else
+            crt_display="$crt_display  << SWITCHING TO"
+        fi
+
+        menu_items+=("CONFIRM" ">>> Switch to $(get_mode_display_name "$target_mode")")
+
+        # Add all EDIT options
+        menu_items+=("EDIT_HD" "Edit HD Output ($hd_output)")
+        menu_items+=("EDIT_CRT" "Edit CRT Output ($crt_output)")
+        menu_items+=("EDIT_BOOT" "Edit CRT Boot Resolution")
+        menu_items+=("EDIT_WATCHER" "Edit Blind Switch Watcher")
+
+        menu_items+=("--------" "─────────────────────────────")
+        menu_items+=("CANCEL" "Return to EmulationStation")
+
+        local choice exit_code
+        choice=$(dialog --title "Mode Switch Configuration" \
+                       --backtitle "HD/CRT Mode Switcher" \
+                       --default-item "CONFIRM" \
+                       --no-cancel \
+                       --no-ok \
+                       --menu "Current Configuration:\n\n$hd_display\n$crt_display\n$boot_display\n$watcher_display\n\nSelect action:" \
+                       22 70 7 \
+                       "${menu_items[@]}" \
+                       3>&1 1>&2 2>&3)
+        exit_code=$?
+        choice="${choice//$'\r'/}"
+        choice="${choice//$'\n'/}"
+        choice="${choice#"${choice%%[![:space:]]*}"}"
+        choice="${choice%"${choice##*[![:space:]]}"}"
+
+        if [ $exit_code -ne 0 ]; then
+            declare -g SUMMARY_ACTION="cancel"
+            return 1
+        fi
+
+        case "$choice" in
+            "CONFIRM")
+                declare -g SUMMARY_ACTION="confirm"
+                return 0
+                ;;
+            "EDIT_HD")
+                declare -g SUMMARY_ACTION="edit_hd"
+                return 0
+                ;;
+            "EDIT_CRT")
+                declare -g SUMMARY_ACTION="edit_crt"
+                return 0
+                ;;
+            "EDIT_BOOT")
+                declare -g SUMMARY_ACTION="edit_boot"
+                return 0
+                ;;
+            "EDIT_WATCHER")
+                declare -g SUMMARY_ACTION="edit_watcher"
+                return 0
+                ;;
+            "CANCEL"|"--------")
+                declare -g SUMMARY_ACTION="cancel"
+                return 1
+                ;;
+            *)
+                declare -g SUMMARY_ACTION="cancel"
+                return 1
+                ;;
+        esac
+    done
 }
 
 # Function: get_current_crt_backup_output
@@ -698,6 +876,10 @@ run_mode_switch_ui() {
                     if [ $? -eq 0 ]; then
                         working_boot="$SELECTED_BOOT"
                     fi
+                    continue
+                    ;;
+                "edit_watcher")
+                    show_watcher_page
                     continue
                     ;;
                 "cancel"|*)
