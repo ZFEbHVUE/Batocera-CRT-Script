@@ -211,10 +211,13 @@ main() {
         sleep 2
         
         if is_dualboot_system; then
-            # Dual-boot: full shutdown required for any cross-kernel transition.
-            # Warm reboots leave stale DRM/KMS state in GPU hardware registers,
-            # causing black screens when the new kernel initializes its display stack.
-            poweroff
+            # Dual-boot: immediate kernel power-off for cross-kernel
+            # transition.  Normal poweroff can hang on some GPUs;
+            # SysRq 'o' is reliable across all hardware.
+            batocera-save-overlay 2>/dev/null || true
+            sync
+            sync
+            echo o > /proc/sysrq-trigger
         else
             reboot
         fi
