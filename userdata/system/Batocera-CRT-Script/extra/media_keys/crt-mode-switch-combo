@@ -362,9 +362,11 @@ sleep 2
 # Use absolute paths: user services / Popen often have PATH without /sbin, so bare
 # "poweroff" can be missing and exit silently before the kernel acts.
 if is_dualboot_system; then
-  _crt_script_log "shutdown: dual-boot (/boot/crt/linux + initrd-crt.gz) -> /sbin/poweroff"
+  _crt_script_log "shutdown: dual-boot (/boot/crt/linux + initrd-crt.gz) -> SysRq power-off"
+  batocera-save-overlay 2>/dev/null || true
   sync 2>/dev/null || true
-  /sbin/poweroff 2>/dev/null || /sbin/shutdown -P -h now 2>/dev/null || _crt_script_log "ERROR: poweroff failed (check root / PATH)"
+  sync 2>/dev/null || true
+  echo o > /proc/sysrq-trigger
 else
   _crt_script_log "shutdown: single-boot -> /sbin/reboot"
   sync 2>/dev/null || true

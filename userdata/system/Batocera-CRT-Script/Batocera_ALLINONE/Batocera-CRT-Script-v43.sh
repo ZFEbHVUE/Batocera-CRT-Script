@@ -686,10 +686,12 @@ backup_restore_main() {
 #####################    WAYLAND / X11 PHASE 1 FUNCTIONS START     ####################
 ########################################################################################
 
+X11_IMAGE_URL="https://sour-silent-prune.6fcff5d8.katapult.cloud/images/batocera-x86_64-43-20260430.img.gz"
+X11_MD5_URL="https://mirrors.o2switch.fr/batocera/x86_64/stable/last/batocera-x86_64-43-20260430.img.gz.md5"
+
 sanitize_image_url() {
   IMAGE_URL="${IMAGE_URL%.md5}"
   IMAGE_URL="${IMAGE_URL% }"
-  MD5_URL="${IMAGE_URL}.md5"
 }
 
 scan_for_x11_image() {
@@ -762,6 +764,16 @@ download_x11_image() {
     if wget --progress=bar:force -O "$part_file" "$IMAGE_URL" 2>&1; then
       mv "$part_file" "$IMAGE_PATH"
       ok_box "Download complete: ${filename}"
+      # Also download the .md5 file from the official mirror
+      local md5_url="${X11_MD5_URL}"
+      local md5_dest="${IMAGE_PATH}.md5"
+      if wget -q -O "$md5_dest" "$md5_url" 2>/dev/null; then
+        ok_box "MD5 checksum downloaded: ${filename}.md5"
+      else
+        err_box "Warning: could not download .md5 checksum file"
+        box_center "URL: $md5_url"
+        box_center "MD5 validation will fail without this file."
+      fi
       return 0
     else
       rm -f "$part_file"
@@ -798,20 +810,34 @@ download_x11_image() {
 }
 
 validate_md5() {
+  local md5_file="${IMAGE_PATH}.md5"
+
   box_hash
   box_center "MD5 Validation"
   box_hash
   box_empty
+
+  if [ ! -f "$md5_file" ]; then
+    err_box "MD5 checksum file not found"
+    box_center "Expected: ${md5_file}"
+    box_center "Transfer the .md5 file alongside the image."
+    box_empty
+    box_hash
+    echo ""
+    return 1
+  fi
+
   box_center "Checking file against official Batocera checksum..."
   box_empty
 
   local official_md5
-  official_md5=$(wget -q -O - "$MD5_URL" 2>/dev/null | awk '{print $1}' | tr -d ' \n\r')
+  official_md5=$(awk '{print $1}' "$md5_file" | tr -d ' \n\r')
 
   if [ -z "$official_md5" ]; then
-    err_box "Could not fetch MD5 checksum from mirror"
-    box_center "URL: $MD5_URL"
-    box_center "Check your internet connection or the URL."
+    err_box "MD5 file is empty or unreadable"
+    box_center "File: ${md5_file}"
+    box_empty
+    box_hash
     echo ""
     return 1
   fi
@@ -848,41 +874,43 @@ prompt_image_source() {
       if [ "$count" -eq 1 ]; then
         local fsize
         fsize=$(du -h "$IMAGE_CANDIDATES" 2>/dev/null | cut -f1)
+        local md5_file="${IMAGE_CANDIDATES}.md5"
         box_hash
         box_center "X11 Batocera Image Found"
         box_hash
         box_empty
-        box_center "${IMAGE_CANDIDATES}  (${fsize})"
-        box_empty
-        box_center "MD5 will be verified against the official Batocera"
-        box_center "checksum before use."
-        box_empty
-        box_hash
-        echo ""
-        echo "  (1) Use this file"
-        echo "  (2) Enter download URL instead"
-        echo "  (3) Cancel"
+        box_center "Image: ${IMAGE_CANDIDATES}  (${fsize})"
+        if [ -f "$md5_file" ]; then
+          box_center "MD5:   ${md5_file}"
+          box_empty
+          box_center "MD5 will be verified against the official Batocera"
+          box_center "checksum before use."
+          box_empty
+          box_hash
+          echo ""
+          echo "  (1) Use this file"
+          echo "  (2) Download from official server instead"
+          echo "  (3) Cancel"
+        else
+          box_empty
+          box_center "${RED}MD5 checksum file not found.${NOCOLOR}"
+          box_center "You must also transfer the .md5 file from the"
+          box_center "Batocera download page to the same location."
+          box_empty
+          box_hash
+          echo ""
+          echo "  (1) Scan again — I have added the .md5 file"
+          echo "  (2) Download from official server instead"
+          echo "  (3) Cancel"
+        fi
         echo ""
         read -r img_choice
         case "$img_choice" in
           1)
+            if [ ! -f "$md5_file" ]; then
+              continue
+            fi
             IMAGE_PATH="$IMAGE_CANDIDATES"
-            # OFFICIAL: hardcoded URL — uncomment when v43 ships publicly
-            # IMAGE_URL="https://mirrors.o2switch.fr/batocera/x86_64/stable/last/batocera-x86_64-43-YYYYMMDD.img.gz"
-            # MD5_URL="${IMAGE_URL}.md5"
-
-            # BETA: derive MD5 URL from user-pasted URL — remove this block when going official
-            # MD5 disabled: skip mirror URL prompt when using local file
-            # if [ -z "${IMAGE_URL:-}" ]; then
-            #   echo ""
-            #   echo "  Paste the mirror URL for this image (ends with .img.gz or .img.gz.md5):"
-            #   echo ""
-            #   printf "  URL: "
-            #   read -r IMAGE_URL
-            # fi
-            IMAGE_URL="${IMAGE_URL:-}"
-            sanitize_image_url
-            # END BETA
             return 0
             ;;
           2) ;; # fall through to URL prompt below
@@ -901,23 +929,25 @@ prompt_image_source() {
           i=$((i + 1))
         done
         box_empty
-        box_center "  ($((count + 1))) Enter download URL instead"
+        box_center "  ($((count + 1))) Download from official server instead"
         box_center "  ($((count + 2))) Cancel"
         box_hash
         echo ""
         read -r multi_choice
         if [ "$multi_choice" -ge 1 ] 2>/dev/null && [ "$multi_choice" -le "$count" ]; then
           IMAGE_PATH=$(echo "$IMAGE_CANDIDATES" | sed -n "${multi_choice}p")
-          # MD5 disabled: skip mirror URL prompt when using local file
-          # if [ -z "${IMAGE_URL:-}" ]; then
-          #   echo ""
-          #   echo "  Paste the mirror URL for this image (ends with .img.gz or .img.gz.md5):"
-          #   echo ""
-          #   printf "  URL: "
-          #   read -r IMAGE_URL
-          # fi
-          IMAGE_URL="${IMAGE_URL:-}"
-          sanitize_image_url
+          if [ ! -f "${IMAGE_PATH}.md5" ]; then
+            echo ""
+            err_box "MD5 checksum file not found: ${IMAGE_PATH}.md5"
+            box_center "Transfer the .md5 file from the Batocera download page"
+            box_center "to the same location, then scan again."
+            box_empty
+            box_hash
+            echo ""
+            echo "  Press ENTER to scan again..."
+            read -r
+            continue
+          fi
           return 0
         elif [ "$multi_choice" -eq $((count + 1)) ]; then
           : # fall through to URL prompt
@@ -932,28 +962,29 @@ prompt_image_source() {
       box_empty
       box_center "No Batocera x86_64 image found on /userdata or USB drives."
       box_empty
-      box_center "HOW TO GET THE IMAGE ONTO THIS MACHINE"
+      box_center "You can download it directly or transfer manually."
       box_empty
-      box_center "STEP 1 - Download the X11 Batocera image on your PC/Mac."
-      box_center "  Use the mirror link provided to you."
+      box_center "OPTION A - Let this script download it (recommended)"
+      box_center "  Select (2) below. ~4 GB download."
       box_empty
-      box_center "STEP 2 - Transfer it to this machine (pick one):"
+      box_center "OPTION B - Transfer the image yourself"
       box_empty
-      box_center "  Windows: WinSCP  ->  wiki.batocera.org/winscp"
-      box_center "    Connect: batocera.local | root | linux"
-      box_center "    Drop file into: /userdata/"
+      box_center "  1. Download the X11 Batocera image AND its .md5 file."
+      box_center "     (Both are available on the Batocera download page.)"
       box_empty
-      box_center "  Mac/Linux: open a second terminal and run:"
-      box_center "    scp FILE root@batocera.local:/userdata/"
+      box_center "  2. Transfer both files to this machine:"
+      box_center "     Windows: WinSCP  ->  wiki.batocera.org/winscp"
+      box_center "       Connect: batocera.local | root | linux"
+      box_center "       Drop files into: /userdata/"
+      box_center "     Mac/Linux: scp FILES root@batocera.local:/userdata/"
+      box_center "     USB Drive: copy files to USB, plug into this machine"
       box_empty
-      box_center "  USB Drive: copy file to USB, plug into this machine"
-      box_empty
-      box_center "STEP 3 - Come back here and select (1) to scan again."
+      box_center "  3. Come back here and select (1) to scan again."
       box_empty
       box_hash
       echo ""
       echo "  (1) Scan again — I have transferred the file"
-      echo "  (2) Paste download URL — script will download directly"
+      echo "  (2) Download from official server"
       echo "  (3) Exit"
       echo ""
       read -r nf_choice
@@ -964,39 +995,19 @@ prompt_image_source() {
       esac
     fi
 
-    # URL prompt (beta: paste URL; official: hardcoded)
-    # OFFICIAL: hardcoded URL — uncomment when v43 ships publicly
-    # IMAGE_URL="https://mirrors.o2switch.fr/batocera/x86_64/stable/last/batocera-x86_64-43-YYYYMMDD.img.gz"
-
-    # BETA: user pastes URL at runtime — remove this block when going official
-    box_hash
-    box_center "X11 Beta Image — Enter Download URL"
-    box_hash
-    box_empty
-    box_center "Paste the direct download link for the X11 beta image."
-    box_center "Use the .img.gz link, NOT the .md5 link."
-    box_center "(Right-click the file on the mirror -> Copy Link Address)"
-    box_empty
-    echo ""
-    printf "  URL: "
-    read -r IMAGE_URL
-    # END BETA
-
-    sanitize_image_url
+    IMAGE_URL="$X11_IMAGE_URL"
 
     box_hash
-    box_center "Confirm Download"
+    box_center "Download X11 Batocera Image"
     box_hash
     box_empty
     box_center "Image: ${IMAGE_URL}"
-    box_center "MD5:   ${MD5_URL}"
-    box_center "       (derived automatically from image URL)"
+    box_center "MD5:   ${X11_MD5_URL}"
     box_empty
     box_hash
     echo ""
     echo "  (1) Yes, download"
-    echo "  (2) Enter a different URL"
-    echo "  (3) Exit"
+    echo "  (2) Cancel"
     echo ""
     read -r confirm_dl
     case "$confirm_dl" in
@@ -1005,7 +1016,6 @@ prompt_image_source() {
         download_x11_image
         return 0
         ;;
-      2) continue ;;
       *) exit 0 ;;
     esac
   done
@@ -1359,6 +1369,7 @@ CRTENTRY
 }
 
 prompt_cleanup_source_image() {
+  local md5_file="${IMAGE_PATH}.md5"
   box_hash
   box_center "Cleanup"
   box_hash
@@ -1366,6 +1377,9 @@ prompt_cleanup_source_image() {
   local fsize
   fsize=$(du -h "$IMAGE_PATH" 2>/dev/null | cut -f1)
   box_center "Source image: ${IMAGE_PATH}  (${fsize})"
+  if [ -f "$md5_file" ]; then
+    box_center "MD5 file:     ${md5_file}"
+  fi
   box_empty
   box_center "The boot files have been extracted successfully."
   box_center "The source image is no longer needed."
@@ -1380,7 +1394,8 @@ prompt_cleanup_source_image() {
   read -r cleanup_choice
   if [ "$cleanup_choice" = "1" ]; then
     rm -f "$IMAGE_PATH"
-    ok_box "Source image deleted."
+    rm -f "$md5_file"
+    ok_box "Source image and MD5 file deleted."
   else
     box_center "Source image kept at: ${IMAGE_PATH}"
   fi
@@ -1398,7 +1413,17 @@ run_phase1() {
   prompt_image_source
 
   # Step 2: Validate checksum
-  # validate_md5
+  if ! validate_md5; then
+    echo ""
+    echo "  (1) Continue without MD5 verification"
+    echo "  (2) Abort"
+    echo ""
+    read -r md5_choice
+    case "$md5_choice" in
+      1) echo "  Proceeding without checksum verification..." ;;
+      *) exit 1 ;;
+    esac
+  fi
 
   # Step 3: Check disk space
   check_disk_space
