@@ -1443,7 +1443,14 @@ run_phase1() {
   # Step 8: Offer to delete source image
   prompt_cleanup_source_image
 
-  # Step 9: Write phase flag for Phase 2
+  # Step 9: Install batocera-steam-update fix (v43 only, PR #15670)
+  # Saves to Wayland overlay so the fix persists in HD mode.
+  # Phase 2 installs the same file into the CRT overlay.
+  cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Steam_fix_v43/batocera-steam-update /usr/bin/batocera-steam-update 2>/dev/null && \
+    chmod 755 /usr/bin/batocera-steam-update 2>/dev/null || true
+  batocera-save-overlay 2>/dev/null || true
+
+  # Step 10: Write phase flag for Phase 2
   mkdir -p "$(dirname "$PHASE_FLAG")"
   echo "2" > "$PHASE_FLAG"
 
@@ -4847,9 +4854,10 @@ case $Version_of_batocera in
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/get_monitorRange  /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange
 
-                #only for V41. Xemu from V42 to fixe a Mesa isse with AAMD
-                #cp -r /userdata/system/Batocera-CRT-Script/UsrBin_configs/xemu_v41/usr /	
-		#chmod 755 /usr/bin/xemu
+		# v43 only: batocera-steam-update fix from batocera-linux PR #15670.
+		# Remove when v44 ships with this fix upstream.
+		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Steam_fix_v43/batocera-steam-update /usr/bin/batocera-steam-update
+		chmod 755 /usr/bin/batocera-steam-update
 
 	;;
 
