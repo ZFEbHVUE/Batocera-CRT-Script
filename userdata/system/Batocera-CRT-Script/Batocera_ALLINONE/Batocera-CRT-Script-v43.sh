@@ -4859,6 +4859,11 @@ case $Version_of_batocera in
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Steam_fix_v43/batocera-steam-update /usr/bin/batocera-steam-update
 		chmod 755 /usr/bin/batocera-steam-update
 
+		# v43 only: Add PSXC2 standalone aspect ratio 10:7 (1.43:1 — custom).
+		# Remove when v44 ships IF this is added upstream.
+		cp /usr/share/emulationstation/es_features.cfg /usr/share/emulationstation/es_features.cfg.bak && sed -i '/<choice name="Widescreen (16:9)" value="16:9" \/>/a\          <choice name="10:7 (1.43:1 — custom)" value="10:7" />' /usr/share/emulationstation/es_features.cfg
+
+
 	;;
 
 
