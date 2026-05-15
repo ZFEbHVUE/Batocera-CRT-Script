@@ -14,7 +14,6 @@ mpvlog="/userdata/system/logs/mpv.log"
 BOOTCONF="/boot/batocera-boot.conf"
 
 # --- Clean up previous switchres modeline - start ---
-# NOTE (v42 behaviour that actually works on your stack):
 # You can only reliably --delmode/--rmmode *after* switching away from the old SR mode.
 # So here we ONLY remember the previous mode; cleanup happens later (post-switch).
 STATE_FILE="/tmp/switchres-last-resolution-state"
