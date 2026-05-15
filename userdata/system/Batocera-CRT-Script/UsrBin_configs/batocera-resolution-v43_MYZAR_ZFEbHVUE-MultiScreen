@@ -1,5 +1,5 @@
 #!/bin/bash
-# batocera-resolution (patched)
+# batocera-resolution
 #
 # Key changes:
 # - If /etc/switchres.ini has monitor=custom, we DO NOT touch monitor nor crt_range0..9.
