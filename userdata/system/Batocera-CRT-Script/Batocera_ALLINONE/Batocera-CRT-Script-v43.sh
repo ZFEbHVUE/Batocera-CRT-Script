@@ -1481,7 +1481,7 @@ run_phase1() {
   box_hash
   echo ""
   read -r
-  poweroff
+  _dualboot_installer_poweroff
 }
 
 ########################################################################################
@@ -1506,6 +1506,16 @@ detect_display_stack() {
   else
     DISPLAY_STACK="x11"
   fi
+}
+
+# Dual-boot Phase 1 / Phase 2: power off after installer prompts (not used for reboot).
+# Matches Geometry_modeline/mode_switcher.sh: userspace poweroff can ACPI-hang on some
+# desktops and Steam Deck; SysRq 'o' after overlay save + sync is reliable.
+_dualboot_installer_poweroff() {
+  batocera-save-overlay 2>/dev/null || true
+  sync 2>/dev/null || true
+  sync 2>/dev/null || true
+  echo o > /proc/sysrq-trigger
 }
 
 # ── Entry-point routing ──
@@ -5938,8 +5948,7 @@ if [ "$IS_PHASE2" = true ]; then
   box_hash
   echo
   read -r
-  sync
-  poweroff
+  _dualboot_installer_poweroff
 elif declare -f show_first_boot_instructions_and_reboot >/dev/null 2>&1; then
   show_first_boot_instructions_and_reboot
 else
