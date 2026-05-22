@@ -3613,27 +3613,74 @@ fi
 # Split the line into an array using space as the delimiter
 IFS=' ' read -ra monitor_info <<< "$monitor_firmware_info"
 
+# monitor_info[0] is the firmware name; valid choices start at 1
+max_choice=$(( ${#monitor_info[@]} - 1 ))
+
+# Mark *x240@* boot resolutions as disabled (no usable ES theme at 240p vertical)
+declare -a is_disabled=()
+has_disabled_resolution=0
+for ((i = 1; i <= max_choice; i++)); do
+  if [[ "${monitor_info[i]}" =~ ^[0-9]+x240@ ]]; then
+    is_disabled[i]=1
+    has_disabled_resolution=1
+  else
+    is_disabled[i]=0
+  fi
+done
+
 # Display monitor information
 echo "	Information for monitor ${monitor_info[0]}:"
 
+if (( has_disabled_resolution )); then
+  echo "#######################################################################"
+  echo "##             NOTE: 240p BOOT / ES THEME NOT SUPPORTED              ##"
+  echo "##                                                                   ##"
+  echo "## WHY THIS IS DISABLED                                              ##"
+  echo "##  We have not found an EmulationStation theme that renders         ##"
+  echo "##  correctly at 240p vertical. Choosing 240p as boot / ES           ##"
+  echo "##  resolution breaks the UI; we cannot fix that in this script.     ##"
+  echo "##                                                                   ##"
+  echo "## WHAT THIS DOES NOT CHANGE                                         ##"
+  echo "##  Switchres still resolution-switches to 240p on game launch       ##"
+  echo "##  when the emulator and game support it. In-game 240p is OK.       ##"
+  echo "##                                                                   ##"
+  echo "## FUTURE STATE                                                      ##"
+  echo "##  When a working 240p-capable EmulationStation theme exists,       ##"
+  echo "##  this option will be re-enabled. Until then it stays disabled.    ##"
+  echo "##                                                                   ##"
+  echo "## SUPPORT POLICY                                                    ##"
+  echo "##  We will not provide Discord support for 240p boot / ES issues.   ##"
+  echo "##  Workarounds to force 240p are discouraged and unsupported.       ##"
+  echo "##  Contributions of a working 240p EmulationStation theme are       ##"
+  echo "##  very welcome.                                                    ##"
+  echo "#######################################################################"
+  echo ""
+fi
+
 # Display resolution options with centered alignment
-for ((i = 1; i < ${#monitor_info[@]}; i++)); do
-  printf "						%s\n" "$(printf "%2d : %s" $i "${monitor_info[i]}")"
+for ((i = 1; i <= max_choice; i++)); do
+  if (( is_disabled[i] )); then
+    printf "						%s\n" "$(printf "   : %s   %b[DISABLED: 240p boot/ES theme not supported]%b" "${monitor_info[i]}" "${YELLOW}" "${NOCOLOR}")"
+  else
+    printf "						%s\n" "$(printf "%2d : %s" "$i" "${monitor_info[i]}")"
+  fi
 done
 
 echo ""
 echo "#######################################################################"
 echo "##       Make your choice for the EDID Resolution                    ##"
+echo "##       (Disabled entries cannot be selected.)                      ##"
 echo "#######################################################################"
 echo -n "                                  "
-
-# monitor_info[0] is the firmware name; valid choices start at 1
-max_choice=$(( ${#monitor_info[@]} - 1 ))
 
 # Re-prompt until the user provides a valid number
 while true; do
   read -r EDID_resolution_choice
   if [[ "$EDID_resolution_choice" =~ ^[0-9]+$ ]] && (( EDID_resolution_choice >= 1 && EDID_resolution_choice <= max_choice )); then
+    if (( is_disabled[EDID_resolution_choice] == 1 )); then
+      echo -n "That resolution is disabled (240p boot/ES theme not supported). Pick another number: "
+      continue
+    fi
     break
   fi
   echo -n "Invalid choice. Please enter a number between 1 and ${max_choice}: "
