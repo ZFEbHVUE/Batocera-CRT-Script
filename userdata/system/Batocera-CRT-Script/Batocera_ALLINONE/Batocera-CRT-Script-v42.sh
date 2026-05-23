@@ -1426,6 +1426,16 @@ case "${version_Batocera}" in
     ;;
 esac
 
+if [ "$Version_of_batocera" != "v42" ]; then
+  box_hash
+  box_center "${RED}WRONG BATOCERA VERSION${NOCOLOR}"
+  box_center "This script requires Batocera v42."
+  box_center "Detected: ${version_Batocera}"
+  box_center "Please use the correct script for your version."
+  box_hash
+  exit 1
+fi
+
 # (Optional) temporary compatibility for any stray references to the old misspelled var.
 # You can remove this after you’re sure nothing reads "verion".
 verion="${VERSION_BATOCERA_NUM}"

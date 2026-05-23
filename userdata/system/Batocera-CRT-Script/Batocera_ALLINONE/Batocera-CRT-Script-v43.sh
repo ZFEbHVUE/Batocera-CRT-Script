@@ -2323,7 +2323,7 @@ NOCOLOR=${NOCOLOR:-"\033[0m"}
 # -------------------- Banner box --------------------
 printf "%s\n" "$border"
 empty_line
-center "BATOCERA CRT SCRIPT — 15 kHz / 25 kHz / 31 kHz for Batocera v42"
+center "BATOCERA CRT SCRIPT — 15 kHz / 25 kHz / 31 kHz for Batocera v43"
 empty_line
 center "Use at your own risk. The authors are not responsible for damage or data loss."
 empty_line
@@ -2406,11 +2406,6 @@ version_Batocera="$(batocera-es-swissknife --version 2>/dev/null || echo unknown
 echo "Version batocera = ${version_Batocera}" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 case "${version_Batocera}" in
-  42*)
-    echo "Version 42"
-    Version_of_batocera="v42"
-    VERSION_BATOCERA_NUM=42
-    ;;
   43*)
     echo "Version 43"
     Version_of_batocera="v43"
@@ -2422,6 +2417,16 @@ case "${version_Batocera}" in
     VERSION_BATOCERA_NUM=0
     ;;
 esac
+
+if [ "$Version_of_batocera" != "v43" ]; then
+  box_hash
+  box_center "${RED}WRONG BATOCERA VERSION${NOCOLOR}"
+  box_center "This script requires Batocera v43."
+  box_center "Detected: ${version_Batocera}"
+  box_center "Please use the correct script for your version."
+  box_hash
+  exit 1
+fi
 
 # (Optional) temporary compatibility for any stray references to the old misspelled var.
 # You can remove this after you’re sure nothing reads "verion".
