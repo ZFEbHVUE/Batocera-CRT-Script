@@ -909,12 +909,6 @@ VNC_SCRIPT_EOF
                 [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg" ] && \
                     cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /boot/crt_theme_assets/CRT.svg 2>/dev/null || true
 
-                # Copy Steam fix to /boot so boot-custom.sh can access it
-                # (S00bootcustom runs before S11share mounts /userdata)
-                [ -f "/userdata/system/Batocera-CRT-Script/UsrBin_configs/Steam_fix_v43/batocera-steam-update" ] && \
-                    cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Steam_fix_v43/batocera-steam-update /boot/crt_theme_assets/batocera-steam-update 2>/dev/null && \
-                    chmod 755 /boot/crt_theme_assets/batocera-steam-update 2>/dev/null || true
-
                 if [ -f "/userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/x11vnc" ]; then
                     chmod 755 /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/x11vnc 2>/dev/null || true
                     cat > /boot/crt_theme_assets/vnc << 'VNC_DUALBOOT_EOF'
@@ -1018,18 +1012,8 @@ install_vnc() {
   cp /boot/crt_theme_assets/vnc /usr/bin/vnc 2>/dev/null && chmod 755 /usr/bin/vnc 2>/dev/null || true
 }
 
-install_steam_fix() {
-  # v43 only: batocera-steam-update fix from batocera-linux PR #15670.
-  # Remove when v44 ships with this fix upstream.
-  # Source is on /boot/ (not /userdata/) because S00bootcustom runs before S11share.
-  local SRC="/boot/crt_theme_assets/batocera-steam-update"
-  [ -f "$SRC" ] && cp "$SRC" /usr/bin/batocera-steam-update 2>/dev/null && chmod 755 /usr/bin/batocera-steam-update 2>/dev/null || true
-}
-
 main() {
   [ "$1" = "start" ] || return 0
-
-  install_steam_fix
 
   local CMD="$(cat /proc/cmdline 2>/dev/null)"
   if echo "$CMD" | grep -q 'BOOT_IMAGE=/crt/'; then
@@ -1080,12 +1064,6 @@ fuser -k 5900/tcp 2>/dev/null || true
 VNC_SCRIPT_EOF
                 chmod 755 /boot/crt_theme_assets/vnc 2>/dev/null || true
             fi
-            
-            # Copy Steam fix to /boot so boot-custom.sh can access it
-            # (S00bootcustom runs before S11share mounts /userdata)
-            [ -f "/userdata/system/Batocera-CRT-Script/UsrBin_configs/Steam_fix_v43/batocera-steam-update" ] && \
-                cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Steam_fix_v43/batocera-steam-update /boot/crt_theme_assets/batocera-steam-update 2>/dev/null && \
-                chmod 755 /boot/crt_theme_assets/batocera-steam-update 2>/dev/null || true
 
             # Create boot-custom.sh that copies from /boot to /usr/share/ (no /userdata dependency)
             cat > /boot/boot-custom.sh << 'BOOTCUSTOM_EOF'
@@ -1094,20 +1072,10 @@ VNC_SCRIPT_EOF
 # Runs via /etc/init.d/S00bootcustom very early in boot (before EmulationStation)
 # Files are pre-copied to /boot during mode switch, so /userdata mount timing doesn't matter
 
-install_steam_fix() {
-  # v43 only: batocera-steam-update fix from batocera-linux PR #15670.
-  # Remove when v44 ships with this fix upstream.
-  # Source is on /boot/ (not /userdata/) because S00bootcustom runs before S11share.
-  local SRC="/boot/crt_theme_assets/batocera-steam-update"
-  [ -f "$SRC" ] && cp "$SRC" /usr/bin/batocera-steam-update 2>/dev/null && chmod 755 /usr/bin/batocera-steam-update 2>/dev/null || true
-}
-
 main() {
   # Run only on start
   [ "$1" = "start" ] || return 0
 
-  install_steam_fix
-  
   # Only copy in HD mode (check if overlay exists - if not, we're in HD mode)
   if [ ! -f "/boot/boot/overlay" ]; then
     # Ensure directories exist
