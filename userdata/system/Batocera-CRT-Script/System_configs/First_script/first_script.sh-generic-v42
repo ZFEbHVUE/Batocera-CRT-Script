@@ -88,13 +88,39 @@ case "$ACTION" in
   ;;
 
   gameStop)
-    # Restore Rotation to EmulationStation and Resolution
+    # Restore rotation and the Boot menu modeline after Switchres games.
+    # Plain xrandr --mode "WxH" can pick the wrong 641x480 variant after RA
+    # switchres; use the Boot_ key from batocera.conf (same path as ES boot).
     log "gameStop: Restoring EmulationStation Rotation + Resolution"
     log "xrandr rotation emulationstation: [display_ES_rotation]"
     xrandr -display :0.0 -o [display_ES_rotation]
+
+    MENU_MODE="$(batocera-settings-get global.videomode 2>/dev/null || true)"
+    if [ -z "$MENU_MODE" ] || [ "$MENU_MODE" = "default" ] || [ "$MENU_MODE" = "auto" ]; then
+      MENU_MODE="$(batocera-settings-get es.resolution 2>/dev/null || true)"
+    fi
+
     log "xrandr display output: [card_display]"
-    log "EmulationStation Resolution: [es_resolution]"
-    xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
+    log "EmulationStation mode: ${MENU_MODE:-[es_resolution]}"
+
+    if [ -n "$MENU_MODE" ] && [ "$MENU_MODE" != "default" ] && [ "$MENU_MODE" != "auto" ]; then
+      # Match ES boot: defineMode adds the Boot_ modeline, then setMode_CVT selects it.
+      batocera-resolution --screen "[card_display]" defineMode "$MENU_MODE" 2>/dev/null || true
+      if batocera-resolution --screen "[card_display]" setMode_CVT "$MENU_MODE"; then
+        log "Restored menu mode via batocera-resolution setMode_CVT: $MENU_MODE"
+        # X mode is correct but ES keeps a stale layout after Switchres games.
+        if [ "${3:-}" = "libretro" ]; then
+          log "Refreshing EmulationStation (libretro Switchres exit)"
+          batocera-es-swissknife --restart >/dev/null 2>&1 || true
+        fi
+      else
+        log "setMode_CVT failed; falling back to xrandr --mode [es_resolution]"
+        xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
+      fi
+    else
+      log "No menu mode in settings; falling back to xrandr --mode [es_resolution]"
+      xrandr -display :0.0 --output [card_display] --mode "[es_resolution]"
+    fi
     # No need to unset vblank_mode — it's per-process
   ;;
 
@@ -105,4 +131,5 @@ esac
 
 log "Done."
 [ "$DEBUG" -eq 1 ] && set +x
+true
 
