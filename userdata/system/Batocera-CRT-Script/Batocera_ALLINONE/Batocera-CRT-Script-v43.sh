@@ -5488,6 +5488,28 @@ chmod 644 $file
 #######################################################################################
 file_BatoceraConf="/userdata/system/batocera.conf"
 
+append_crt_script_settings_start() {
+	{
+		echo "###################################################"
+		echo "## CRT Script Settings Start"
+		echo "###################################################"
+		echo "## ES Settings, See wiki page on how to center EmulationStation"
+	} >> "$file_BatoceraConf"
+}
+
+append_fbneo_tate_settings() {
+	{
+		echo "###################################################"
+		echo "##  FBNEO CORE TATE SETTINGS"
+		echo "###################################################"
+		echo "fbneo.video_allow_rotate=off"
+		echo "###################################################"
+		echo "## CRT Script Settings End"
+		echo "###################################################"
+	} >> "$file_BatoceraConf"
+}
+
+
 # Steps 4-5: Write CRT videomode/videooutput to batocera.conf and pre-populate CRT backup
 # Remove any existing lines first to avoid duplicates (factory conf may have these set)
 if [ -n "$_crt_boot_mode" ]; then
@@ -5519,7 +5541,7 @@ if [ -n "$_crt_boot_mode" ]; then
     sed -i '/^es\.resolution=/d' "$file_BatoceraConf"
     echo "es.resolution=$_crt_boot_mode" >> "$file_BatoceraConf"
 fi
-echo "## ES Settings, See wiki page on how to center EmulationStation" 			>> "$file_BatoceraConf"
+append_crt_script_settings_start
 
 if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
 	es_customsargs="es.customsargs=--screensize "$H_RES_EDID" "$V_RES_EDID" --screenoffset 00 00"
@@ -5865,7 +5887,7 @@ if [ $es_rotation_choice -eq 1 ]; then
 			echo "Problems of rotation_choice"
 		;;
 	esac
-	echo "fbneo.video_allow_rotate=off"						>> "$file_BatoceraConf"
+	append_fbneo_tate_settings
 fi
 
 if [ $es_rotation_choice -eq 2 ]; then
@@ -5887,7 +5909,7 @@ if [ $es_rotation_choice -eq 2 ]; then
 			echo "Problems of rotation_choice"
 		;;
 	esac
-	echo "fbneo.video_allow_rotate=off"						>> "$file_BatoceraConf"
+	append_fbneo_tate_settings
 fi
 
 if [ $es_rotation_choice -eq 3 ]; then
@@ -5909,7 +5931,7 @@ if [ $es_rotation_choice -eq 3 ]; then
 			echo "Problems of rotation_choice"
 		;;
 	esac
-	echo "fbneo.video_allow_rotate=off"						 >> "$file_BatoceraConf"
+	append_fbneo_tate_settings
 fi
 
 if [ $es_rotation_choice -eq 4 ]; then
@@ -5931,7 +5953,7 @@ if [ $es_rotation_choice -eq 4 ]; then
 				echo "Problems of rotation_choice"
 			;;
 		esac
-	echo "fbneo.video_allow_rotate=off" 						>> "$file_BatoceraConf"
+	append_fbneo_tate_settings
 fi
 chmod 755 "$file_BatoceraConf"
 # -----------------------------------------------------------------------------
