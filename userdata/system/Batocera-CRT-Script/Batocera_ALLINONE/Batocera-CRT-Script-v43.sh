@@ -2505,7 +2505,7 @@ case $selected_card in
 
 		center_plain_log "Select option 1 to $((var+1)):"
 		read choice_Drivers_Nvidia
-		while [[ ! ${choice_Drivers_Nvidia} =~ ^[1-$((var+1))]$ ]] && [[ "$choice_Drivers_Nvidia" = "" ]] ; do
+		while [[ ! ${choice_Drivers_Nvidia} =~ ^[1-$((var+1))]$ ]] ; do
 			center_plain_log "Select option 1 to $((var+1)):"
 			read choice_Drivers_Nvidia
 		done
@@ -2519,10 +2519,14 @@ case $selected_card in
 			box_center "Nvidia drivers version selector"
 			box_hash
 
-			declare -a Name_Nvidia_drivers_version=( "true" "legacy470" "legacy390" "legacy340" )
+			declare -a Name_Nvidia_drivers_version=( "true" "legacy580" "legacy470" )
 			for var in "${!Name_Nvidia_drivers_version[@]}"; do
-        echo "			$((var+1)) : ${Name_Nvidia_drivers_version[$var]}"
-      done
+				if [ "${Name_Nvidia_drivers_version[$var]}" = "true" ]; then
+					echo "			$((var+1)) : true (Default - Recommended)"
+				else
+					echo "			$((var+1)) : ${Name_Nvidia_drivers_version[$var]}"
+				fi
+			done
 
 			box_hash
 			box_center "Make your choice"
@@ -2530,7 +2534,7 @@ case $selected_card in
 
 			center_plain_log "Select option 1 to $((var+1)):"
 			read choice_Name_Drivers_Nvidia
-			while [[ ! ${choice_Name_Drivers_Nvidia} =~ ^[1-$((var+1))]$ ]] && [[ "$choice_Name_Drivers_Nvidia" = "" ]] ; do
+			while [[ ! ${choice_Name_Drivers_Nvidia} =~ ^[1-$((var+1))]$ ]] ; do
 				center_plain_log "Select option 1 to $((var+1)):"
 				read choice_Name_Drivers_Nvidia
 			done
@@ -4064,7 +4068,7 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		video_display=$video_output 
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
-			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
+			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then
 				video_modeline=$video_output_xrandr
 				dotclock_min=0
 				dotclock_min_mame=$dotclock_min
@@ -4088,7 +4092,7 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
-			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
+			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then
 				video_modeline=$video_output_xrandr
 				dotclock_min=25
 				dotclock_min_mame=$dotclock_min
@@ -4113,7 +4117,7 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
-			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then	
+			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then	
 				video_modeline=$video_output_xrandr
 				dotclock_min=25.0
 				dotclock_min_mame=$dotclock_min
@@ -4138,7 +4142,7 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
-			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]||[ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then	
+			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then	
 				video_modeline=$video_output_xrandr
 				dotclock_min=25.0
 				dotclock_min_mame=$dotclock_min
@@ -4520,12 +4524,10 @@ cp /boot/batocera-boot.conf  /boot/batocera-boot.conf.tmp
 if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 	if   [ "$Drivers_Name_Nvidia_CHOICE" == "true" ]; then
 		sed -e 's/.*nvidia-driver=.*/nvidia-driver=true/' -e 's/.*amdgpu=.*/#amdgpu=true/' 	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+	elif [ "$Drivers_Name_Nvidia_CHOICE" == "legacy580" ]; then
+		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy580/' -e 's/.*amdgpu=.*/#amdgpu=true/' 	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	elif [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy470/'  -e 's/.*amdgpu=.*/#amdgpu=true/'  	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
-	elif [ "$Drivers_Name_Nvidia_CHOICE" == "legacy390" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy390/' -e 's/.*amdgpu=.*/#amdgpu=true/' /boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
-        elif [ "$Drivers_Name_Nvidia_CHOICE" == "legacy340" ]; then
-		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy340/' -e 's/.*amdgpu=.*/#amdgpu=true/' /boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
+		sed -e 's/.*nvidia-driver=.*/nvidia-driver=legacy470/' -e 's/.*amdgpu=.*/#amdgpu=true/' 	/boot/batocera-boot.conf > /boot/batocera-boot.conf.tmp
 	else
 		echo "problems of Nvidia driver name"
 	fi	
