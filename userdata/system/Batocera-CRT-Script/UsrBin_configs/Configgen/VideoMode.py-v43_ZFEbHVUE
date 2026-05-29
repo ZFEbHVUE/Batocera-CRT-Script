@@ -43,12 +43,6 @@ def changeMode_cvt(videomode: str) -> None:
         _logger.error("changeMode_cvt: invalid empty video mode")
         return
 
-    if not checkModeExists(videomode):
-        _logger.warning(
-            "changeMode_cvt: mode %s not found in listModes, trying setMode_CVT anyway",
-            videomode
-        )
-
     cmd = ["batocera-resolution", "setMode_CVT", videomode]
     _logger.debug("changeMode_cvt setVideoMode(%s): %s", videomode, cmd)
 
