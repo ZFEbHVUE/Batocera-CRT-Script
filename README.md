@@ -13,8 +13,8 @@ If you are setting up Batocera with a **PC CRT (31 kHz VGA/SVGA)**, follow this 
 🔗 [PC CRT's & Setup Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/Pc-CRT's-&-Setup-Instructions)
 
 📥 **Install the Script**  
-Follow the full setup guide here:  
-🔗 [Installation Instructions](https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md)
+Follow the installation guide on the wiki (prerequisites, then X11 or Dual-Boot path):  
+🔗 [Batocera CRT Script Installation Guide](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/Batocera-CRT-Script-Installation-Guide-%E2%80%90-Wired-Or-Wireless-Connection)
 
 💬 **Need Help?**  
 Join the discussion on Discord:  
@@ -76,6 +76,10 @@ Batocera does not natively support CRT displays — this script adds the full su
 - 📁 **videomodes.conf Integration**  
   Resolutions are read from `videomodes.conf`, but **Switchres handles switching**, not xrandr.  
   You may manually add resolutions, but be sure to test them with your monitor profile first.
+
+- 💡 **HD/CRT Mode Switcher**  
+  Seamlessly switch between **HD monitor** and **CRT monitor** modes without having to run the CRT script again or restore. Perfect for PC setups and handheld devices like the **Steam Deck** or **ROG Ally**, allowing you to toggle between handheld mode and CRT mode with a simple reboot or power cycle.
+  🔗 [HD/CRT Mode Switcher Wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/HD-CRT-Mode-Switcher)
 
 ---
 
