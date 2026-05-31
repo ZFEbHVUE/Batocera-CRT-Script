@@ -1,7 +1,11 @@
+⚠️
+---
+
 > **DEPRECATED (v42):** This file is kept for reference. For **Batocera v43**, use the wiki installation guide:  
 > [Batocera CRT Script Installation Guide](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/Batocera-CRT-Script-Installation-Guide-%E2%80%90-Wired-Or-Wireless-Connection)  
 > (X11 Exclusive and Dual-Boot steps are linked from that page.)
 
+⚠️
 ---
 
 ⚠️ **Warning: Unsupported Scan Rates & CRT Hardware Safety**
