@@ -686,8 +686,8 @@ backup_restore_main() {
 #####################    WAYLAND / X11 PHASE 1 FUNCTIONS START     ####################
 ########################################################################################
 
-X11_IMAGE_URL="https://sour-silent-prune.6fcff5d8.katapult.cloud/images/batocera-x86_64-43-20260430.img.gz"
-X11_MD5_URL="https://mirrors.o2switch.fr/batocera/x86_64/stable/last/batocera-x86_64-43-20260430.img.gz.md5"
+X11_IMAGE_URL="https://updates.batocera.org/x86_64/stable/last/batocera-x86_64-43.1-20260529.img.gz"
+X11_MD5_URL="https://mirrors.o2switch.fr/batocera/x86_64/stable/last/batocera-x86_64-43.1-20260529.img.gz.md5"
 
 sanitize_image_url() {
   IMAGE_URL="${IMAGE_URL%.md5}"
