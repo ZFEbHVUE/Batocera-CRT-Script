@@ -2361,8 +2361,8 @@ center_plain "• Wiki (main):"
 center_plain "  https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki"
 printf "\n"
 
-center_plain "• Installation Guide (wired or wireless):"
-center_plain "  https://github.com/ZFEbHVUE/Batocera-CRT-Script/blob/main/HowTo_Wired_Or_Wireless_Connection.md"
+center_plain "• Installation Guide (wiki):"
+center_plain "  https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki/Batocera-CRT-Script-Installation-Guide-%E2%80%90-Wired-Or-Wireless-Connection"
 printf "\n"
 
 center_plain "• Supported AMD dGPUs & APUs:"
