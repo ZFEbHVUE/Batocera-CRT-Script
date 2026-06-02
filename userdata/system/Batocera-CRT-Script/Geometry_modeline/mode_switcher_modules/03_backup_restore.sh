@@ -16,6 +16,25 @@ create_backup_directory_structure() {
     mkdir -p "${backup_dir}/overlay"
 }
 
+# Function: flatten_nested_emulator_config_backup
+# Purpose: Repair snapshots where cp -ra copied into an existing dest directory,
+#          leaving a nested duplicate (e.g. retroarch/retroarch/config/remaps).
+# Parameters: $1 - backup or live emulator config root (e.g. .../emulator_configs/retroarch)
+flatten_nested_emulator_config_backup() {
+    local backup_path="$1"
+    local nested_name
+    nested_name=$(basename "$backup_path")
+    local nested="${backup_path}/${nested_name}"
+
+    if [ ! -d "$nested" ]; then
+        return 0
+    fi
+
+    cp -a "${nested}/." "${backup_path}/" 2>/dev/null || true
+    rm -rf "${nested}" 2>/dev/null || true
+    echo "[$(date +"%H:%M:%S")]: Flattened nested ${nested_name}/ tree at ${backup_path}" >> "$LOG_FILE"
+}
+
 # Function: set_syslinux_boot_default
 # Purpose: In dual-boot systems, change the DEFAULT line in all syslinux.cfg
 #          files without restoring the entire file (preserves dual-boot structure)
@@ -564,12 +583,14 @@ backup_mode_files() {
     
     # MAME folder (contains orientation-specific INI files)
     if [ -d "/userdata/system/configs/mame" ]; then
+        rm -rf "${backup_dir}/emulator_configs/mame" 2>/dev/null || true
         cp -ra "/userdata/system/configs/mame" "${backup_dir}/emulator_configs/mame" 2>/dev/null || true
         echo "[$(date +"%H:%M:%S")]: Backed up entire MAME configs folder" >> "$LOG_FILE"
     fi
     
     # RetroArch folder (CRT-specific settings)
     if [ -d "/userdata/system/configs/retroarch" ]; then
+        rm -rf "${backup_dir}/emulator_configs/retroarch" 2>/dev/null || true
         cp -ra "/userdata/system/configs/retroarch" "${backup_dir}/emulator_configs/retroarch" 2>/dev/null || true
         echo "[$(date +"%H:%M:%S")]: Backed up entire RetroArch configs folder" >> "$LOG_FILE"
     fi
@@ -1174,9 +1195,11 @@ BOOTCUSTOM_EOF
         
         # MAME folder
         if [ -d "${backup_dir}/emulator_configs/mame" ]; then
+            flatten_nested_emulator_config_backup "${backup_dir}/emulator_configs/mame"
             rm -rf "/userdata/system/configs/mame" 2>/dev/null || true
             mkdir -p "/userdata/system/configs"
             cp -ra "${backup_dir}/emulator_configs/mame" "/userdata/system/configs/mame" 2>/dev/null || true
+            flatten_nested_emulator_config_backup "/userdata/system/configs/mame"
             echo "[$(date +"%H:%M:%S")]: Restored entire mame/ folder from HD Mode backup" >> "$LOG_FILE"
         else
             rm -rf "/userdata/system/configs/mame" 2>/dev/null || true
@@ -1185,9 +1208,11 @@ BOOTCUSTOM_EOF
         
         # RetroArch folder
         if [ -d "${backup_dir}/emulator_configs/retroarch" ]; then
+            flatten_nested_emulator_config_backup "${backup_dir}/emulator_configs/retroarch"
             rm -rf "/userdata/system/configs/retroarch" 2>/dev/null || true
             mkdir -p "/userdata/system/configs"
             cp -ra "${backup_dir}/emulator_configs/retroarch" "/userdata/system/configs/retroarch" 2>/dev/null || true
+            flatten_nested_emulator_config_backup "/userdata/system/configs/retroarch"
             echo "[$(date +"%H:%M:%S")]: Restored entire retroarch/ folder from HD Mode backup" >> "$LOG_FILE"
         else
             rm -rf "/userdata/system/configs/retroarch" 2>/dev/null || true
@@ -1328,9 +1353,11 @@ BOOTCUSTOM_EOF
         
         # MAME folder
         if [ -d "${backup_dir}/emulator_configs/mame" ]; then
+            flatten_nested_emulator_config_backup "${backup_dir}/emulator_configs/mame"
             rm -rf "/userdata/system/configs/mame" 2>/dev/null || true
             mkdir -p "/userdata/system/configs"
             cp -ra "${backup_dir}/emulator_configs/mame" "/userdata/system/configs/mame" 2>/dev/null || true
+            flatten_nested_emulator_config_backup "/userdata/system/configs/mame"
             echo "[$(date +"%H:%M:%S")]: Restored entire mame/ folder from CRT Mode backup" >> "$LOG_FILE"
         else
             echo "[$(date +"%H:%M:%S")]: No mame/ folder in CRT Mode backup" >> "$LOG_FILE"
@@ -1338,9 +1365,11 @@ BOOTCUSTOM_EOF
         
         # RetroArch folder
         if [ -d "${backup_dir}/emulator_configs/retroarch" ]; then
+            flatten_nested_emulator_config_backup "${backup_dir}/emulator_configs/retroarch"
             rm -rf "/userdata/system/configs/retroarch" 2>/dev/null || true
             mkdir -p "/userdata/system/configs"
             cp -ra "${backup_dir}/emulator_configs/retroarch" "/userdata/system/configs/retroarch" 2>/dev/null || true
+            flatten_nested_emulator_config_backup "/userdata/system/configs/retroarch"
             echo "[$(date +"%H:%M:%S")]: Restored entire retroarch/ folder from CRT Mode backup" >> "$LOG_FILE"
         else
             echo "[$(date +"%H:%M:%S")]: No retroarch/ folder in CRT Mode backup" >> "$LOG_FILE"
