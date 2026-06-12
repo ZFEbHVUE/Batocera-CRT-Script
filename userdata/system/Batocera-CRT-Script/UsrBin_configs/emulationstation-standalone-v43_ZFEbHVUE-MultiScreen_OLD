@@ -15,378 +15,6 @@ touch "${REBOOT_FLAG}" || exit 1
 # Environment
 export HOME=/userdata/system
 
-
-# Description of the issue and workaround
-#
-# CRT-specific additions for the Batocera CRT Script / ZFEbHVUE MultiScreen flow.
-#
-# 1. Primary CRT mode handling:
-#    The stock standalone normally applies the primary ES resolution with
-#    batocera-resolution setMode. For CRT use, we need to define and apply a CVT
-#    modeline from the configured ES boot resolution instead.
-#
-#    The width is nudged by +1 when the last digit is even. This keeps the
-#    generated ES mode away from common EDID/native modes and avoids conflicts
-#    with modes that already exist.
-#
-#    ES window size and position are built from:
-#      /userdata/system/es.arg.override
-#
-#    Default values:
-#      screenoffset_x 00
-#      screenoffset_y 00
-#      screensizeoffset_x 00
-#      screensizeoffset_y 00
-#
-# 2. SDL/ES geometry workaround:
-#    SDL/EmulationStation currently does not always refresh the ES window
-#    geometry correctly after returning from a game when custom ES offsets are
-#    active.
-#
-#    This is a temporary workaround until the SDL/ES issue can be fixed upstream.
-#    If any valid value in es.arg.override is non-zero, a small watcher waits for
-#    emulatorlauncher to exit and then restarts ES once by using
-#    batocera-es-swissknife --restart when available.
-#
-#    This runtime build intentionally keeps the stock Xorg EmulationStation launch
-#    behavior used by Batocera, but with the build-time placeholders already
-#    expanded for direct installation on a live Batocera x86/Xorg system.
-#
-#    Do not force SDL_AUDIODRIVER here. The old custom wrapper forced PipeWire,
-#    which is not part of the stock runtime launch command.
-
-ES_ARG_OVERRIDE="/userdata/system/es.arg.override"
-
-es_sdl_geometry_workaround_log() {
-    local message="Standalone: SDL geometry workaround: $*"
-
-    mkdir -p "$(dirname "$log")"
-    echo "$message" >> "$log"
-
-    # Make the log survive the forced ES restart. batocera-es-swissknife uses
-    # kill -9 on EmulationStation, so flush before requesting the restart.
-    sync -f "$log" 2>/dev/null || true
-}
-
-es_arg_override_get_value() {
-    local key="$1"
-    local value
-
-    [ -f "$ES_ARG_OVERRIDE" ] || return 1
-
-    value="$(awk -v key="$key" '$1 == key { print $2; exit }' "$ES_ARG_OVERRIDE" 2>/dev/null)"
-    [ -n "$value" ] || value="00"
-
-    echo "$value"
-}
-
-es_arg_override_valid_value() {
-    echo "$1" | grep -Eq '^-?[0-9][0-9]$'
-}
-
-es_arg_override_to_int() {
-    local value="$1"
-
-    case "$value" in
-        -*) echo "-$((10#${value#-}))" ;;
-        *)  echo "$((10#$value))" ;;
-    esac
-}
-
-es_arg_override_get_int_or_zero() {
-    local key="$1"
-    local value
-
-    value="$(es_arg_override_get_value "$key" 2>/dev/null || echo 00)"
-
-    if ! es_arg_override_valid_value "$value"; then
-        echo "Standalone: CRT: Invalid $key value in es.arg.override: $value. Using 0." >> "$log"
-        echo 0
-        return 0
-    fi
-
-    es_arg_override_to_int "$value"
-}
-
-es_arg_override_get_valid_or_default() {
-    local key="$1"
-    local default_value="${2:-00}"
-    local value
-
-    value="$(es_arg_override_get_value "$key" 2>/dev/null || echo "$default_value")"
-
-    if ! es_arg_override_valid_value "$value"; then
-        echo "Standalone: CRT: Invalid $key value in es.arg.override: $value. Using ${default_value}." >> "$log"
-        echo "$default_value"
-        return 0
-    fi
-
-    echo "$value"
-}
-
-es_arg_override_debug_values() {
-    local sx sy ssx ssy
-
-    sx="$(es_arg_override_get_value screenoffset_x 2>/dev/null || echo 00)"
-    sy="$(es_arg_override_get_value screenoffset_y 2>/dev/null || echo 00)"
-    ssx="$(es_arg_override_get_value screensizeoffset_x 2>/dev/null || echo 00)"
-    ssy="$(es_arg_override_get_value screensizeoffset_y 2>/dev/null || echo 00)"
-
-    echo "screenoffset_x=${sx}, screenoffset_y=${sy}, screensizeoffset_x=${ssx}, screensizeoffset_y=${ssy}"
-}
-
-es_arg_override_geometry_needs_restart() {
-    local key
-    local value
-
-    [ -f "$ES_ARG_OVERRIDE" ] || return 1
-
-    for key in screenoffset_x screenoffset_y screensizeoffset_x screensizeoffset_y; do
-        value="$(es_arg_override_get_value "$key")"
-
-        if ! es_arg_override_valid_value "$value"; then
-            es_sdl_geometry_workaround_log "Ignoring invalid $key value in es.arg.override: $value"
-            continue
-        fi
-
-        # 00 is the default. Any valid non-zero offset/size-offset needs the
-        # temporary ES restart workaround after game exit.
-        [ "$(es_arg_override_to_int "$value")" -ne 0 ] && return 0
-    done
-
-    return 1
-}
-
-emulatorlauncher_running_for_geometry_fix() {
-    if command -v pgrep >/dev/null 2>&1; then
-        pgrep -f "emulatorlauncher" >/dev/null 2>&1 && return 0
-    fi
-
-    ps ww 2>/dev/null | grep -q '[e]mulatorlauncher'
-}
-
-find_batocera_es_swissknife() {
-    local swissknife
-
-    swissknife="$(command -v batocera-es-swissknife 2>/dev/null || true)"
-    if [ -n "$swissknife" ] && [ -x "$swissknife" ]; then
-        echo "$swissknife"
-        return 0
-    fi
-
-    if [ -x /usr/bin/batocera-es-swissknife ]; then
-        echo /usr/bin/batocera-es-swissknife
-        return 0
-    fi
-
-    if [ -x /bin/batocera-es-swissknife ]; then
-        echo /bin/batocera-es-swissknife
-        return 0
-    fi
-
-    return 1
-}
-
-restart_es_for_sdl_geometry_workaround() {
-    local swissknife
-    local es_pid
-
-    swissknife="$(find_batocera_es_swissknife || true)"
-
-    if [ -n "$swissknife" ]; then
-        es_sdl_geometry_workaround_log "Restarting ES after game exit using $swissknife --restart. Active offsets: $(es_arg_override_debug_values)"
-        "$swissknife" --restart >> "$log" 2>&1 && return 0
-        es_sdl_geometry_workaround_log "$swissknife --restart failed. Falling back to direct ES PID kill."
-    else
-        es_sdl_geometry_workaround_log "batocera-es-swissknife not found. Falling back to direct ES PID kill."
-    fi
-
-    es_pid="$(pidof /usr/bin/emulationstation 2>/dev/null || true)"
-
-    if [ -n "$es_pid" ]; then
-        es_sdl_geometry_workaround_log "Fallback killing ES PID(s): $es_pid"
-        # Intentionally unquoted: pidof may return more than one PID.
-        kill -9 $es_pid 2>/dev/null || true
-    else
-        es_sdl_geometry_workaround_log "Fallback failed: no running /usr/bin/emulationstation PID found."
-    fi
-}
-
-watch_es_game_exit_for_geometry_fix() {
-    if ! es_arg_override_geometry_needs_restart; then
-        return 0
-    fi
-
-    es_sdl_geometry_workaround_log "Watcher armed. Active launch-time offsets: $(es_arg_override_debug_values)"
-
-    while ! pidof /usr/bin/emulationstation >/dev/null 2>&1; do
-        sleep 1
-    done
-
-    while pidof /usr/bin/emulationstation >/dev/null 2>&1; do
-        if emulatorlauncher_running_for_geometry_fix; then
-            while emulatorlauncher_running_for_geometry_fix; do
-                sleep 1
-            done
-
-            # Give emulatorlauncher/configgen a short moment to finish cleanup.
-            sleep 1
-
-            if es_arg_override_geometry_needs_restart; then
-                restart_es_for_sdl_geometry_workaround
-            fi
-            break
-        fi
-
-        sleep 1
-    done
-}
-
-crt_normalize_bootresolution() {
-    local mode="$1"
-    local after_last_dot
-    local digit_count
-
-    after_last_dot="$(echo "$mode" | sed 's/.*\.//')"
-    digit_count="$(echo "$after_last_dot" | grep -o '[0-9]' | wc -l)"
-
-    # Preserve the old CRT behavior: if the last dotted field contains five or
-    # more digits, trim the final three characters.
-    if [ "$digit_count" -ge 5 ]; then
-        mode="$(echo "$mode" | sed 's/.\{3\}$//')"
-    fi
-
-    echo "$mode"
-}
-
-crt_parse_bootresolution() {
-    local mode="$1"
-    local rest
-
-    CRT_WIDTH=""
-    CRT_HEIGHT=""
-    CRT_REFRESH=""
-
-    case "$mode" in
-        *x*.*) ;;
-        *) return 1 ;;
-    esac
-
-    CRT_WIDTH="${mode%%x*}"
-    rest="${mode#*x}"
-    CRT_HEIGHT="${rest%%.*}"
-    CRT_REFRESH="${rest#*.}"
-
-    [[ "$CRT_WIDTH" =~ ^[0-9]+$ ]] || return 1
-    [[ "$CRT_HEIGHT" =~ ^[0-9]+$ ]] || return 1
-    [ -n "$CRT_REFRESH" ] || return 1
-
-    return 0
-}
-
-crt_write_es_customsargs() {
-    local es_arg="$1"
-    local conf="/userdata/system/batocera.conf"
-
-    if [ -f "$conf" ] && grep -q '^[#[:space:]]*es\.customsargs=' "$conf"; then
-        sed -i "s|^[#[:space:]]*es\.customsargs=.*|$es_arg|" "$conf"
-    else
-        echo "$es_arg" >> "$conf"
-    fi
-}
-
-crt_update_first_script_mode() {
-    local res="$1"
-    local first_script="/userdata/system/scripts/first_script.sh"
-
-    [ -f "$first_script" ] || return 0
-
-    sed -i "s|--mode \".*\"|--mode \"$res\"|" "$first_script"
-}
-
-crt_apply_primary_resolution() {
-    local output="$1"
-    local bootresolution="$2"
-    local normalized
-    local width
-    local height
-    local refresh
-    local res
-    local crt_bootresolution
-    local screensizeoffset_x
-    local screensizeoffset_y
-    local screenoffset_x
-    local screenoffset_y
-    local screenoffset_x_raw
-    local screenoffset_y_raw
-    local screensize_x
-    local screensize_y
-    local display_rotate
-    local es_arg
-
-    [ -n "$output" ] || return 1
-    [ -n "$bootresolution" ] || return 1
-
-    normalized="$(crt_normalize_bootresolution "$bootresolution")"
-
-    if ! crt_parse_bootresolution "$normalized"; then
-        echo "Standalone: CRT: Could not parse boot resolution '${bootresolution}'. Falling back to stock setMode." >> "$log"
-        return 1
-    fi
-
-    width="$CRT_WIDTH"
-    height="$CRT_HEIGHT"
-    refresh="$CRT_REFRESH"
-
-    # Preserve the existing CRT-specific width +1 behavior. If the final digit
-    # of the width is even, nudge it to an odd width to avoid conflicts with
-    # already-existing EDID/native modes.
-    if [ $((width % 10 % 2)) -eq 0 ]; then
-        width=$((width + 1))
-    fi
-
-    res="${width}x${height}"
-    crt_bootresolution="${res}.${refresh}"
-
-    screensizeoffset_x="$(es_arg_override_get_int_or_zero screensizeoffset_x)"
-    screensizeoffset_y="$(es_arg_override_get_int_or_zero screensizeoffset_y)"
-    screenoffset_x="$(es_arg_override_get_int_or_zero screenoffset_x)"
-    screenoffset_y="$(es_arg_override_get_int_or_zero screenoffset_y)"
-    screenoffset_x_raw="$(es_arg_override_get_valid_or_default screenoffset_x 00)"
-    screenoffset_y_raw="$(es_arg_override_get_valid_or_default screenoffset_y 00)"
-
-    screensize_x=$((width + screensizeoffset_x))
-    screensize_y=$((height + screensizeoffset_y))
-
-    display_rotate="$(/usr/bin/batocera-settings-get-master "display.rotate.${output}")"
-    [ -z "$display_rotate" ] && display_rotate="$(/usr/bin/batocera-settings-get-master display.rotate)"
-
-    if [ "$display_rotate" = "1" ] || [ "$display_rotate" = "3" ]; then
-        es_arg="es.customsargs=--screensize ${screensize_y} ${screensize_x} --screenoffset ${screenoffset_y_raw} ${screenoffset_x_raw}"
-    else
-        es_arg="es.customsargs=--screensize ${screensize_x} ${screensize_y} --screenoffset ${screenoffset_x_raw} ${screenoffset_y_raw}"
-    fi
-
-    echo "Standalone: CRT: Defining primary ES mode '${crt_bootresolution}' on '${output}'." >> "$log"
-    echo "Standalone: CRT: Writing ${es_arg}" >> "$log"
-
-    crt_write_es_customsargs "$es_arg"
-    crt_update_first_script_mode "$res"
-
-    # defineMode can return an XRandR BadName error if the mode already exists,
-    # especially after an ES restart. That should not break the standalone loop.
-    # Keep the error in display.log, then still try setMode_CVT.
-    if ! batocera-resolution --screen "${output}" defineMode "${crt_bootresolution}" >> "$log" 2>&1; then
-        echo "Standalone: CRT: defineMode failed or mode already exists for '${crt_bootresolution}'. Continuing with setMode_CVT." >> "$log"
-    fi
-
-    if ! batocera-resolution --screen "${output}" setMode_CVT "${crt_bootresolution}" >> "$log" 2>&1; then
-        echo "Standalone: CRT: setMode_CVT failed for '${crt_bootresolution}' on '${output}'." >> "$log"
-        return 1
-    fi
-}
-
-
 _wait_for_compositor() {
     # If not in a Wayland session, no need to wait.
     if [ -z "$WAYLAND_DISPLAY" ]; then return 0; fi
@@ -565,19 +193,63 @@ while [ -e "${REBOOT_FLAG}" ]; do
         echo "Standalone: Docked mode - applying minTomaxResolution for ${DOCKED_OUTPUT}." >> "$log"
         batocera-resolution --screen "${DOCKED_OUTPUT}" minTomaxResolution
     else
-        ## The resolution for the first screen is on the boot file so that it is easier to change it
-        ## It is not needed for other screens
-        bootresolution="$(batocera-settings-get-master -f "$BOOTCONF" es.resolution)"
-        if [ -z "${bootresolution}" ]; then
-            echo "Standalone: No resolution in boot config for '${settings_output}'. Using minTomaxResolution-secure." >> "$log"
-            batocera-resolution --screen "${settings_output}" minTomaxResolution-secure
-        else
-            echo "Standalone: CRT: Preparing primary resolution '${bootresolution}' for '${settings_output}'." >> "$log"
-            if ! crt_apply_primary_resolution "${settings_output}" "${bootresolution}"; then
-                echo "Standalone: CRT: Fallback setting resolution for '${settings_output}' to '${bootresolution}'." >> "$log"
-                batocera-resolution --screen "${settings_output}" setMode "${bootresolution}"
-            fi
-        fi
+
+################### CRT ##########################################################################	
+    bootresolution="$(batocera-settings-get-master -f "$BOOTCONF" es.resolution)"
+
+    after_last_dot=$(echo "$bootresolution" | sed 's/.*\.//')
+    digit_count=$(echo "$after_last_dot" | grep -o '[0-9]' | wc -l)
+    if [ "$digit_count" -ge 5 ]; then
+    	bootresolution=$(echo "$bootresolution" | sed 's/.\{3\}$//')
+    fi
+
+    if [ -z "${bootresolution}" ]; then
+        batocera-resolution minTomaxResolution-secure
+    else
+################### ZFEbHVUE ##########################################################################	
+            line=$(grep '^\(#\)\?es\.customsargs=' /userdata/system/batocera.conf)
+	    screenoffset_values=$(echo "$line" | awk '{match($0, /--screenoffset ([0-9]+) ([0-9]+)/, arr); print arr[1], arr[2]}')
+	    read screenoffset_x screenoffset_y <<< "$screenoffset_values"    
+	    display_rotate="$(/usr/bin/batocera-settings-get-master display.rotate)"
+	    read WIDTH HEIGHT PARTHZ <<< $(echo ${bootresolution} | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
+	    
+        if [ $(( WIDTH % 10 % 2 )) -eq 0 ]; then
+	    	WIDTH=$(( WIDTH + 1 ))
+	    fi
+
+ 	    RES="${WIDTH}x${HEIGHT}"
+	    bootresolution="${RES}.${PARTHZ}"
+
+	    file="/userdata/system/es.arg.override"
+	    if [ -f "$file" ]; then
+    		#screensize_x=$(grep -w screensize_x "$file" | awk '{print $2}')
+    		#screensize_y=$(grep -w screensize_y "$file" | awk '{print $2}')
+		screensizeoffset_x=$(grep -w screensizeoffset_x "$file" | awk '{print $2}')
+    		screensizeoffset_y=$(grep -w screensizeoffset_y "$file" | awk '{print $2}')
+		screensize_x=$((WIDTH  + screensizeoffset_x))
+		screensize_y=$((HEIGHT + screensizeoffset_y))
+    		screenoffset_x=$(grep -w screenoffset_x "$file" | awk '{print $2}')
+    		screenoffset_y=$(grep -w screenoffset_y "$file" | awk '{print $2}')
+	    else
+		screensize_x=$WIDTH
+		screensize_y=$HEIGHT
+	    fi
+
+	    sed -i "s/--mode \".*\"/--mode \"$RES\"/"    /userdata/system/scripts/first_script.sh
+
+	    if ([ "$display_rotate" == "1" ] || [ "$display_rotate" == "3" ]); then
+		es_arg="es.customsargs=--screensize "$screensize_y" "$screensize_x" --screenoffset "$screenoffset_y" "$screenoffset_x""
+	    else
+		es_arg="es.customsargs=--screensize "$screensize_x" "$screensize_y" --screenoffset "$screenoffset_x" "$screenoffset_y""
+	    fi
+
+	    sed -i "s/.*es.customsargs=.*/$es_arg/" 		/userdata/system/batocera.conf
+
+	    batocera-resolution --screen "${settings_output}"  defineMode "${bootresolution}"
+	    batocera-resolution --screen "${settings_output}"  setMode_CVT "${bootresolution}"
+
+    fi
+
 
         # Other screens
         if [ -n "${settings_output2}" ]; then
@@ -788,15 +460,8 @@ while [ -e "${REBOOT_FLAG}" ]; do
     cd /userdata # ES need a PWD
 
     # DBUS is required for the gio/gvfs/trash:///...
-    ES_GEOMETRY_FIX_PID=""
-    if es_arg_override_geometry_needs_restart; then
-        watch_es_game_exit_for_geometry_fix &
-        ES_GEOMETRY_FIX_PID="$!"
-    fi
-
-    dbus-run-session -- emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed ${CUSTOMESOPTIONS}
-
-    [ -n "$ES_GEOMETRY_FIX_PID" ] && kill "$ES_GEOMETRY_FIX_PID" 2>/dev/null || true
+    #%BATOCERA_EMULATIONSTATION_PREFIX% dbus-run-session -- emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required %BATOCERA_EMULATIONSTATION_ARGS% ${CUSTOMESOPTIONS}
+    SDL_AUDIODRIVER=pipewire dbus-run-session -- emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed ${CUSTOMESOPTIONS}
 
     if which batocera-backglass; then
         if [ -n "${settings_output2}" ]; then
