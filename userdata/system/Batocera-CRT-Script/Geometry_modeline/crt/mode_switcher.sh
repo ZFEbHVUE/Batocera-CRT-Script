@@ -6,12 +6,6 @@
 # Wayland/HD mode: xterm -maximized lands on the wrong display when a CRT DAC
 # is plugged in. Fix: inject a temporary labwc window rule that pins xterm to
 # the primary video output, then clean up on exit.
-#
-# X11/CRT mode: ES renders a single splash frame via SDL then blocks in
-# system(), leaving that frame frozen in the DRM scanout buffer.  The fix is
-# es_settings.cfg HideWindow=true, which causes ES to fully deinit its window
-# before running the command — releasing the DRM plane so xterm owns the
-# display cleanly. The mode-switch backup/restore logic sets this automatically.
 
 ADDED_RULE=0
 RC="/userdata/system/.config/labwc/rc.xml"
