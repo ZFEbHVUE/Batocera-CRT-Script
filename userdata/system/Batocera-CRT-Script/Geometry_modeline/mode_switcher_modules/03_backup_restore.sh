@@ -1228,10 +1228,7 @@ BOOTCUSTOM_EOF
             echo "[$(date +"%H:%M:%S")]: No es_settings.cfg in HD Mode backup" >> "$LOG_FILE"
         fi
 
-        # Remove HideWindow in HD mode — it is only needed for CRT mode X11 script
-        # launches. In HD/Wayland mode the labwc window-rule shim handles output
-        # placement; leaving HideWindow set is harmless but removes the splash which
-        # is desirable to keep in HD mode for a polished experience.
+        # HideWindow disables ES launch splash artwork
         local _es_cfg="/userdata/system/configs/emulationstation/es_settings.cfg"
         if [ -f "$_es_cfg" ] && grep -q 'name="HideWindow"' "$_es_cfg" 2>/dev/null; then
             sed -i '/<bool name="HideWindow"/d' "$_es_cfg" 2>/dev/null || true
@@ -1384,22 +1381,12 @@ BOOTCUSTOM_EOF
             echo "[$(date +"%H:%M:%S")]: No es_settings.cfg in CRT Mode backup" >> "$LOG_FILE"
         fi
 
-        # Ensure HideWindow=true in CRT mode so ES fully deinits before launching
-        # shell-script "games" (mode switcher, geometry tool, etc.).  Without this,
-        # ES renders a frozen splash frame that occupies the DRM scanout buffer for
-        # the entire duration of the child process, blocking xterm from appearing.
+        # HideWindow disables ES launch splash artwork
         local _es_cfg="/userdata/system/configs/emulationstation/es_settings.cfg"
-        mkdir -p "/userdata/system/configs/emulationstation"
-        if [ -f "$_es_cfg" ]; then
-            if grep -q 'name="HideWindow"' "$_es_cfg" 2>/dev/null; then
-                sed -i 's/<bool name="HideWindow" value="[^"]*"/<bool name="HideWindow" value="true"/' "$_es_cfg" 2>/dev/null || true
-            else
-                sed -i 's|</config>|\t<bool name="HideWindow" value="true" />\n</config>|' "$_es_cfg" 2>/dev/null || true
-            fi
-        else
-            printf '<?xml version="1.0"?>\n<config>\n\t<bool name="HideWindow" value="true" />\n</config>\n' > "$_es_cfg"
+        if [ -f "$_es_cfg" ] && grep -q 'name="HideWindow"' "$_es_cfg" 2>/dev/null; then
+            sed -i '/<bool name="HideWindow"/d' "$_es_cfg" 2>/dev/null || true
+            echo "[$(date +"%H:%M:%S")]: Removed HideWindow from es_settings.cfg (CRT mode)" >> "$LOG_FILE"
         fi
-        echo "[$(date +"%H:%M:%S")]: Ensured HideWindow=true in es_settings.cfg (CRT mode)" >> "$LOG_FILE"
 
         # 3. RESTORE BOOT-CUSTOM.SH (Creates X11 configs on boot)
         if ! is_dualboot_system; then
