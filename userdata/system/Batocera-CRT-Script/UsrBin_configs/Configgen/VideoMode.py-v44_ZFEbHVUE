@@ -58,7 +58,6 @@ def changeMode_cvt(videomode: str) -> None:
                 raise BatoceraException("Error setting video mode") from e
             time.sleep(1)
 
-
 def getCurrentMode() -> str:  # noqa: RET503
     proc = subprocess.Popen(["batocera-resolution currentMode"], stdout=subprocess.PIPE, shell=True)
     (out, _) = proc.communicate()
