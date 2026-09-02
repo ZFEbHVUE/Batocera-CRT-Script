@@ -470,8 +470,8 @@ case "${ACTION}" in
 
 	MODELINE_CUSTOM="\"${RES_MODE}\" $(echo "$MODE_switchres" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
 	sed -i  "s/.*Modeline.*/    Modeline            $MODELINE_CUSTOM/" 	/userdata/system/99-nvidia.conf
-    ;;    
-
+    ;;  
+    
     "setMode_CVT")
         MODE=$1
 # If this exact token is whitelisted in videomodes.conf, do NOT use CVT.
@@ -575,6 +575,7 @@ fi
             # screen 3
             if test -n "${MODE3}"
             then
+		sleep 1
             if xrandr --listConnectedOutputs | sed -e s+"*$"++ | grep -qE "^${MODE3}$"; then # if there is at least the screen 3
                 echo "set user output: ${MODE3} as right of ${PREVIOUS_SCREEN}" >&2 >> "$log"
                 xrandr --output "${MODE3}" --right-of "${PREVIOUS_SCREEN}"
@@ -694,6 +695,10 @@ fi
     "getDisplayComp")
         echo "openbox"
         ;;
+
+    "configureWindow")
+	# nothing to do, on xorg, configuring windows is done at application level
+	;;
 
     *)
         f_usage
