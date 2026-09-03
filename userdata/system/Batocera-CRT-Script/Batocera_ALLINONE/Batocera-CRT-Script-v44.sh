@@ -688,7 +688,7 @@ echo "Version batocera = ${version_Batocera}" >> /userdata/system/logs/BUILD_15K
 
 case "${version_Batocera}" in
   44*)
-    echo "Version 43"
+    echo "Version 44"
     Version_of_batocera="v44"
     VERSION_BATOCERA_NUM=44
     ;;
