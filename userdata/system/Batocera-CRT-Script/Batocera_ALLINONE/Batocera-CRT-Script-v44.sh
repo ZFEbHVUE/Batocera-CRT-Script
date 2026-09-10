@@ -5063,6 +5063,8 @@ cp /userdata/system/Batocera-CRT-Script/Geometry_modeline/CRT.svg /usr/share/emu
 chmod 755 "$CRT_ROMS/crt/es_adjust_tool.sh"
 chmod 755 "$CRT_ROMS/crt/geometry.sh"
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.sh
+chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool_legacy.sh
+chmod 0644 /userdata/system/Batocera-CRT-Script/Geometry_modeline/es_tool.py
 chmod 755 /userdata/system/Batocera-CRT-Script/Geometry_modeline/geometry.sh
 chmod 0644 "$CRT_ROMS/crt/es_adjust_tool.sh.keys"
 chmod 0644 "$CRT_ROMS/crt/geometry.sh.keys"

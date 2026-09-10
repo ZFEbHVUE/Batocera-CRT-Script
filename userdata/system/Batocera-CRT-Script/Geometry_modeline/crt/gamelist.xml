@@ -47,10 +47,10 @@ If you push the CRT range too far in the geometry tool, you’ll have limited op
 	<game>
 		<path>./es_adjust_tool.sh</path>
 		<name>3 - ES Centering &amp; Scaling Tool</name>
-		<desc>Scaling and centering for cases in 
-which these operations within the service menu
-and CRT geometry tool do not produce a perfectly centered screen.		
-See Script wiki page for more information</desc>
+		<desc>Visually center and scale EmulationStation on the CRT.
+The tool previews the result while editing the existing relative
+ES geometry offsets used by the CRT Script backend.
+See Script wiki page for more information.</desc>
 		<image>./images/es_adjust_tool-image.png</image>
 		<marquee>./images/es_adjust_tool-logo.png</marquee>
 		<thumbnail>./images/es_adjust_tool-thumb.png</thumbnail>
