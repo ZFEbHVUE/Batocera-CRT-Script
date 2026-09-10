@@ -21,34 +21,59 @@
             "target": "KEY_RIGHT"
         },
         {
+            "trigger": "a",
+            "type": "key",
+            "target": "KEY_ENTER"
+        },
+        {
+            "trigger": "b",
+            "type": "key",
+            "target": "KEY_ESC"
+        },
+        {
+            "trigger": "x",
+            "type": "key",
+            "target": "KEY_R"
+        },
+        {
+            "trigger": "y",
+            "type": "key",
+            "target": "KEY_R"
+        },
+        {
+            "trigger": "joystick1up",
+            "type": "key",
+            "target": "KEY_UP"
+        },
+        {
+            "trigger": "joystick1down",
+            "type": "key",
+            "target": "KEY_DOWN"
+        },
+        {
+            "trigger": "joystick1left",
+            "type": "key",
+            "target": "KEY_LEFT"
+        },
+        {
+            "trigger": "joystick1right",
+            "type": "key",
+            "target": "KEY_RIGHT"
+        },
+        {
             "trigger": "start",
             "type": "key",
             "target": "KEY_ENTER"
         },
         {
+            "trigger": "select",
+            "type": "key",
+            "target": "KEY_ESC"
+        },
+        {
             "trigger": ["hotkey", "start"],
             "type": "key",
-            "target": [ "KEY_ESC" ]
-        },
-        {
-            "trigger": "a",
-            "type": "key",
-            "target": "KEY_PAGEUP"
-        },
-        {
-            "trigger": "y",
-            "type": "key",
-            "target": "KEY_PAGEDOWN"
-        },
-        {
-            "trigger": "pageup",
-            "type": "key",
-            "target": "KEY_LEFTCTRL"
-        },
-        {
-            "trigger": "pagedown",
-            "type": "key",
-            "target": "KEY_LEFTCTRL"
+            "target": ["KEY_ESC"]
         }
     ]
 }
