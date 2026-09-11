@@ -48,6 +48,11 @@ export HOME=/userdata/system
 #    emulatorlauncher to exit and then restarts ES once by using
 #    batocera-es-swissknife --restart when available.
 #
+#    Workaround origin: Batocera-CRT-Script commit
+#      ecedc287caaded160f5bda8ca9dcab8f279b7d6e
+#    The temporary block and launch call site below are explicitly marked for
+#    removal once the upstream EmulationStation SDL resize fix is present.
+#
 #    This runtime build intentionally keeps the stock Xorg EmulationStation launch
 #    behavior used by Batocera, but with the build-time placeholders already
 #    expanded for direct installation on a live Batocera x86/Xorg system.
@@ -56,17 +61,6 @@ export HOME=/userdata/system
 #    which is not part of the stock runtime launch command.
 
 ES_ARG_OVERRIDE="/userdata/system/es.arg.override"
-
-es_sdl_geometry_workaround_log() {
-    local message="Standalone: SDL geometry workaround: $*"
-
-    mkdir -p "$(dirname "$log")"
-    echo "$message" >> "$log"
-
-    # Make the log survive the forced ES restart. batocera-es-swissknife uses
-    # kill -9 on EmulationStation, so flush before requesting the restart.
-    sync -f "$log" 2>/dev/null || true
-}
 
 es_arg_override_get_value() {
     local key="$1"
@@ -133,6 +127,52 @@ es_arg_override_debug_values() {
     ssy="$(es_arg_override_get_value screensizeoffset_y 2>/dev/null || echo 00)"
 
     echo "screenoffset_x=${sx}, screenoffset_y=${sy}, screensizeoffset_x=${ssx}, screensizeoffset_y=${ssy}"
+}
+
+# ============================================================================
+# TEMPORARY SDL/EMULATIONSTATION CRT GEOMETRY WORKAROUND
+# ============================================================================
+# REMOVE THIS BLOCK once the upstream EmulationStation SDL resize regression is
+# fixed in the Batocera EmulationStation revision used here.
+#
+# Why this exists:
+#   After returning from a game, SDL_WINDOWEVENT_RESIZED can overwrite the
+#   logical --screensize geometry with the physical SDL window dimensions when
+#   custom CRT geometry is active. Restarting EmulationStation re-applies the
+#   intended launch geometry from es.arg.override.
+#
+# Downstream workaround introduced in Batocera-CRT-Script commit:
+#   ecedc287caaded160f5bda8ca9dcab8f279b7d6e
+#   https://github.com/ZFEbHVUE/Batocera-CRT-Script/commit/ecedc287caaded160f5bda8ca9dcab8f279b7d6e
+#
+# Upstream regression reference:
+#   0de5d9c66e1393bf02421f398e9f0f5016ab2fb6
+#
+# When the upstream fix is submitted/merged, reference the downstream commit
+# above in the PR/commit discussion as the temporary workaround being retired.
+#
+# Remove together:
+#   - es_sdl_geometry_workaround_log()
+#   - es_arg_override_geometry_needs_restart()
+#   - emulatorlauncher_running_for_geometry_fix()
+#   - find_batocera_es_swissknife()
+#   - restart_es_for_sdl_geometry_workaround()
+#   - watch_es_game_exit_for_geometry_fix()
+#   - the TEMPORARY SDL GEOMETRY WORKAROUND call-site block before ES launch
+#
+# Keep the generic es.arg.override parsing helpers above this block; they are
+# also used by the normal CRT geometry setup and are not part of the workaround.
+# ============================================================================
+
+es_sdl_geometry_workaround_log() {
+    local message="Standalone: SDL geometry workaround: $*"
+
+    mkdir -p "$(dirname "$log")"
+    echo "$message" >> "$log"
+
+    # Make the log survive the forced ES restart. batocera-es-swissknife uses
+    # kill -9 on EmulationStation, so flush before requesting the restart.
+    sync -f "$log" 2>/dev/null || true
 }
 
 es_arg_override_geometry_needs_restart() {
@@ -242,6 +282,10 @@ watch_es_game_exit_for_geometry_fix() {
     done
 }
 
+# ============================================================================
+# END TEMPORARY SDL/EMULATIONSTATION CRT GEOMETRY WORKAROUND
+# ============================================================================
+
 crt_normalize_bootresolution() {
     local mode="$1"
     local after_last_dot
@@ -287,12 +331,28 @@ crt_parse_bootresolution() {
 crt_write_es_customsargs() {
     local es_arg="$1"
     local conf="/userdata/system/batocera.conf"
+    local desired_value="${es_arg#es.customsargs=}"
+    local current_value=""
+
+    # Avoid rewriting batocera.conf on every ES start/restart when the value
+    # generated from es.arg.override is already the effective es.customsargs.
+    # This is especially important while the temporary SDL geometry workaround
+    # intentionally restarts EmulationStation after game exit.
+    if [ -f "$conf" ]; then
+        current_value="$(/usr/bin/batocera-settings-get es.customsargs 2>/dev/null || true)"
+        if [ "$current_value" = "$desired_value" ]; then
+            echo "Standalone: CRT: es.customsargs already matches es.arg.override; skipping batocera.conf write." >> "$log"
+            return 0
+        fi
+    fi
 
     if [ -f "$conf" ] && grep -q '^[#[:space:]]*es\.customsargs=' "$conf"; then
         sed -i "s|^[#[:space:]]*es\.customsargs=.*|$es_arg|" "$conf"
     else
         echo "$es_arg" >> "$conf"
     fi
+
+    echo "Standalone: CRT: Updated ${es_arg}" >> "$log"
 }
 
 crt_update_first_script_mode() {
@@ -368,7 +428,7 @@ crt_apply_primary_resolution() {
     fi
 
     echo "Standalone: CRT: Defining primary ES mode '${crt_bootresolution}' on '${output}'." >> "$log"
-    echo "Standalone: CRT: Writing ${es_arg}" >> "$log"
+    echo "Standalone: CRT: Desired ${es_arg}" >> "$log"
 
     crt_write_es_customsargs "$es_arg"
     crt_update_first_script_mode "$res"
@@ -788,6 +848,13 @@ while [ -e "${REBOOT_FLAG}" ]; do
     cd /userdata # ES need a PWD
 
     # DBUS is required for the gio/gvfs/trash:///...
+
+    # ========================================================================
+    # TEMPORARY SDL GEOMETRY WORKAROUND CALL SITE
+    # Remove this block together with the temporary workaround functions above
+    # once the upstream EmulationStation SDL resize regression is fixed.
+    # Downstream origin: ecedc287caaded160f5bda8ca9dcab8f279b7d6e
+    # ========================================================================
     ES_GEOMETRY_FIX_PID=""
     if es_arg_override_geometry_needs_restart; then
         watch_es_game_exit_for_geometry_fix &
@@ -797,6 +864,7 @@ while [ -e "${REBOOT_FLAG}" ]; do
     dbus-run-session -- emulationstation ${GAMELAUNCHOPT} --exit-on-reboot-required --windowed ${CUSTOMESOPTIONS}
 
     [ -n "$ES_GEOMETRY_FIX_PID" ] && kill "$ES_GEOMETRY_FIX_PID" 2>/dev/null || true
+    # ================= END TEMPORARY SDL GEOMETRY WORKAROUND ================
 
     if which batocera-backglass; then
         if [ -n "${settings_output2}" ]; then
