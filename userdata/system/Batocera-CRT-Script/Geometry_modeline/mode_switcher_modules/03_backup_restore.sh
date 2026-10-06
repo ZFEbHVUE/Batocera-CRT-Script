@@ -1700,6 +1700,16 @@ BOOTCUSTOM_EOF
         fi
     fi
     
+    # Fightcade VERTICAL MODE is CRT-only. The Wayland HD boot has no xrandr,
+    # so emulationstation-standalone never runs custom-es-config and the menu
+    # file would survive the switch. Force it to the mode we are about to boot.
+    # norestart: this process is the switcher, and a reboot follows.
+    if [ -x /userdata/system/fightcade-flatpak/fightcade-lobby-vertical ]; then
+        /userdata/system/fightcade-flatpak/fightcade-lobby-vertical sync-menu "$mode" norestart \
+            >>/tmp/fightcade-lobby-vertical.log 2>&1 || true
+        echo "[$(date +"%H:%M:%S")]: Fightcade vertical menu set for $mode" >> "$LOG_FILE"
+    fi
+
     echo "[$(date +"%H:%M:%S")]: Restore completed for $mode mode (userdata-only approach)" >> "$LOG_FILE"
     return 0
 }
