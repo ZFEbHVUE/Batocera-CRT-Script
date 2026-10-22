@@ -379,6 +379,207 @@ make_parent_and_copy_preserve() {
   fi
 }
 
+# Record the live HD monitor for Wayland and X11.
+# Called when the system-restore backup is created, before any driver reboot
+# and before videomodes.conf replaces listModes with 15 kHz modelines.
+# A later pass skips this when hd_mode_list.txt already has content.
+capture_hd_monitor_list() {
+  local dest="/userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/video_settings"
+  mkdir -p "$dest"
+
+  # X11 batocera-resolution talks to the X server. A Wayland session does not.
+  if [ -z "$(ls /run/user/*/wayland-* 2>/dev/null)" ] && ! pgrep -x labwc >/dev/null 2>&1; then
+    export DISPLAY="${DISPLAY:-:0}"
+    if [ -z "${XAUTHORITY:-}" ] && [ -f /var/lib/.Xauthority ]; then
+      export XAUTHORITY=/var/lib/.Xauthority
+    fi
+  fi
+
+  if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    if [ -S /run/wayland-0 ] || ls /run/user/*/wayland-0 >/dev/null 2>&1; then
+      export WAYLAND_DISPLAY=wayland-0
+      export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run}"
+    fi
+  fi
+
+  local stack="wayland"
+  if command -v batocera-resolution >/dev/null 2>&1; then
+    local detected
+    detected=$(batocera-resolution getDisplayMode 2>/dev/null || true)
+    [ "$detected" = "xorg" ] && stack="xorg"
+  fi
+
+  # The primary output can be the CRT DAC, which only advertises 640x480.
+  # Use the connected output whose real modes go above that.
+  local screen="" out line id res w h px top best_px
+  best_px=0
+  while IFS= read -r out; do
+    [ -z "$out" ] && continue
+    top=0
+    while IFS= read -r line; do
+      id="${line%%:*}"
+      case "$id" in max-*|"") continue ;; esac
+      res="${id%%.*}"
+      w="${res%%x*}"
+      h="${res#*x}"
+      case "$w" in *[!0-9]*) continue ;; esac
+      case "$h" in *[!0-9]*) continue ;; esac
+      px=$((w * h))
+      [ "$px" -gt "$top" ] && top=$px
+    done <<EOF
+$(batocera-resolution --screen "$out" listModes 2>/dev/null)
+EOF
+    if [ "$top" -gt "$best_px" ]; then
+      best_px=$top
+      screen=$out
+    fi
+  done <<EOF
+$(batocera-resolution listOutputs 2>/dev/null)
+EOF
+
+  local tmp
+  tmp=$(mktemp)
+  if [ -n "$screen" ]; then
+    batocera-resolution --screen "$screen" listModes > "$tmp" 2>/dev/null || true
+  else
+    batocera-resolution listModes > "$tmp" 2>/dev/null || true
+  fi
+  if [ ! -s "$tmp" ]; then
+    rm -f "$tmp"
+    box_center "Could not read the HD monitor mode list."
+    return 0
+  fi
+
+  {
+    echo "STACK=$stack"
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      local id="${line%%:*}"
+      [ "$id" = "max-640x480" ] && continue
+      printf '%s\n' "$line"
+    done < "$tmp"
+  } > "${dest}/hd_mode_list.txt"
+  echo "$stack" > "${dest}/hd_display_stack.txt"
+  local _mon=""
+  if [ -n "$screen" ] && command -v wlr-randr >/dev/null 2>&1; then
+    _mon=$(XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run}" WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}" wlr-randr 2>/dev/null \
+      | awk -v screen="$screen" '
+          $1 == screen { grab=1; next }
+          grab && $0 !~ /^[[:space:]]/ { exit }
+          grab && index($0, "Model:") { sub(/.*Model: /, ""); print; exit }
+        ')
+  fi
+  if [ -z "$_mon" ] && command -v wlr-randr >/dev/null 2>&1; then
+    _mon=$(XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run}" WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}" wlr-randr 2>/dev/null \
+      | awk -F'Model: ' '/Model:/ { print $2; exit }')
+  fi
+  # X11 has no wlr-randr. The product name is in the EDID of the chosen screen.
+  if [ -z "$_mon" ] && [ -n "$screen" ] && command -v edid-decode >/dev/null 2>&1; then
+    local _drm _d _cand
+    _drm="$screen"
+    case "$screen" in
+      HDMI-[0-9]*) _drm="HDMI-A-${screen#HDMI-}" ;;
+    esac
+    for _cand in "$_drm" "$screen"; do
+      for _d in /sys/class/drm/card*-"$_cand"; do
+        [ -r "$_d/edid" ] || continue
+        _mon=$(edid-decode "$_d/edid" 2>/dev/null | sed -n "s/.*Display Product Name: '\\([^']*\\)'.*/\\1/p" | head -1)
+        [ -n "$_mon" ] && break 2
+      done
+    done
+    if [ -z "$_mon" ]; then
+      case "$screen" in
+        HDMI-[0-9]*)
+          for _d in /sys/class/drm/card*-HDMI-B-"${screen#HDMI-}"; do
+            [ -r "$_d/edid" ] || continue
+            _mon=$(edid-decode "$_d/edid" 2>/dev/null | sed -n "s/.*Display Product Name: '\\([^']*\\)'.*/\\1/p" | head -1)
+            [ -n "$_mon" ] && break
+          done
+          ;;
+      esac
+    fi
+  fi
+  if [ -n "$_mon" ]; then
+    printf '%s\n' "$_mon" > "${dest}/hd_monitor.txt"
+    box_center "HD monitor: ${_mon}"
+  fi
+  rm -f "$tmp"
+
+  local current res chosen best_delta line id label hz milli delta
+  if [ -n "$screen" ]; then
+    current=$(batocera-resolution --screen "$screen" currentMode 2>/dev/null || true)
+  else
+    current=$(batocera-resolution currentMode 2>/dev/null || true)
+  fi
+  case "$current" in
+    unknown*|""|640x480.*) current="" ;;
+  esac
+  res="${current%%.*}"
+  chosen=""
+  best_delta=999999
+  # A cap like max-3440x1440 does not change refresh. This panel's preferred
+  # mode can be 165Hz, which leaves EmulationStation black. Keep the full list,
+  # and preselect the ~60Hz mode at the resolution that is on screen.
+  while IFS= read -r line; do
+    [[ "$line" == STACK=* ]] && continue
+    id="${line%%:*}"
+    label="${line#*:}"
+    [[ "$id" == max-* ]] && continue
+    [[ "$id" != "${res}."* ]] && continue
+    hz=$(echo "$label" | awk '{print $(NF-1)}')
+    milli=$(echo "$hz" | awk '{printf "%d", ($1 * 1000) + 0.5}')
+    [ -z "$milli" ] && continue
+    if [ "$milli" -gt 60000 ]; then
+      delta=$((milli - 60000))
+    else
+      delta=$((60000 - milli))
+    fi
+    if [ "$delta" -lt "$best_delta" ]; then
+      best_delta=$delta
+      chosen=$id
+    fi
+  done < "${dest}/hd_mode_list.txt"
+
+  if [ -z "$chosen" ]; then
+    local best_px=0 px
+    best_delta=999999
+    while IFS= read -r line; do
+      [[ "$line" == STACK=* ]] && continue
+      id="${line%%:*}"
+      label="${line#*:}"
+      [[ "$id" == max-* ]] && continue
+      res="${id%%.*}"
+      w="${res%%x*}"
+      h="${res#*x}"
+      case "$w" in *[!0-9]*) continue ;; esac
+      case "$h" in *[!0-9]*) continue ;; esac
+      px=$((w * h))
+      [ "$px" -lt "$best_px" ] && continue
+      hz=$(echo "$label" | awk '{print $(NF-1)}')
+      milli=$(echo "$hz" | awk '{printf "%d", ($1 * 1000) + 0.5}')
+      [ -z "$milli" ] && continue
+      if [ "$milli" -gt 60000 ]; then
+        delta=$((milli - 60000))
+      else
+        delta=$((60000 - milli))
+      fi
+      if [ "$px" -gt "$best_px" ] || [ "$delta" -lt "$best_delta" ]; then
+        best_px=$px
+        best_delta=$delta
+        chosen=$id
+      fi
+    done < "${dest}/hd_mode_list.txt"
+  fi
+
+  if [ -n "$chosen" ]; then
+    echo "global.videomode=$chosen" > "${dest}/video_mode.txt"
+    echo "es.resolution=$chosen" > "${dest}/es_resolution.txt"
+    box_center "Saved HD monitor list. Preselected ${chosen}."
+  else
+    box_center "Saved HD monitor list."
+  fi
+}
+
 backup_once() {
   msg "==> Preparing first-run BACKUP…"
   mkdir -p "$BACKUP_ROOT"
@@ -398,6 +599,11 @@ backup_once() {
   # Write check file regardless (we only run this once)
   mkdir -p "$BASE_DIR"
   date +"%Y-%m-%d %H:%M:%S" > "$CHECK_FILE"
+
+  # HD monitor list, before a Sea Islands reboot or the 15 kHz mode file.
+  if [ ! -s /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/video_settings/hd_mode_list.txt ]; then
+    capture_hd_monitor_list
+  fi
 
   # Baseline system-restore backup summary (nice UI)
   box_hash
@@ -525,6 +731,14 @@ restore_all() {
   if [ -f "$mode_switcher_flag" ]; then
     rm -f "$mode_switcher_flag"
     box_center "Mode switcher first-run flag removed"
+  fi
+
+  # The HD list is captured once and then skipped. A stock restore must drop
+  # it, or the next install keeps the old monitor instead of reading the one
+  # that is connected now. This is mode_backups only. BACKUP/ stays.
+  if [ -d "$BASE_DIR/mode_backups" ]; then
+    rm -rf "$BASE_DIR/mode_backups"
+    box_center "HD/CRT mode backups removed"
   fi
 
   # Dual-boot cleanup: remove CRT boot environment if it was installed
@@ -1478,6 +1692,11 @@ run_phase1() {
   box_hash
   echo ""
   sleep 1
+
+  # The backup step already saved the HD monitor. Do not replace that list.
+  if [ ! -s /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/video_settings/hd_mode_list.txt ]; then
+    capture_hd_monitor_list
+  fi
 
   # Step 1: Acquire image (scan local + download)
   prompt_image_source
@@ -5344,8 +5563,12 @@ _hd_videooutput=$(batocera-settings-get global.videooutput 2>/dev/null || true)
 
 # Step 2: Write HD backup files (mode switcher reads these on CRT->HD switch)
 mkdir -p "${MODE_BACKUP_BASE}/hd_mode/video_settings"
+# The HD list is saved when the system-restore backup is created.
+# Do not capture again here. videomodes.conf is already the 15 kHz list.
+if [ ! -s "${MODE_BACKUP_BASE}/hd_mode/video_settings/hd_mode_list.txt" ]; then
 echo "global.videomode=${_hd_videomode:-default}" \
     > "${MODE_BACKUP_BASE}/hd_mode/video_settings/video_mode.txt"
+fi
 echo "${_hd_videooutput}" \
     > "${MODE_BACKUP_BASE}/hd_mode/video_settings/video_output.txt"
 
