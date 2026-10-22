@@ -38,6 +38,8 @@ XTERM_NAME=""
 
 DISPLAY=:0.0 xterm $XTERM_NAME -fs 15 -maximized \
     +sb -fg white -bg black -fa "DejaVuSansMono" -en UTF-8 \
+    -cr black -ms black \
+    -xrm 'XTerm*pointerColor: black' -xrm 'XTerm*pointerColorBackground: black' \
     -e /userdata/system/Batocera-CRT-Script/Geometry_modeline/mode_switcher.sh
 
 # cleanup_labwc_rule runs automatically via EXIT trap
