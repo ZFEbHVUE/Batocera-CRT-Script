@@ -9,6 +9,8 @@
 #
 # NOTE: defineMode path kept as-is (no temp ini injection) per user's request to handle later.
 
+export LC_ALL=C
+
 log="/userdata/system/logs/display.log"
 mpvlog="/userdata/system/logs/mpv.log"
 BOOTCONF="/boot/batocera-boot.conf"
@@ -26,6 +28,74 @@ if [ -f "$STATE_FILE" ]; then
 fi
 # --- Clean up previous switchres modeline - end ---
 
+_primary_output() {
+    PRIMARY=$(xrandr --listPrimary)
+    if test -z "${PRIMARY}"
+    then
+        PRIMARY=$(xrandr --listConnectedOutputs | sed -e 's/\*$//' | head -n1)
+    fi
+    echo "${PRIMARY}"
+}
+
+_map_touchscreen() {
+    TRIES=0
+    until ID=$(xinput list --id-only "pointer:$1" 2>/dev/null) || [ "${TRIES}" -ge 5 ]
+    do
+        TRIES=$((TRIES + 1))
+        sleep 1
+    done
+    if [ -z "${ID}" ]
+    then
+        echo "Touchscreen '$1' not found" >> "$log"
+        return 1
+    fi
+    xinput --map-to-output "${ID}" "$2"
+    echo "Touchscreen '$1' mapped to $2" >> "$log"
+}
+
+_map_touchscreens() {
+    WANTED=$(batocera-settings-get-master "display.touchscreen.$1")
+    if [ -n "${WANTED}" ]
+    then
+        _map_touchscreen "${WANTED}" "$1"
+    elif [ "$1" = "$(_primary_output)" ]
+    then
+        CLAIMED=$(sed -n 's/^display\.touchscreen\.[^=]*=//p' /userdata/system/batocera.conf 2>/dev/null)
+        for NODE in /dev/input/event*
+        do
+            udevadm info -q property -n "${NODE}" 2>/dev/null | grep -qx 'ID_INPUT_TOUCHSCREEN=1' || continue
+            NAME=$(cat "/sys/class/input/${NODE##*/}/device/name")
+            echo "${CLAIMED}" | grep -qxF "${NAME}" || _map_touchscreen "${NAME}" "$1"
+        done
+    fi
+}
+
+_vrr_capable() {
+    local card
+
+    for card in /sys/class/drm/card[0-9]*; do
+        case "${card##*/}" in *-*) continue ;; esac
+        [ "$(basename "$(readlink -f "${card}/device/driver")")" = "amdgpu" ] || continue
+        modetest -M amdgpu -c 2>/dev/null | awk -F'\t' '
+            /^[0-9]+\t/ { connected = ($3 == "connected") }
+            /^\t[0-9]+ vrr_capable:/ { vrr = 1; next }
+            vrr && /^\t\tvalue:/ { if (connected && $3 == "value: 1") found = 1; vrr = 0 }
+            END { exit !found }' && return 0
+    done
+    return 1
+}
+
+# runs before X starts; the root overlay lives in RAM so the edit resets every boot
+if test "${1}" = "setVrr"
+then
+    AMDGPU_CONF="/etc/X11/xorg.conf.d/20-amdgpu.conf"
+    test -f "${AMDGPU_CONF}" || exit 0
+    VRR=true
+    test "$(batocera-settings-get display.vrr)" = "0" && VRR=false
+    sed -i "s|\"VariableRefresh\" \"[a-z]*\"|\"VariableRefresh\" \"${VRR}\"|" "${AMDGPU_CONF}"
+    echo "Xorg VariableRefresh: ${VRR}" >> "$log"
+    exit 0
+fi
 
 PSCREEN=
 if test "${1}" = "--screen"
@@ -35,18 +105,9 @@ then
     shift
 fi
 
-# set default screen, the first one
 if test -z "${PSCREEN}"
 then
-    PSCREEN=$(xrandr --listPrimary)
-fi
-
-# Fallback if no primary screen is designated
-# Therefore we default to the first connected output.
-# Helps with TV"s powering off whilst Bato is active
-if test -z "${PSCREEN}"
-then
-    PSCREEN=$(xrandr --listConnectedOutputs | sed -e 's/\*$//' | head -n1)
+    PSCREEN=$(_primary_output)
 fi
 
 f_usage() {
@@ -68,16 +129,61 @@ f_usage() {
     echo "${0} refreshRate" >&2
 }
 
+# a rate written on the labwc builds is in mHz; xrandr takes Hz and picks the closest listed rate
+_rate_hz() {
+    [ -n "$1" ] || return 0
+    awk -v r="$1" 'BEGIN { printf "%.2f\n", r >= 1000 ? r / 1000 : r }'
+}
+
+# modes a sink only takes as YCbCr 4:2:0 sit in the EDID's Y420 video data block; TVs tend to show
+# no picture on them, so they are left out of every listing
+_420_only_modes() {
+    xrandr --props | awk -v o="$1" '$0 ~ "^" o " " { p = 1; next } /^[^[:space:]]/ { p = 0 } p' \
+        | edid-decode 2>/dev/null | sed -n '/YCbCr 4:2:0 Video Data Block/,/^  [^ ]/p' | awk '/VIC/ { printf "%s@%.0f\n", $3, $4 }'
+}
+
+_list_modes() {
+    local skip
+    skip=$(_420_only_modes "$1" | tr '\n' ' ')
+    xrandr --listModes "$1" | awk -v skip=" ${skip} " '{ split($1, m, "."); if (!index(skip, " " m[1] "@" int((m[2] "." m[3]) + 0.5) " ")) print }'
+}
+
+# the rate to use when a request names only a resolution: the listed one nearest 60 Hz, since
+# xrandr alone would take the first mode of that name, 4:2:0-only ones included
+_listed_rate() {
+    _list_modes "${PSCREEN}" | awk -v res="$1" '
+        { split($1, m, "."); if (m[1] != res) next; d = (m[2] "." m[3]) - 60; if (d < 0) d = -d }
+        best == "" || d < bd { best = m[2] "." m[3]; bd = d }
+        END { print best }'
+}
+
+# xrandr would silently take the closest rate for a resolution, so check the request against the listing
+_mode_listed() {
+    _list_modes "${PSCREEN}" | awk -v res="$1" -v hz="$2" '
+        { split($1, m, "."); d = (m[2] "." m[3]) - hz; if (d < 0) d = -d }
+        m[1] == res && (hz == "" || d < 0.01) { found = 1; exit }
+        END { exit !found }'
+}
+
 f_minTomaxResolution() {
     
     BOOTRESOLUTION="$(batocera-settings-get -f "$BOOTCONF" es.resolution)"
     CONFRESOLUTION="$(batocera-settings-get-master es.resolution)"
+    # what ES saves for AUTO
+    [ "${BOOTRESOLUTION}" = "auto" ] && BOOTRESOLUTION=
+    [ "${CONFRESOLUTION}" = "auto" ] && CONFRESOLUTION=
 
     if [ -z "$1" ]; then
         # reinit the screen (in case it was off)
-        if [ -n "${BOOTRESOLUTION}" ] && [ "${BOOTRESOLUTION}" != "auto" ]; then
-            BOOT_RES=$(echo "${BOOTRESOLUTION}" | cut -d'.' -f1 | sed 's/max-//;s/\..*//')
-            BOOT_RATE=$(echo "${BOOTRESOLUTION}" | cut -s -d'.' -f2-)
+        BOOT_RES=$(echo "${BOOTRESOLUTION}" | cut -d'.' -f1 | sed 's/max-//;s/\..*//')
+        BOOT_RATE=$(_rate_hz "$(echo "${BOOTRESOLUTION}" | cut -s -d'.' -f2-)")
+        if [ -n "${BOOTRESOLUTION}" ] && ! _mode_listed "${BOOT_RES}" "${BOOT_RATE}"; then
+            echo "es.resolution ${BOOTRESOLUTION} is not an available mode, using --auto" >> "$log"
+            BOOTRESOLUTION=
+            CONFRESOLUTION=
+        fi
+        if [ -n "${BOOTRESOLUTION}" ]; then
+            [ -n "${BOOT_RATE}" ] || BOOT_RATE=$(_listed_rate "${BOOT_RES}")
             if [ -n "$BOOT_RATE" ]; then
                 echo "es.resolution setting found. Initializing screen to: ${BOOT_RES} @ ${BOOT_RATE}Hz" >> "$log"
                 xrandr --output "${PSCREEN}" --mode "${BOOT_RES}" --rate "${BOOT_RATE}"
@@ -104,7 +210,7 @@ f_minTomaxResolution() {
     MHEIGHT=$(echo "$1"x | tr -d [[:blank:]] | cut -dx -f2)
 
     # This logic finds the highest resolution with the highest refresh rate >= 59Hz.
-    IDEAL_MODE_INFO=$(xrandr --listModes "${PSCREEN}" | \
+    IDEAL_MODE_INFO=$(_list_modes "${PSCREEN}" | \
         grep -oE '[0-9]+x[0-9]+[[:space:]]+[0-9]+\.[0-9]+' | \
         # Keep only modes with a refresh rate of 59Hz or higher
         # and not the excluded resolution on some 4k TV's - 4096x2160
@@ -138,7 +244,7 @@ f_minTomaxResolution() {
         MAXWIDTH=$(echo "$RESOLUTION" | cut -d 'x' -f 1)
         MAXHEIGHT=$(echo "$RESOLUTION" | cut -d 'x' -f 2)
         # Extract refresh rate if present
-        MAXRATE=$(echo "$BOOTRESOLUTION" | cut -s -d '.' -f 2-)
+        MAXRATE=$(_rate_hz "$(echo "$BOOTRESOLUTION" | cut -s -d '.' -f 2-)")
         if [ -n "$MAXRATE" ]; then
             echo "Using ES resolution setting of $MAXWIDTH x $MAXHEIGHT @ $MAXRATE Hz" >> "$log"
         else
@@ -150,7 +256,7 @@ f_minTomaxResolution() {
         MAXWIDTH=$(echo "$RESOLUTION" | cut -d 'x' -f 1)
         MAXHEIGHT=$(echo "$RESOLUTION" | cut -d 'x' -f 2)
         # Extract refresh rate if present
-        MAXRATE=$(echo "$CONFRESOLUTION" | cut -s -d '.' -f 2-)
+        MAXRATE=$(_rate_hz "$(echo "$CONFRESOLUTION" | cut -s -d '.' -f 2-)")
         if [ -n "$MAXRATE" ]; then
             echo "Using master ES resolution setting of $MAXWIDTH x $MAXHEIGHT @ $MAXRATE Hz" >> "$log"
         else
@@ -223,7 +329,7 @@ f_minTomaxResolution() {
     
     # select the new resolution with preferred refresh rate
     if [ -n "$MAXRATE" ]; then
-        xrandr --listModes "${PSCREEN}" | while IFS= read -r line; do
+        _list_modes "${PSCREEN}" | while IFS= read -r line; do
             resolution=$(echo "$line" | awk -F'.' '{print $1}')
             rate=$(echo "$line" | grep -oE '[0-9]+\.[0-9]+' | tail -1 | tr -d "*")
             # Check if the resolution and refresh rate match the MAX values
@@ -233,26 +339,23 @@ f_minTomaxResolution() {
                 OUTPUT=${PSCREEN}
                 echo "New resolution applied = Output: ${OUTPUT} Resolution: ${PARTRES} Rate: ${MAXRATE}" >> "$log"
                 xrandr --output "$OUTPUT" --mode "$PARTRES" --rate "$MAXRATE"
-                if [ "${CURRENT_ROTATION}" != "0" ]; then
-                    batocera-resolution --screen "${PSCREEN}" setRotation "${CURRENT_ROTATION}"
-                fi
+                batocera-resolution --screen "${PSCREEN}" setRotation "${CURRENT_ROTATION}"
                 exit 0
             fi
         done
     else
         # no set refresh rate so select the first valid one
-        xrandr --listModes "${PSCREEN}" |
+        _list_modes "${PSCREEN}" |
         while read SUGGRESOLUTIONRATE SUGGMODE; do
             SUGGRESOLUTION=$(echo "${SUGGRESOLUTIONRATE}" | cut -d . -f 1)
             SUGGWIDTH=$(echo "${SUGGRESOLUTION}" | cut -d x -f 1)
             SUGGHEIGHT=$(echo "${SUGGRESOLUTION}" | cut -d x -f 2)
             if test "${SUGGWIDTH}" -le "${MAXWIDTH}" -a "${SUGGHEIGHT}" -le "${MAXHEIGHT}"; then
                 OUTPUT=${PSCREEN}
-                echo "Using old method = Output: ${OUTPUT} Mode: ${SUGGRESOLUTION}" >> $log
-                xrandr --output "${OUTPUT}" --mode "${SUGGRESOLUTION}"
-                if [ "${CURRENT_ROTATION}" != "0" ]; then
-                    batocera-resolution --screen "${PSCREEN}" setRotation "${CURRENT_ROTATION}"
-                fi
+                SUGGRATE=$(_listed_rate "${SUGGRESOLUTION}")
+                echo "Using old method = Output: ${OUTPUT} Mode: ${SUGGRESOLUTION} Rate: ${SUGGRATE}" >> $log
+                xrandr --output "${OUTPUT}" --mode "${SUGGRESOLUTION}" --rate "${SUGGRATE}"
+                batocera-resolution --screen "${PSCREEN}" setRotation "${CURRENT_ROTATION}"
                 exit 0
             fi
         done
@@ -306,7 +409,6 @@ _set_mode_from_videomodes_conf() {
   return 1
 }
 
-
 case "${ACTION}" in
     "listModes")
         # STRICT: only list modes explicitly present in videomodes.conf
@@ -319,7 +421,7 @@ case "${ACTION}" in
           awk 'NF && $0 !~ /^[[:space:]]*#/ { sub(/[[:space:]]+$/, "", $0); print }' "$VMFILE"
         else
           # Fallback for safety: if no videomodes.conf, show what the driver reports
-          xrandr --listModes "${PSCREEN}" | sed -e 's/\*$//' | sed -e 's/^\([^ ]*\) \(.*\)$/\1:\2/' | sed -e "/\b\(SR\)\b/d"
+          _list_modes "${PSCREEN}" | sed -e 's/\*$//' | sed -e 's/^\([^ ]*\) \(.*\)$/\1:\2/' | sed -e "/\b\(SR\)\b/d"
         fi
     ;;
 
@@ -448,6 +550,7 @@ case "${ACTION}" in
         } > "$info_game"
     ;;
 
+
     "defineMode")
         MODE=$1
         read WIDTH HEIGHT PARTHZ <<< $(echo $MODE | awk -F'[x.]' '{print $1, $2, $3 "." $4}')
@@ -463,6 +566,7 @@ case "${ACTION}" in
         xrandr -display :0.0 --newmode ${RES_MODE} ${MODELINE_CUSTOM}
         xrandr -display :0.0 --addmode ${OUTPUT} ${RES_MODE}
     ;;
+
 
     "setMode_CVT")
         MODE=$1
@@ -574,6 +678,9 @@ fi
                 PREVIOUS_SCREEN="${MODE3}"
             fi
             fi
+            for OUTP in "${MODE1}" "${MODE2}" "${MODE3}"; do
+                [ -n "${OUTP}" ] && _map_touchscreens "${OUTP}"
+            done
         else
             # disable all except the first one
             xrandr --listConnectedOutputs | sed -e s+"*$"++ |
@@ -588,6 +695,7 @@ fi
                 # enable (in case of reboot of es)
                 echo "set ${FIRSTOUTPUT} as primary" >&2 >> "$log"
                 xrandr --output "${FIRSTOUTPUT}" --primary
+                _map_touchscreens "${FIRSTOUTPUT}"
             )
         fi
         ;;
@@ -630,44 +738,26 @@ fi
 	    exit 0
         ;;
 
-    "setRotation")
-        TRIES=5
-        COUNT=0
-        ROTATE=$1
-        OUTPUT=${PSCREEN}
-        while [ $COUNT -lt $TRIES ]; do
-            TOUCHSCREEN=$(xinput | grep pointer | tail -n +2 | grep -Ei 'touchscreen|2808:1015|27C6:011A|0603:F001|HID Touch' | sed -E 's/[^a-zA-Z0-9]*((\S+ ?)+[a-zA-Z0-9\(\)]+)\s*id=([0-9]+)\s*(.*)/"\1"/')
-            TOUCHID=$(xinput | grep pointer | tail -n +2 | grep -Ei 'touchscreen|2808:1015|27C6:011A|0603:F001|HID Touch' | sed -E 's/[^a-zA-Z0-9]*((\S+ ?)+[a-zA-Z0-9\(\)]+)\s*id=([0-9]+)\s*(.*)/\3/')
-            if [ -n "$TOUCHSCREEN" ] && [ -n "$TOUCHID" ]; then
-                echo "Touch screen panel: $TOUCHSCREEN" >> $log
-                echo "With touch screen panel ID of: $TOUCHID" >> $log
-                break
-            fi
-            COUNT=$((COUNT+1))
-            sleep 1
-        done
+    "supportHdr")
+	    exit 1
+        ;;
 
-        case "${ROTATE}" in
-            "1")
-                xrandr --output "${OUTPUT}" --rotate right
-                [ ! -z "${TOUCHSCREEN}" ] && xinput set-prop "${TOUCHID}" --type=float "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1
-                echo "Screen rotated right" >> $log
-                ;;
-            "2")
-                xrandr --output "${OUTPUT}" --rotate inverted
-                [ ! -z "${TOUCHSCREEN}" ] && xinput set-prop "${TOUCHID}" --type=float "Coordinate Transformation Matrix" -1 0 1 0 -1 1 0 0 1
-                echo "Screen rotated inverted" >> $log
-                ;;
-            "3")
-                xrandr --output "${OUTPUT}" --rotate left
-                [ ! -z "${TOUCHSCREEN}" ] && xinput set-prop "${TOUCHID}" --type=float "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1
-                echo "Screen rotated left" >> $log
-                ;;
-            *)
-                # in case of reboot of es
-                xrandr --output "${OUTPUT}" --rotate normal
-                [ ! -z "${TOUCHSCREEN}" ] && xinput set-prop "${TOUCHID}" --type=float "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1
+    "supportVrr")
+	    _vrr_capable
+	    exit $?
+        ;;
+
+    "setRotation")
+        OUTPUT=${PSCREEN}
+        case "${1}" in
+            "1") ROTATION=right ;;
+            "2") ROTATION=inverted ;;
+            "3") ROTATION=left ;;
+            *) ROTATION=normal ;;
         esac
+        xrandr --output "${OUTPUT}" --rotate "${ROTATION}"
+        echo "Screen ${OUTPUT} rotated ${ROTATION}" >> "$log"
+        _map_touchscreens "${OUTPUT}"
         ;;
 
     "getRotation")
@@ -676,8 +766,8 @@ fi
 
     "setReflection")
         OUTPUT=${PSCREEN}
-        REFLECTION=$1
-        xrandr --output "${OUTPUT}" --reflect "${REFLECTION}"
+        xrandr --output "${OUTPUT}" --reflect "${1}"
+        _map_touchscreens "${OUTPUT}"
         ;;
     
     "getDisplayMode")
