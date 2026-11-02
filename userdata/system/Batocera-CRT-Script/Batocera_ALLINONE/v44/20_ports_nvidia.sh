@@ -1,16 +1,10 @@
-#######################################################################################
-# Add Kodi to ports folder
-#######################################################################################
+# Add Kodi to the ports folder.
 cp /userdata/system/Batocera-CRT-Script/extra/Kodi/Kodi.sh /userdata/roms/ports
 chmod 755 /userdata/roms/ports/Kodi.sh
 
-#######################################################################################
-## Save in compilation in batocera image
-#######################################################################################
+# Persist the copied files into the Batocera overlay.
 batocera-save-overlay
-#######################################################################################
-## Put the custom file for the 15KHz modelines for ES and Games 
-#######################################################################################
+# Proprietary NVIDIA: write 99-nvidia.conf for 15, 25, or 31 kHz. Remove it otherwise.
 
 if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 

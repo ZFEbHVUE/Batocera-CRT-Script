@@ -1,7 +1,3 @@
-########################################################################################
-#####################    WAYLAND / X11 PHASE 1 FUNCTIONS START     ####################
-########################################################################################
-
 # Target Batocera major version
 if ([ "$Version_of_batocera" == "v44" ]); then
 {
@@ -849,7 +845,7 @@ run_phase1() {
 PHASE_FLAG="/userdata/system/Batocera-CRT-Script/.install_phase"
 CRT_SCRIPT_DIR="/userdata/system/Batocera-CRT-Script"
 
-# Global state set by routing — consumed later in the script
+# Set here. 23_finalize.sh reads IS_PHASE2.
 IS_PHASE2=false
 IS_DUALBOOT_INSTALL=false
 
@@ -878,11 +874,8 @@ if [ -f "$PHASE_FLAG" ] && [ "$(cat "$PHASE_FLAG" 2>/dev/null)" = "2" ]; then
   IS_PHASE2=true
   IS_DUALBOOT_INSTALL=true
 
-  # Redirect the system's batocera-save-overlay so every save — explicit calls
-  # in this script AND the automatic shutdown save — writes to /boot/crt/overlay
-  # instead of /boot/boot/overlay.  Without this, CRT-specific binaries
-  # (patched batocera-resolution, switchres.ini, etc.) contaminate the Wayland
-  # overlay and break display detection on the next Wayland boot.
+  # Point batocera-save-overlay at /boot/crt/overlay. Later files and the
+  # shutdown save would otherwise write CRT binaries into the Wayland overlay.
   if grep -q 'OVERLAYFILE="/boot/boot/overlay"' /usr/bin/batocera-save-overlay 2>/dev/null; then
     sed -i 's|OVERLAYFILE="/boot/boot/overlay"|OVERLAYFILE="/boot/crt/overlay"|' /usr/bin/batocera-save-overlay
   fi
@@ -897,7 +890,7 @@ if [ -f "$PHASE_FLAG" ] && [ "$(cat "$PHASE_FLAG" 2>/dev/null)" = "2" ]; then
   box_hash
   echo ""
   sleep 2
-  # Fall through to backup_restore_main → standard CRT config flow
+  # backup_restore_main runs at the bottom of this file, then the later files continue.
 else
   detect_display_stack
   if [ "$DISPLAY_STACK" = "wayland" ]; then
@@ -911,7 +904,7 @@ else
       box_empty
       box_center "Your games and save files will ${GREEN}NOT${NOCOLOR} be deleted."
       box_hash
-      local wl_choice=""
+      wl_choice=""
       while :; do
         box_empty
         box_center "Your choice [1/2]:"
@@ -948,12 +941,5 @@ else
   # DISPLAY_STACK=x11 → fall through to standard CRT install
 fi
 
-########################################################################################
-#####################    WAYLAND / X11 DUAL-BOOT ROUTING END       ####################
-########################################################################################
-
-# >>> Call the backup/restore entry-point now, then continue with the rest of the script:
+# backup_restore_main is defined in 02_restore.sh.
 backup_restore_main || exit 1
-########################################################################################
-#####################                 BACKUP EXIST END		   		   #################
-########################################################################################

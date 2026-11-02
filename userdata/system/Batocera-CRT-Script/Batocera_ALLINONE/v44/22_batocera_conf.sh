@@ -1,7 +1,5 @@
 
-#######################################################################################
-## Bootstrap videomode/videooutput — capture HD state and derive CRT Boot_ mode
-#######################################################################################
+# Bootstrap videomode and videooutput: capture the HD state and derive the CRT Boot_ mode.
 MODE_BACKUP_BASE="/userdata/Batocera-CRT-Script-Backup/mode_backups"
 
 # Step 1: Capture current HD values (batocera.conf still reflects HD state at this point)
@@ -24,9 +22,7 @@ _crt_boot_line=$(grep "Boot_" /userdata/system/videomodes.conf 2>/dev/null \
     | grep "^${H_RES_EDID}x${V_RES_EDID}\." | head -1)
 _crt_boot_mode="${_crt_boot_line%%:*}"
 
-#######################################################################################
-## how create a file /userdatat/system/es.arg.override
-#######################################################################################
+# /userdata/system/es.arg.override
 file="/userdata/system/es.arg.override"
 
 #screensize_x_new=$H_RES_EDID
@@ -48,9 +44,7 @@ echo "screenoffset_x $screenoffset_x_new" >> "$file"
 echo "screenoffset_y $screenoffset_y_new" >> "$file"
 chmod 644 $file
 
-#######################################################################################
-## how to center EmulationStation
-#######################################################################################
+# batocera.conf. One of the lines tells the user how to center EmulationStation.
 file_BatoceraConf="/userdata/system/batocera.conf"
 
 append_crt_script_settings_start() {
@@ -110,143 +104,143 @@ append_crt_script_settings_start
 
 if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
 	es_customsargs="es.customsargs=--screensize "$H_RES_EDID" "$V_RES_EDID" --screenoffset 00 00"
-	es_arg="--screensize "$H_RES_EDID" "$V_RES_EDID" --screenoffset 00 00"
 else
 	es_customsargs="es.customsargs=--screensize "$V_RES_EDID" "$H_RES_EDID" --screenoffset 00 00"
-	es_arg="--screensize "$V_RES_EDID" "$H_RES_EDID" --screenoffset 00 00"
 fi
 echo $es_customsargs 									>> "$file_BatoceraConf"
 
 #######################################################################################"
 ## CRT GLOBAL CONFIG FOR RETROARCH
 #######################################################################################"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#	CRT CONFIG RETROARCH"                                                            >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  RETROARCH MENU DRIVER — RGUI (recommended on CRTs)"                             >> "$file_BatoceraConf"
-echo "#    • rgui  — classic, low-overhead, sharp at low resolutions"                    >> "$file_BatoceraConf"
-echo "global.retroarch.menu_driver=rgui"                                                 >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  RETROARCH — SHOW ADVANCED SETTINGS (ENABLED)"                                   >> "$file_BatoceraConf"
-echo "#"                                                                                 >> "$file_BatoceraConf"
-echo "#  What this does:"                                                                >> "$file_BatoceraConf"
-echo "#    • Shows hidden expert pages in RetroArch’s menu."                             >> "$file_BatoceraConf"
-echo "global.retroarch.menu_show_advanced_settings=true"                                 >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  RETROARCH — MENU WIDGETS (OSD POP-UPS) DISABLED"                                >> "$file_BatoceraConf"
-echo "#  Disables toast-style UI elements to keep CRT runs lean and stable."             >> "$file_BatoceraConf"
-echo "global.retroarch.menu_enable_widgets=false"                                        >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  RETROARCH — CRT SWITCHRES VIA switchres.ini (MODE 4)"                           >> "$file_BatoceraConf"
-echo "#  Delegates modeline decisions to SwitchRes using your switchres.ini."            >> "$file_BatoceraConf"
-echo "global.retroarch.crt_switch_resolution=4"                                         >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
+cat >> "$file_BatoceraConf" <<'EOF'
+###################################################
+#	CRT CONFIG RETROARCH
+###################################################
+###################################################
+#  RETROARCH MENU DRIVER — RGUI (recommended on CRTs)
+#    • rgui  — classic, low-overhead, sharp at low resolutions
+global.retroarch.menu_driver=rgui
+###################################################
+#  RETROARCH — SHOW ADVANCED SETTINGS (ENABLED)
+#
+#  What this does:
+#    • Shows hidden expert pages in RetroArch’s menu.
+global.retroarch.menu_show_advanced_settings=true
+###################################################
+#  RETROARCH — MENU WIDGETS (OSD POP-UPS) DISABLED
+#  Disables toast-style UI elements to keep CRT runs lean and stable.
+global.retroarch.menu_enable_widgets=false
+###################################################
+#  RETROARCH — CRT SWITCHRES VIA switchres.ini (MODE 4)
+#  Delegates modeline decisions to SwitchRes using your switchres.ini.
+global.retroarch.crt_switch_resolution=4
+###################################################
+EOF
 if [ "$dotclock_min" == "25.0" ]; then
 	echo "global.retroarch.crt_switch_resolution_super=$super_width"                     >> "$file_BatoceraConf"
 else
 	echo "global.retroarch.crt_switch_resolution_super=0"                                >> "$file_BatoceraConf"
 fi
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  RETROARCH — CRT HI-RES MENU (ENABLED)"                                          >> "$file_BatoceraConf"
-echo "#  Use a higher-resolution mode for the RA menu; games stay native."               >> "$file_BatoceraConf"
-echo "global.retroarch.crt_switch_hires_menu=true"                                      >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  RETROARCH DESKTOP MENU (Qt) — DISABLED"                                         >> "$file_BatoceraConf"
-echo "#  Disable RetroArch's built-in Qt desktop menu interface (WIMP UI)."              >> "$file_BatoceraConf"
-echo "#  Even when you don't use the Qt UI, RetroArch still initializes it by default,"  >> "$file_BatoceraConf"
-echo "#  which can:"                                                                     >> "$file_BatoceraConf"
-echo "#    • add extra CPU overhead and memory usage,"                                   >> "$file_BatoceraConf"
-echo "#    • introduce thread contention,"                                               >> "$file_BatoceraConf"
-echo "#    • can cause subtle frame or audio timing issues (especially under Xorg)."     >> "$file_BatoceraConf"
-echo "#  The setting below disables the Qt desktop UI entirely."                         >> "$file_BatoceraConf"
-echo "global.retroarch.desktop_menu_enable=false"                                       >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR"                               >> "$file_BatoceraConf"
-echo "#  Keep pixels sharp and timing stable for native CRT modes."                      >> "$file_BatoceraConf"
-echo "global.shaderset=none"                                                             >> "$file_BatoceraConf"
-echo "global.smooth=0"                                                                   >> "$file_BatoceraConf"
-echo "global.retroarch.vrr_runloop_enable=0"                                             >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  DISABLE / QUIET RETROARCH NOTIFICATIONS"                                        >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "##  Hide refresh-rate change notification"                                         >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_refresh_rate=false"                            >> "$file_BatoceraConf"
-echo "##  Smaller on-screen text for CRTs (default 32 is huge at 240p)"                  >> "$file_BatoceraConf"
-echo "global.retroarch.video_font_size = 10" 						                     >> "$file_BatoceraConf"
-echo "##  (Optional) Hide the 'Onscreen Display' submenu from RetroArch"                 >> "$file_BatoceraConf"
-echo "global.retroarch.settings_show_onscreen_display=false"                            >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "# ---------- RetroArch — Per-event Notification Toggles ----------"                >> "$file_BatoceraConf"
-echo "# These options control specific pop-up toasts."                                   >> "$file_BatoceraConf"
-echo "# feedback; change to \"false\" to quiet that specific message."                   >> "$file_BatoceraConf"
-echo "## RetroArch per-event notifications — set to \"false\" to hide a given toast"     >> "$file_BatoceraConf"
-echo "# Shows a toast when a gamepad autoconfig profile is applied (driver/name)"        >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_autoconfig=true"                               >> "$file_BatoceraConf"
-echo "# Shows a toast when cheats are (re)applied to the running content"                >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_cheats_applied=true"                           >> "$file_BatoceraConf"
-echo "# Shows a toast when a config override (core/game/dir) is loaded"                  >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_config_override_load=true"                     >> "$file_BatoceraConf"
-echo "# Shows a toast when fast-forward is toggled (and often the speed)"                >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_fast_forward=true"                             >> "$file_BatoceraConf"
-echo "# Shows extra netplay info toasts (join/leave, status, misc events)"               >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_netplay_extra=true"                            >> "$file_BatoceraConf"
-echo "# Shows a toast when a ROM patch (IPS/UPS/BPS, etc.) is applied"                   >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_patch_applied=true"                            >> "$file_BatoceraConf"
-echo "# Shows a toast when an input remap file is loaded"                                >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_remap_load=true"                               >> "$file_BatoceraConf"
-echo "# Shows a toast when a screenshot is captured (usually with save path)"            >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_screenshot=true"                               >> "$file_BatoceraConf"
-echo "# Shows a toast when the initial disk is set for multi-disk content"               >> "$file_BatoceraConf"
-echo "global.retroarch.notification_show_set_initial_disk=true"                         >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "##  GUNCON2 SHADER SAVE FIX"                                                       >> "$file_BatoceraConf"
-echo "##  Ensures RetroArch actually uses shaders and saves presets as references,"      >> "$file_BatoceraConf"
-echo "##  so your GunCon2-related shader presets"                                        >> "$file_BatoceraConf"
-echo "##  persist across cores/games and aren’t lost on restart."                        >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "# Save shader presets as *reference* files instead of flattening/embedding."       >> "$file_BatoceraConf"
-echo "# This helps keep per-core/per-game presets (like GunCon2 effects) consistent"     >> "$file_BatoceraConf"
-echo "# and prevents accidental overwrites when RA regenerates configs."                 >> "$file_BatoceraConf"
-echo "global.retroarch.video_shader_preset_save_reference_enable=true"                  >> "$file_BatoceraConf"
-echo "# Make sure the shader pipeline is actually enabled globally, so the saved"        >> "$file_BatoceraConf"
-echo "# presets load and apply (some setups disable shaders by default)."                >> "$file_BatoceraConf"
-echo "global.retroarch.video_shader_enable=true"                                        >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "##  GLOBAL EMULATOR SETTINGS"                                                      >> "$file_BatoceraConf"
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "# Disable Batocera’s bezel artwork system globally (no overlays/frames)"           >> "$file_BatoceraConf"
-echo "##  No bezel artwork (use full native game image)"                                 >> "$file_BatoceraConf"
-echo "global.bezel=none"                                                                 >> "$file_BatoceraConf"
-echo "# Prevent automatic resize of the “tattoo” area when bezels would adjust layout"   >> "$file_BatoceraConf"
-echo "# (keeps the gameplay viewport stable and pixel-accurate)"                         >> "$file_BatoceraConf"
-echo "##  Don’t auto-resize the bezel/tattoo layout area"                                >> "$file_BatoceraConf"
-echo "global.bezel.resize_tattoo=0"                                                      >> "$file_BatoceraConf"
-echo "# Hide the bezel “tattoo” watermark/logo (system/game branding)"                   >> "$file_BatoceraConf"
-echo "##  Hide bezel watermark/logo (tattoo)"                                            >> "$file_BatoceraConf"
-echo "global.bezel.tattoo=0"                                                             >> "$file_BatoceraConf"
-echo "# Don’t stretch bezel graphics to fill the screen (avoid distortion)"              >> "$file_BatoceraConf"
-echo "##  Don’t stretch bezels to fill screen; preserve proportions"                     >> "$file_BatoceraConf"
-echo "global.bezel_stretch=0"                                                            >> "$file_BatoceraConf"
-echo "# Disable Batocera HUD overlays (e.g., FPS, temps) during gameplay"                >> "$file_BatoceraConf"
-echo "##  Disable Batocera HUD (FPS/temps overlays)"                                     >> "$file_BatoceraConf"
-echo "global.hud=none"                                                                   >> "$file_BatoceraConf"
-#######################################################################################
-##  Rotation of EmulationStation
-#######################################################################################
+cat >> "$file_BatoceraConf" <<'EOF'
+###################################################
+#  RETROARCH — CRT HI-RES MENU (ENABLED)
+#  Use a higher-resolution mode for the RA menu; games stay native.
+global.retroarch.crt_switch_hires_menu=true
+###################################################
+#  RETROARCH DESKTOP MENU (Qt) — DISABLED
+#  Disable RetroArch's built-in Qt desktop menu interface (WIMP UI).
+#  Even when you don't use the Qt UI, RetroArch still initializes it by default,
+#  which can:
+#    • add extra CPU overhead and memory usage,
+#    • introduce thread contention,
+#    • can cause subtle frame or audio timing issues (especially under Xorg).
+#  The setting below disables the Qt desktop UI entirely.
+global.retroarch.desktop_menu_enable=false
+###################################################
+#  DISABLE DEFAULT SHADER, BILINEAR FILTERING & VRR
+#  Keep pixels sharp and timing stable for native CRT modes.
+global.shaderset=none
+global.smooth=0
+global.retroarch.vrr_runloop_enable=0
+###################################################
+#  DISABLE / QUIET RETROARCH NOTIFICATIONS
+###################################################
+##  Hide refresh-rate change notification
+global.retroarch.notification_show_refresh_rate=false
+##  Smaller on-screen text for CRTs (default 32 is huge at 240p)
+global.retroarch.video_font_size = 10
+##  (Optional) Hide the 'Onscreen Display' submenu from RetroArch
+global.retroarch.settings_show_onscreen_display=false
+###################################################
+# ---------- RetroArch — Per-event Notification Toggles ----------
+# These options control specific pop-up toasts.
+# feedback; change to "false" to quiet that specific message.
+## RetroArch per-event notifications — set to "false" to hide a given toast
+# Shows a toast when a gamepad autoconfig profile is applied (driver/name)
+global.retroarch.notification_show_autoconfig=true
+# Shows a toast when cheats are (re)applied to the running content
+global.retroarch.notification_show_cheats_applied=true
+# Shows a toast when a config override (core/game/dir) is loaded
+global.retroarch.notification_show_config_override_load=true
+# Shows a toast when fast-forward is toggled (and often the speed)
+global.retroarch.notification_show_fast_forward=true
+# Shows extra netplay info toasts (join/leave, status, misc events)
+global.retroarch.notification_show_netplay_extra=true
+# Shows a toast when a ROM patch (IPS/UPS/BPS, etc.) is applied
+global.retroarch.notification_show_patch_applied=true
+# Shows a toast when an input remap file is loaded
+global.retroarch.notification_show_remap_load=true
+# Shows a toast when a screenshot is captured (usually with save path)
+global.retroarch.notification_show_screenshot=true
+# Shows a toast when the initial disk is set for multi-disk content
+global.retroarch.notification_show_set_initial_disk=true
+###################################################
+##  GUNCON2 SHADER SAVE FIX
+##  Ensures RetroArch actually uses shaders and saves presets as references,
+##  so your GunCon2-related shader presets
+##  persist across cores/games and aren’t lost on restart.
+###################################################
+# Save shader presets as *reference* files instead of flattening/embedding.
+# This helps keep per-core/per-game presets (like GunCon2 effects) consistent
+# and prevents accidental overwrites when RA regenerates configs.
+global.retroarch.video_shader_preset_save_reference_enable=true
+# Make sure the shader pipeline is actually enabled globally, so the saved
+# presets load and apply (some setups disable shaders by default).
+global.retroarch.video_shader_enable=true
+###################################################
+##  GLOBAL EMULATOR SETTINGS
+###################################################
+# Disable Batocera’s bezel artwork system globally (no overlays/frames)
+##  No bezel artwork (use full native game image)
+global.bezel=none
+# Prevent automatic resize of the “tattoo” area when bezels would adjust layout
+# (keeps the gameplay viewport stable and pixel-accurate)
+##  Don’t auto-resize the bezel/tattoo layout area
+global.bezel.resize_tattoo=0
+# Hide the bezel “tattoo” watermark/logo (system/game branding)
+##  Hide bezel watermark/logo (tattoo)
+global.bezel.tattoo=0
+# Don’t stretch bezel graphics to fill the screen (avoid distortion)
+##  Don’t stretch bezels to fill screen; preserve proportions
+global.bezel_stretch=0
+# Disable Batocera HUD overlays (e.g., FPS, temps) during gameplay
+##  Disable Batocera HUD (FPS/temps overlays)
+global.hud=none
+EOF
 
+# Rotation of EmulationStation
 term_rotation="display.rotate="
 term_es_rotation=$term_rotation$((es_rotation_choice-1))
-echo "###################################################"                               >> "$file_BatoceraConf"
-echo "#  EMULATIONSTATION UI ROTATION (MENU & THEME ONLY)"                               >> "$file_BatoceraConf"
-echo "#  Sets the orientation of EmulationStation’s interface."                          >> "$file_BatoceraConf"
-echo "#  This does NOT rotate games; emulators are handled separately by the script."    >> "$file_BatoceraConf"
-echo "#  ES ROTATION  MODE" 								                             >> "$file_BatoceraConf"
+cat >> "$file_BatoceraConf" <<'EOF'
+###################################################
+#  EMULATIONSTATION UI ROTATION (MENU & THEME ONLY)
+#  Sets the orientation of EmulationStation’s interface.
+#  This does NOT rotate games; emulators are handled separately by the script.
+#  ES ROTATION  MODE
+EOF
 echo $term_es_rotation									                                 >> "$file_BatoceraConf"
 
-#######################################################################################
-## Mame initialisation Batocera not for RetroLX at this time
-#######################################################################################
+# v44 MAME ini, ui.ini, and the GunCon2 plugin.ini.
 
 cd /usr/bin/mame
 ./mame -cc
@@ -277,84 +271,83 @@ esac
 
 cp /userdata/system/configs/mame/mame.ini       /userdata/system/configs/mame/mame.ini.bak 
 
-#######################################################################################
-## UPGRADE Mame  Batocera  create an folder for new binary of MAME (GroovyMame)
-####################################################################################### 
+# Directory a GroovyMAME binary can be placed in. 
 if [ ! -d "/userdata/system//mame" ];then
 	mkdir /userdata/system/mame
 fi
 
-####################################################################################### 
-echo "###################################################"				>> "$file_BatoceraConf"
-echo "##  CRT SYSTEM SETTINGS" 								            >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "CRT.emulator=sh" 									                >> "$file_BatoceraConf"
-echo "CRT.core=sh" 									                    >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "##  GROOVYMAME EMULATOR SETTINGS" 						        >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "mame.bezel=none" 									                >> "$file_BatoceraConf"
-echo "mame.bezel_stretch=0" 								            >> "$file_BatoceraConf"
-echo "mame.core=mame" 									                >> "$file_BatoceraConf"
-echo "mame.emulator=mame" 								                >> "$file_BatoceraConf"
-echo "mame.bezel.tattoo=0" 								                >> "$file_BatoceraConf"
-echo "mame.bgfxshaders=None" 								            >> "$file_BatoceraConf"
-echo "mame.hud=none" 									                >> "$file_BatoceraConf"
-echo "mame.switchres=1" 								                >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "##  NEOGEO SYSTEM SETTINGS" 							            >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "neogeo.bezel=none" 								                >> "$file_BatoceraConf"
-echo "neogeo.bezel_stretch=0" 								            >> "$file_BatoceraConf"
-echo "neogeo.core=mame" 								                >> "$file_BatoceraConf"
-echo "neogeo.emulator=mame" 							                >> "$file_BatoceraConf"
-echo "neogeo.bezel.tattoo=0" 								            >> "$file_BatoceraConf"
-echo "neogeo.bgfxshaders=None" 								            >> "$file_BatoceraConf"
-echo "neogeo.hud=none"									                >> "$file_BatoceraConf"
-echo "neogeo.switchres=1" 								                >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "##  MAME EMULATOR SETTINGS" 							            >> "$file_BatoceraConf"
-echo "##  APPLE2 / CAMPUTER LYNX / ACORN BBC/ELECTRON/ARCHIMEDE" 	    >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "apple2.core=mame" 								                >> "$file_BatoceraConf"
-echo "apple2.emulator=mame" 							                >> "$file_BatoceraConf"
-echo "apple2.switchres=1" 								                >> "$file_BatoceraConf"
-echo "bbc.core=mame" 									                >> "$file_BatoceraConf"
-echo "bbc.emulator=mame" 								                >> "$file_BatoceraConf"
-echo "bbc.switchres=1" 									                >> "$file_BatoceraConf"
-echo "electron.core=mame" 								                >> "$file_BatoceraConf"
-echo "electron.emulator=mame" 								            >> "$file_BatoceraConf"
-echo "electron.switchres=1" 								            >> "$file_BatoceraConf"
-echo "archimedes.core=mame" 								            >> "$file_BatoceraConf"
-echo "archimedes.emulator=mame" 							            >> "$file_BatoceraConf"
-echo "archimedes.switchres=1" 								            >> "$file_BatoceraConf"
-echo "camplynx.core=mame"								                >> "$file_BatoceraConf"
-echo "camplynx.emulator=mame"								            >> "$file_BatoceraConf"
-echo "camplynx.switchres=1" 								            >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "##  STANDALONE EMULATOR SETTINGS" 						        >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "amiga500.core=A500" 								                >> "$file_BatoceraConf"
-echo "amiga500.cpu_compatibility=exact" 				                >> "$file_BatoceraConf"
-echo "amiga500.emulator=fsuae" 							                >> "$file_BatoceraConf"
-echo "amiga500.video_allow_rotate=true" 				                >> "$file_BatoceraConf"
-echo "amigacd32.core=CD32" 								                >> "$file_BatoceraConf"
-echo "amigacd32.emulator=fsuae" 						                >> "$file_BatoceraConf"
-echo "atarist.core=hatari" 								                >> "$file_BatoceraConf"
-echo "atarist.emulator=hatari" 							                >> "$file_BatoceraConf"
-echo "dos.core=dosbox" 									                >> "$file_BatoceraConf"
-echo "dos.emulator=dosbox" 								                >> "$file_BatoceraConf"
-echo "msx1.core=openmsx" 								                >> "$file_BatoceraConf"
-echo "msx1.emulator=openmsx" 							                >> "$file_BatoceraConf"
-echo "msx2.core=openmsx" 								                >> "$file_BatoceraConf"
-echo "msx2.emulator=openmsx"							                >> "$file_BatoceraConf"
-echo "msx2+.core=openmsx" 								                >> "$file_BatoceraConf"
-echo "flash.core=lightspark" 							                >> "$file_BatoceraConf"
-echo "flash.emulator=lightspark" 						                >> "$file_BatoceraConf"
-echo "msx2+.emulator=openmsx" 							                >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
-echo "##  GROOVYMAME TATE SETTINGS" 							        >> "$file_BatoceraConf"
-echo "###################################################" 				>> "$file_BatoceraConf"
+cat >> "$file_BatoceraConf" <<'EOF'
+###################################################
+##  CRT SYSTEM SETTINGS
+###################################################
+CRT.emulator=sh
+CRT.core=sh
+###################################################
+##  GROOVYMAME EMULATOR SETTINGS
+###################################################
+mame.bezel=none
+mame.bezel_stretch=0
+mame.core=mame
+mame.emulator=mame
+mame.bezel.tattoo=0
+mame.bgfxshaders=None
+mame.hud=none
+mame.switchres=1
+###################################################
+##  NEOGEO SYSTEM SETTINGS
+###################################################
+neogeo.bezel=none
+neogeo.bezel_stretch=0
+neogeo.core=mame
+neogeo.emulator=mame
+neogeo.bezel.tattoo=0
+neogeo.bgfxshaders=None
+neogeo.hud=none
+neogeo.switchres=1
+###################################################
+##  MAME EMULATOR SETTINGS
+##  APPLE2 / CAMPUTER LYNX / ACORN BBC/ELECTRON/ARCHIMEDE
+###################################################
+apple2.core=mame
+apple2.emulator=mame
+apple2.switchres=1
+bbc.core=mame
+bbc.emulator=mame
+bbc.switchres=1
+electron.core=mame
+electron.emulator=mame
+electron.switchres=1
+archimedes.core=mame
+archimedes.emulator=mame
+archimedes.switchres=1
+camplynx.core=mame
+camplynx.emulator=mame
+camplynx.switchres=1
+###################################################
+##  STANDALONE EMULATOR SETTINGS
+###################################################
+amiga500.core=A500
+amiga500.cpu_compatibility=exact
+amiga500.emulator=fsuae
+amiga500.video_allow_rotate=true
+amigacd32.core=CD32
+amigacd32.emulator=fsuae
+atarist.core=hatari
+atarist.emulator=hatari
+dos.core=dosbox
+dos.emulator=dosbox
+msx1.core=openmsx
+msx1.emulator=openmsx
+msx2.core=openmsx
+msx2.emulator=openmsx
+msx2+.core=openmsx
+flash.core=lightspark
+flash.emulator=lightspark
+msx2+.emulator=openmsx
+###################################################
+##  GROOVYMAME TATE SETTINGS
+###################################################
+EOF
  
 if [ -d "/userdata/system/configs/mame/ini" ];then
 	if [ -f "/userdata/system/configs/mame/ini/horizont.ini" ];then
@@ -365,91 +358,62 @@ if [ -f "/userdata/system/configs/mame/ini/vertical.ini" ];then
 	fi
 fi
 
-if [ $es_rotation_choice -eq 1 ]; then
-	echo "mame.rotation=none" 							>> "$file_BatoceraConf"
-	case $Rotating_screen in 
-		None)
-			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
-				/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/vertical_normal.ini > /userdata/system/configs/mame/ini/vertical.ini
-		;;
-		Clockwise)
-			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
-				  /userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/vertical_clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini
-		;;
-		Counter-Clockwise)
-			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
-				 /userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini
-		;;
-		*)
-			echo "Problems of rotation_choice"
-		;;
-	esac
-	append_fbneo_tate_settings
-fi
-
-if [ $es_rotation_choice -eq 2 ]; then
-	echo "mame.rotation=autoror"							>> "$file_BatoceraConf"
-	case $Rotating_screen in 
-		None)	
-			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
-					/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/horizont_inverted.ini > /userdata/system/configs/mame/ini/horizont.ini
-		;;
-		Clockwise)
-			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
-					/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
-		;;
-		Counter-Clockwise)
-			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
-					/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/horizont_clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
-		;;
-		*)
-			echo "Problems of rotation_choice"
-		;;
-	esac
-	append_fbneo_tate_settings
-fi
-
-if [ $es_rotation_choice -eq 3 ]; then
-	echo "mame.rotation=none" 							>> "$file_BatoceraConf"
-	case $Rotating_screen in 
-		None)
-			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
-				/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/vertical_inverted.ini > /userdata/system/configs/mame/ini/vertical.ini
-		;;
-		Clockwise)
-			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
-				/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/vertical_clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini
-		;;
-		Counter-Clockwise)
-			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
-				/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/vertical_counter-clockwise.ini > /userdata/system/configs/mame/ini/vertical.ini      
-		;;
-		*)
-			echo "Problems of rotation_choice"
-		;;
-	esac
-	append_fbneo_tate_settings
-fi
-
-if [ $es_rotation_choice -eq 4 ]; then
-	echo "mame.rotation=autorol"							>> "$file_BatoceraConf"
-	case $Rotating_screen in 
-		None)
-			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
-				/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/horizont_normal.ini > /userdata/system/configs/mame/ini/horizont.ini
-		;;
-		Clockwise)
-			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
-				/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/horizont_clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
-		;;
-		Counter-Clockwise)
-			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
-				/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/horizont_counter-clockwise.ini > /userdata/system/configs/mame/ini/horizont.ini
-			;;
-			*)
-				echo "Problems of rotation_choice"
-			;;
+mame_rot=""
+tate_kind=""
+tate_src=""
+case $es_rotation_choice in
+	1)
+		mame_rot="none"
+		tate_kind="vertical"
+		case $Rotating_screen in
+			None) tate_src="vertical_normal.ini" ;;
+			Clockwise) tate_src="vertical_clockwise.ini" ;;
+			Counter-Clockwise) tate_src="vertical_counter-clockwise.ini" ;;
+			*) echo "Problems of rotation_choice" ;;
 		esac
+		;;
+	2)
+		mame_rot="autoror"
+		tate_kind="horizont"
+		case $Rotating_screen in
+			None) tate_src="horizont_inverted.ini" ;;
+			Clockwise) tate_src="horizont_counter-clockwise.ini" ;;
+			Counter-Clockwise) tate_src="horizont_clockwise.ini" ;;
+			*) echo "Problems of rotation_choice" ;;
+		esac
+		;;
+	3)
+		mame_rot="none"
+		tate_kind="vertical"
+		case $Rotating_screen in
+			None) tate_src="vertical_inverted.ini" ;;
+			Clockwise) tate_src="vertical_clockwise.ini" ;;
+			Counter-Clockwise) tate_src="vertical_counter-clockwise.ini" ;;
+			*) echo "Problems of rotation_choice" ;;
+		esac
+		;;
+	4)
+		mame_rot="autorol"
+		tate_kind="horizont"
+		case $Rotating_screen in
+			None) tate_src="horizont_normal.ini" ;;
+			Clockwise) tate_src="horizont_clockwise.ini" ;;
+			Counter-Clockwise) tate_src="horizont_counter-clockwise.ini" ;;
+			*) echo "Problems of rotation_choice" ;;
+		esac
+		;;
+esac
+if [ -n "$mame_rot" ]; then
+	echo "mame.rotation=$mame_rot" >> "$file_BatoceraConf"
+	if [ -n "$tate_src" ]; then
+		if [ "$tate_kind" = "vertical" ]; then
+			sed -e "s/\[super_width_vertical\]/$super_width_vertical/g" -e "s/\[interlace_vertical\]/$interlace_vertical/g" -e "s/\[dotclock_min_vertical\]/$dotclock_min_vertical/g" \
+				"/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/$tate_src" > /userdata/system/configs/mame/ini/vertical.ini
+		else
+			sed -e "s/\[super_width_horizont\]/$super_width_horizont/g" -e "s/\[interlace_horizont\]/$interlace_horizont/g" -e "s/\[dotclock_min_horizont\]/$dotclock_min_horizont/g" \
+				"/userdata/system/Batocera-CRT-Script/Mame_configs/Mame_TATE/$tate_src" > /userdata/system/configs/mame/ini/horizont.ini
+		fi
+	fi
 	append_fbneo_tate_settings
 fi
 chmod 755 "$file_BatoceraConf"

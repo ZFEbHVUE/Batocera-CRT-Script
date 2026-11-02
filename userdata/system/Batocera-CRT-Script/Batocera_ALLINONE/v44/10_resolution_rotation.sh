@@ -1,13 +1,5 @@
-########################################################################################
-#####################              BOOT RESOLUTION        ##############################
-########################################################################################
+# Token written into the syslinux video= line by 11_boot_files.sh.
 boot_resolution="e"
-#echo "Boot resolution = $boot_resolution" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
-################################################################################################################################
-#####################              ES RESOLUTION          ######################################################################
-
-################################################################################################################################
-#echo "ES_resolution = $ES_resolution" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 
 ################################################################################################################################
 #######################################                  ROTATION                   ############################################
@@ -184,16 +176,9 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 	echo "AMDGPU" >> 	/userdata/system/logs/TYPE_OF_CARD_DRIVERS.info
 	
 	if [[ "$video_output" == *"DP"* ]]; then
-		term_dp="DP"
-		term_displayport="DisplayPort"
-		video_display=$video_output
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_modeline=$video_output_xrandr
 	elif [[ $video_output == *"DVI"* ]]; then
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_display=$video_output
 	
-  		term_DVI=DVI-I
 		if [ "$R9_380" == "YES" ]; then
 			video_modeline=$video_output_xrandr
 		else
@@ -201,14 +186,8 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 		fi	
   
 	elif [[ "$video_output" == *"VGA"* ]]; then
-		term_VGA=VGA
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_display=$video_output
 		video_modeline=$video_output_xrandr
 	elif [[ "$video_output" == *"HDMI"* ]] ; then
-		term_HDMI=HDMI-A
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_display=$video_output
  		video_modeline=$video_output_xrandr
 		dotclock_min=25.0
 		dotclock_min_mame=$dotclock_min
@@ -218,19 +197,12 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
  elif [ "$TYPE_OF_CARD" == "INTEL" ]; then
 	drivers_amd=""
 	if [[ "$video_output" == *"DP"* ]]; then
-		term_dp="DP"
-		term_displayport="DisplayPort"
-		video_display=$video_output 
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		video_modeline=$video_output_xrandr   
 		dotclock_min=0
 		dotclock_min_mame=$dotclock_min
 		super_width=1920
 		super_width_mame=$super_width
 	elif [[ "$video_output" == *"VGA"* ]]; then
-		term_VGA="VGA"
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_display=$video_output
 		video_modeline=$video_output_xrandr
 		dotclock_min=25.0
 		dotclock_min_mame=$dotclock_min
@@ -240,10 +212,6 @@ if [ "$TYPE_OF_CARD" == "AMD/ATI" ]; then
 elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 	drivers_amd=""
 	if [[ "$video_output" == *"DP"* ]]; then
-		term_dp="DP"
-		term_displayport="DisplayPort"
-		video_display=$video_output 
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then
 				video_modeline=$video_output_xrandr
@@ -265,9 +233,6 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 			super_width_mame=$super_width
 		fi
 	elif [[ "$video_output" == *"DVI"* ]]; then
-		term_DVI=DVI-I
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then
 				video_modeline=$video_output_xrandr
@@ -290,9 +255,6 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 			super_width_mame=$super_width
 		fi
 	elif [[ "$video_output" == *"HDMI"* ]] ; then
-		term_HDMI=HDMI
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then	
 				video_modeline=$video_output_xrandr
@@ -315,9 +277,6 @@ elif [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 			super_width_mame=$super_width
 		fi
 	elif [[ "$video_output" == *"VGA"* ]] ; then
-		term_VGA=VGA
-		nbr=$(sed 's/[^[:digit:]]//g' <<< "${video_output}")
-		video_display=$video_output
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			if [ "$Drivers_Name_Nvidia_CHOICE" == "legacy470" ]; then	
 				video_modeline=$video_output_xrandr

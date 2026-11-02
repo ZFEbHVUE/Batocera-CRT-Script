@@ -1,7 +1,5 @@
-#######################################################################################
-# Media keys + blind CRT to HD chord (Steam Deck): combo, watcher, userdata mirror,
-# user service. combo.debug is never installed; remove it for full HD restore + shutdown.
-#######################################################################################
+# Media keys and the blind CRT-to-HD chord on Steam Deck.
+# combo.debug is never installed. Removing it is part of a full HD restore and shutdown.
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/multimedia_keys.conf /userdata/system/configs/
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/esrestart /usr/bin
 cp /userdata/system/Batocera-CRT-Script/extra/media_keys/xrestart /usr/bin

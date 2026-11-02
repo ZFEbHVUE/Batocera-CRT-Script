@@ -1,6 +1,4 @@
-#######################################################################################
-# Create Mode Switcher for HD/CRT Mode switching
-#######################################################################################
+# Install the HD/CRT mode switcher.
 if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/crt/mode_switcher.sh" ]; then
     # Ensure main script exists and is executable
     if [ -f "/userdata/system/Batocera-CRT-Script/Geometry_modeline/mode_switcher.sh" ]; then

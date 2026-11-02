@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Batocera CRT Script v44.
-# The installer is split by scope so it can be read in pieces.
-# Each file is sourced in this order. Nothing in those files was rewritten.
+# Each file below is sourced in this order.
 _v44_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/v44"
 
 # TUI banners, colors, and prompts

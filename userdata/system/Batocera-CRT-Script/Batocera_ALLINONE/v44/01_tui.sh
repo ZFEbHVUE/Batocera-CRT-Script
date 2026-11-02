@@ -1,9 +1,5 @@
 #!/bin/bash
 
-########################################################################################
-#####################        TUI banner utilities start     		   #################
-########################################################################################
-
 # --- Colors (real ESCs) ---
 RED=${RED:-$'\033[31m'}
 GREEN=${GREEN:-$'\033[32m'}
@@ -230,6 +226,7 @@ type center_both >/dev/null 2>&1 || center_both() { center "$*" | _log_tee; }
 
 ####################################################################################
 # FINAL MESSAGE: First-boot instructions + reboot prompt (uses TUI helpers) START  #
+# Called from 23_finalize.sh after the install steps.
 ####################################################################################
 show_first_boot_instructions_and_reboot() {
   # Safety: fallbacks if color vars aren't defined
@@ -275,11 +272,3 @@ show_first_boot_instructions_and_reboot() {
   read -r
   reboot
 }
-
-####################################################################################
-# FINAL MESSAGE: First-boot instructions + reboot prompt (uses TUI helpers) END    #
-####################################################################################
-
-########################################################################################
-#####################        TUI banner utilities end     			   #################
-########################################################################################

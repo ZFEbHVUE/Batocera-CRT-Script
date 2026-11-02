@@ -1,5 +1,5 @@
 
-# v42 Backup & Restore Helper
+# Backup and restore.
 # - First run: creates BACKUP/ with original files and writes backup.file
 # - Subsequent runs: offers to (1) continue install or (2) restore to stock (removes script + restores files)
 
@@ -575,7 +575,6 @@ prompt_when_backup_exists() {
       1)
         box_center "Proceeding with installation/setup…"
         printf "Proceeding with installation/setup…\n" >> "$LOG_FILE"
-        BACKUP_CHOICE="1"
         printf "\n"
         return 0
         ;;
@@ -638,7 +637,5 @@ if [ "$Version_of_batocera" != "v44" ]; then
   exit 1
 fi
 
-# (Optional) temporary compatibility for any stray references to the old misspelled var.
-# You can remove this after you’re sure nothing reads "version".
 version="${VERSION_BATOCERA_NUM}"
 

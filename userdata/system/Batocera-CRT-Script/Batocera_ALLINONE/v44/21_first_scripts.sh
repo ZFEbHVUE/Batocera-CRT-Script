@@ -1,7 +1,5 @@
 
-######################################################################################
-# Create a first_script.sh for exiting of Emulationstation
-#######################################################################################
+# first_script.sh runs when leaving EmulationStation.
 ##if the folder doesn't exist, it will be create now
 if [ ! -d "/userdata/system/scripts" ];then
     mkdir    /userdata/system/scripts
@@ -25,17 +23,11 @@ chmod 755 /userdata/system/scripts/1_GunCon2.sh
 sed -e "s/\[card_display\]/$video_modeline/g" /userdata/system/Batocera-CRT-Script/GunCon2/GunCon2_Calibration.sh-generic > "$CRT_ROMS/crt/GunCon2_Calibration.sh"
 chmod 755 "$CRT_ROMS/crt/GunCon2_Calibration.sh"
 
-
-#######################################################################################
-## Copy of batocera.conf for Libretro cores for use with Switchres
-#######################################################################################
-# first time using the script save the batocera.conf in batocera.conf.bak
+# Keep the original batocera.conf so each run does not append the CRT block again.
 if [ ! -f "/userdata/system/batocera.conf.bak" ];then
 	cp /userdata/system/batocera.conf /userdata/system/batocera.conf.bak
 fi
 
-
-# avoid append on each script launch
 LINE_NO=$(sed -n '/## ES Settings, See wiki page on how to center EmulationStation/{=;q;}' /userdata/system/batocera.conf.bak)
 
 if [ -z "$LINE_NO" ]; then 

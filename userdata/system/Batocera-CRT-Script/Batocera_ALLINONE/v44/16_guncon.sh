@@ -1,6 +1,4 @@
-#######################################################################################
-# Create GunCon2 LUA plugin for GroovyMame for V36, V37 and V38
-#######################################################################################
+# GunCon2 LUA plugin. Copied only when Version_of_batocera is v44.
 ## if the folder doesn't exist, it will be created now
 if [ ! -d "/usr/bin/mame/plugins/gunlight" ];then
 	mkdir /usr/bin/mame/plugins/gunlight
@@ -8,7 +6,7 @@ fi
 if ([ "$Version_of_batocera" == "v44" ]); then
 	cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/gunlight_menu.lua /usr/bin/mame/plugins/gunlight/gunlight_menu.lua
 	cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/gunlight_save.lua /usr/bin/mame/plugins/gunlight/gunlight_save.lua
-#only for V44.
+# init.lua for v44.
 	cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/init-v44.lua /usr/bin/mame/plugins/gunlight/init.lua
 #	
 	cp /userdata/system/Batocera-CRT-Script/GunCon2/gunlight/plugin.json /usr/bin/mame/plugins/gunlight/plugin.json
@@ -18,9 +16,7 @@ if ([ "$Version_of_batocera" == "v44" ]); then
 	chmod 644 /usr/bin/mame/plugins/gunlight/plugin.json
 fi
 
-#######################################################################################
-# Create GunCon2 shader for V36, V37 and v38
-#######################################################################################
+# GunCon2 lightgun shader, udev rule, and calibrate scripts.
 ## if the folder doesn't exist, it will be created now
 if [ ! -d "/usr/share/batocera/shaders/configs/lightgun-shader" ];then
 	mkdir /usr/share/batocera/shaders/configs/lightgun-shader

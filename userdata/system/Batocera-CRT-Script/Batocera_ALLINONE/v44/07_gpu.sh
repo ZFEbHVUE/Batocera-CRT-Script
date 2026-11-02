@@ -245,22 +245,11 @@ else
   prompt_centered_tty "PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE"
 fi
 
-########################################################################################
-# --- AMD IP discovery pre-scan (multi-GPU) — build per-card envs start ---        #####
-########################################################################################
-# --- AMD IP discovery pre-scan (multi-GPU) — build per-card envs ---
-# Purpose:
-#   - Walk every AMD GPU under /sys/class/drm/card*
-#   - Read amdgpu_ip_info (IP discovery) to detect DISPLAY_ENGINE (DCN/DCE) + version
-#   - Apply policy: DCN => AMD_IS_APU=1 (runtime truth), else legacy PCI list / fallbacks
-#   - Write /tmp/crt-detect/cardN.env per card (used later when a connector is chosen)
-#
-# Inputs:  kernel debugfs (amdgpu_ip_info), lspci (optional), PCI_LIST (legacy APU table)
-# Outputs: /tmp/crt-detect/cardN.env with: AMD_CARD_INDEX, AMD_PCI_ADDR, DISPLAY_ENGINE,
-#          DISPLAY_VERSION, AMD_IS_APU, APU_REASON, etc.
-# Notes:   No card is “selected” yet; this is only inventory. Binding happens in Part 2.
-
-# Multi-GPU pre-scan: build /tmp/crt-detect/cardN.env for each AMD GPU.
+# Inventory every AMD GPU into /tmp/crt-detect/cardN.env.
+# DISPLAY_ENGINE comes from debugfs, then dmesg, then the lspci name.
+# AMD_IS_APU is separate: PCI list, APU codename, or the small-VRAM heuristic.
+# DCN does not by itself mark a card as an APU.
+# 08_connector.sh loads the env for the connector the user picks.
 PCI_LIST="/userdata/system/Batocera-CRT-Script/Cards_detection/list_detection_amd_apu.txt"
 OUTDIR="/tmp/crt-detect"
 mkdir -p "$OUTDIR"
@@ -274,6 +263,17 @@ else
   echo "debugfs NOT mounted (DISPLAY_ENGINE may be NONE)." >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 fi
 shopt -s nullglob
+
+# Echo DCN or DCE from an lspci product name. Echo nothing when the name is unknown.
+amd_engine_from_lspci_name() {
+  local name
+  name="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  if printf '%s' "$name" | grep -qE '(navi|rdna|sienna|phoenix|rembrandt|vangogh|aero|merce|navy[ _-]flounder|dimgrey[ _-]cavefish|beige[ _-]goby|arcturus|aldebaran|raven|renoir|cezanne|yellow[ _-]carp|raphael|strix)'; then
+    echo DCN
+  elif printf '%s' "$name" | grep -qE '(polaris|tonga|hawaii|bonaire|pitcairn|kabini|kaveri|carrizo|stoney|cape verde|curacao|oland|tahiti|verde|gfx7|gfx8|fiji|topaz|mullins)'; then
+    echo DCE
+  fi
+}
 
 # --- Robust engine parser: read DCN/DCE + version from several debugfs files or dmesg ---
 parse_display_engine_from_text() {
@@ -332,16 +332,13 @@ parse_display_engine_from_text() {
         NAME_LINE="$(lspci -nn 2>/dev/null | grep -iE 'VGA.*AMD|Display.*AMD' | head -n1 || true)"
       fi
     fi
-	    # Normalize
     NAME_LINE="$(printf '%s' "$NAME_LINE" | tr '[:upper:]' '[:lower:]')"
-    if printf '%s' "$NAME_LINE" | grep -qE '(navi|rdna|sienna|phoenix|rembrandt|vangogh|aero|merce|navi [0-9]+)'; then
-      OUT_ENGINE="DCN"
+    local eng
+    eng="$(amd_engine_from_lspci_name "$NAME_LINE")"
+    if [ -n "$eng" ]; then
+      OUT_ENGINE="$eng"
       OUT_VERSION=""
-      echo "Engine detect: heuristic => DCN (from lspci name: $NAME_LINE)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
-    elif printf '%s' "$NAME_LINE" | grep -qE '(polaris|tonga|hawaii|bonaire|pitcairn|kabini|kaveri|carrizo|stoney|cape verde|curacao|oland|tahiti|verde|gfx7|gfx8)'; then
-      OUT_ENGINE="DCE"
-      OUT_VERSION=""
-      echo "Engine detect: heuristic => DCE (from lspci name: $NAME_LINE)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+      echo "Engine detect: heuristic => $eng (from lspci name: $NAME_LINE)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
     fi
   fi
 return 1
@@ -401,16 +398,13 @@ read_engine_anywhere() {
         NAME_LINE="$(lspci -nn 2>/dev/null | grep -iE 'VGA.*AMD|Display.*AMD' | head -n1 || true)"
       fi
     fi
-    # Normalize
     NAME_LINE="$(printf '%s' "$NAME_LINE" | tr '[:upper:]' '[:lower:]')"
-    if printf '%s' "$NAME_LINE" | grep -qE '(navi|rdna|sienna|phoenix|rembrandt|vangogh|aero|merce|navi [0-9]+)'; then
-      OUT_ENGINE="DCN"
+    local eng
+    eng="$(amd_engine_from_lspci_name "$NAME_LINE")"
+    if [ -n "$eng" ]; then
+      OUT_ENGINE="$eng"
       OUT_VERSION=""
-      echo "Engine detect: heuristic => DCN (from lspci name: $NAME_LINE)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
-    elif printf '%s' "$NAME_LINE" | grep -qE '(polaris|tonga|hawaii|bonaire|pitcairn|kabini|kaveri|carrizo|stoney|cape verde|curacao|oland|tahiti|verde|gfx7|gfx8)'; then
-      OUT_ENGINE="DCE"
-      OUT_VERSION=""
-      echo "Engine detect: heuristic => DCE (from lspci name: $NAME_LINE)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+      echo "Engine detect: heuristic => $eng (from lspci name: $NAME_LINE)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
     fi
   fi
   # If heuristic or any method set OUT_ENGINE, treat as success
@@ -489,16 +483,6 @@ infer_from_pci_list() {
 
 APU_NAMES_RE='raven|raven ridge|raven2|picasso|dali|pollock|renoir|lucienne|cezanne|barcelo|van[[:space:]]*gogh|yellow[[:space:]]*carp|rembrandt|phoenix( 2)?|hawk[[:space:]]*point|strix[[:space:]]*point|mendocino'
 
-read_triplet_from_ipinfo() {
-  local f="$1" re="$2"
-  awk 'BEGIN{IGNORECASE=1}
-       $0 ~ /'"$re"'/ {
-         n=split($0,a,/[^0-9]+/); c=0;
-         for(i=1;i<=n;i++){ if(a[i]~/^[0-9]+$/){v[++c]=a[i]; if(c==3) break} }
-         if(c==3){ print v[1]"."v[2]"."v[3]; exit 0 }
-       }' "$f" 2>/dev/null || true
-}
-
 is_amd_card() {
   [[ -e "$1/device/vendor" ]] && [[ "$(tr '[:upper:]' '[:lower:]' < "$1/device/vendor")" == "0x1002" ]]
 }
@@ -516,7 +500,6 @@ process_card_prescan() {
     LSPCI_LINE=$(lspci -s "${PCI_ADDR#0000:}" -nn 2>/dev/null | sed 's/^[^:]*: //') || true
   fi
 
-  local IPINFO="/sys/kernel/debug/dri/${IDX}/amdgpu_ip_info"
   local AMD_IS_APU=0 APU_REASON=""
   local DISPLAY_ENGINE="NONE" DISPLAY_VERSION=""
 
@@ -556,7 +539,7 @@ process_card_prescan() {
       fi
     fi
   fi
-# Save per-card env (banner will be shown later when we know the chosen connector)
+# Write this card's env. 08_connector.sh prints the banner after the connector is chosen.
   
   # If engine is still NONE, try inferring from PCI list (legacy table)
   if [ "${DISPLAY_ENGINE:-NONE}" = "NONE" ] && [ -r "$PCI_LIST" ]; then
@@ -565,13 +548,12 @@ process_card_prescan() {
 
   # Caller safety net: if DISPLAY_ENGINE is still NONE, infer from lspci name
   if [ "${DISPLAY_ENGINE:-NONE}" = "NONE" ] && command -v lspci >/dev/null 2>&1; then
+    local name eng
     name="$(lspci -s "${PCI_ADDR#0000:}" -nn 2>/dev/null | tr '[:upper:]' '[:lower:]')"
-    if printf '%s' "$name" | grep -qE '(navi|rdna|sienna|navy[ _-]flounder|dimgrey[ _-]cavefish|beige[ _-]goby|arcturus|aldebaran|raven|renoir|cezanne|vangogh|yellow[ _-]carp|phoenix|raphael|strix)'; then
-      DISPLAY_ENGINE="DCN"; DISPLAY_VERSION=""
-      echo "Engine detect: caller safety net => DCN (from lspci name: $name)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
-    elif printf '%s' "$name" | grep -qE '(polaris|tonga|hawaii|bonaire|pitcairn|tahiti|verde|oland|fiji|topaz|kabini|kaveri|carrizo|stoney|mullins)'; then
-      DISPLAY_ENGINE="DCE"; DISPLAY_VERSION=""
-      echo "Engine detect: caller safety net => DCE (from lspci name: $name)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+    eng="$(amd_engine_from_lspci_name "$name")"
+    if [ -n "$eng" ]; then
+      DISPLAY_ENGINE="$eng"; DISPLAY_VERSION=""
+      echo "Engine detect: caller safety net => $eng (from lspci name: $name)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
     fi
   fi
 cat > "/tmp/crt-detect/card${IDX}.env" <<EOF
@@ -596,11 +578,7 @@ done
 
 if [[ $found_any -eq 0 ]]; then
   echo "!!!! BE CAREFUL: no AMD GPU detected !!!!"
-  # Surrounding case/esac continues; later logic will abort if needed.
 fi
-########################################################################################
-# --- AMD IP discovery pre-scan (multi-GPU) — build per-card envs END ---          #####
-########################################################################################
 	;;
 	*)
 		# Centered + logged unknown-card banner, then exit as before

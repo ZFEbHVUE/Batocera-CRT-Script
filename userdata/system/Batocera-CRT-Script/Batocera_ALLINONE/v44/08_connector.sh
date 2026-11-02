@@ -1,19 +1,12 @@
 
-# Final selection line — pick ONE of the two styles below:
-
-# (A) Keep original plain log line (not centered)
-# echo "	Selected card = ${CHOSEN:-$selected_card}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
-
-# (B) Centered + logged (plain line, not boxed)
 center_plain_log "Selected card = ${CHOSEN:-$selected_card}"
 
 
-# Run output detection now (after GPU preflight)
+# Defined in 05_output_detect.sh. Runs after the GPU pre-scan in 07_gpu.sh.
 output_detection_and_persist
 
-
-# The new detector already picked a connector and wrote 10-monitor.conf.
-# We just confirm & log it here, keeping the old variable name for compatibility.
+# output_detection_and_persist already wrote 10-monitor.conf.
+# video_output stays the name the rest of the installer already uses.
 
 # Safety: make sure CHOSEN is set (the detector sets it globally)
 if [ -z "${CHOSEN:-}" ]; then
@@ -25,18 +18,15 @@ fi
 video_output="${KERNEL_CONN_NAME:-$CHOSEN}"   # DRM name for syslinux [card_output]
 video_output_xrandr="${video_output_xrandr:-$CHOSEN}"  # Xorg/xrandr name for X11 bits
 
-########################################################################################
-# --- Bind selected connector to owning AMD card — load env + banner START ---     #####
-########################################################################################
-# --- Bind selected connector to owning AMD card — load env + banner ---
+# Bind the chosen connector to the AMD card that owns it.
 # Purpose:
 #   - Map the chosen connector (e.g., DP-1/HDMI-A-1) to its owning cardN
-#   - Source /tmp/crt-detect/cardN.env from Part 1 (DISPLAY_ENGINE, AMD_IS_APU, etc.)
+#   - Source /tmp/crt-detect/cardN.env written by 07_gpu.sh
 #   - Show the APU banner and log a one-liner with connector -> card mapping
 #
 # Inputs:  video_output (the connector chosen by the user/detector), cardN.env files
 # Outputs: Exports AMD_IS_APU, DISPLAY_ENGINE, DISPLAY_VERSION, AMD_CARD_INDEX, AMD_PCI_ADDR
-# Downstream: interlace parity (IFE) and EDID generation will key off DISPLAY_ENGINE.
+# 09_monitor_edid.sh reads DISPLAY_ENGINE when it sets interlace parity and the EDID.
 # Map a connector like "VGA-0" / "HDMI-0" / "HDMI-A-1" / "DVI-0" / "DP-1" / "DisplayPort-1"
 # to its owning AMD card index (N), tolerating xrandr <-> sysfs naming differences.
 # Only binds to cards we prescanned (i.e., with /tmp/crt-detect/cardN.env).
@@ -171,7 +161,7 @@ get_card_index_for_connector() {
   fi
 
   
-  # Heuristic fallback via lspci name (engine only, no version)
+  # Not a card index. Sets OUT_ENGINE from the lspci name, then the lookup fails.
   if [ -z "$OUT_ENGINE" ]; then
     local NAME_LINE=""
     if command -v lspci >/dev/null 2>&1; then
@@ -327,84 +317,6 @@ else
   echo "Sea Islands check skipped (helper functions missing or no AMD card bound)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 fi
 
-
-is_sea_islands_chip() {
-  # Prefer CHIP_* family if exposed earlier (e.g., parsed from list_detection_amd_apu.txt)
-  # Fallback: lspci product string probe
-  local hint="${CHIP_FAMILY:-}"
-  if [ -z "$hint" ]; then
-    local l=""
-    if command -v lspci >/dev/null 2>&1; then
-      l="$(lspci -s "${AMD_PCI_ADDR#0000:}" -nn 2>/dev/null | tr '[:upper:]' '[:lower:]')"
-    fi
-    hint="$l"
-  fi
-  printf '%s' "$hint" | grep -qiE '(chip_)?(bonaire|hawaii|kaveri|kabini|mullins)' && return 0
-  # Some kernel trees use older internal codenames
-  printf '%s' "$hint" | grep -qiE '(kalindi|spectre|spooky)' && return 0
-  return 1
-}
-
-get_bound_driver() {
-  local dev="/sys/class/drm/card${AMD_CARD_INDEX}/device"
-  local drv=""; drv="$(basename "$(readlink -f "$dev/driver" 2>/dev/null)" 2>/dev/null || true)"
-  printf '%s' "$drv"
-}
-
-offer_switch_to_radeon() {
-  local conf="/boot/batocera-boot.conf"
-  local bak="/boot/batocera-boot.conf.bak_sea_islands"
-  echo "Sea Islands: offering driver switch; editing $conf with backup $bak" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
-
-  box_hash
-  box_center "Sea Islands (GCN 2.x / DCE 8.x) detected under ${GREEN}amdgpu${NOCOLOR}."
-  box_center "Interlace is ${RED}unsupported${NOCOLOR} on amdgpu for this family."
-  box_empty
-  box_center "Recommended: switch to ${GREEN}radeon${NOCOLOR} driver in /boot/batocera-boot.conf"
-  box_center "(this sets: amdgpu=false)"
-  box_hash
-  prompt_centered_tty "PRESS ${BLUE}ENTER${NOCOLOR} TO APPLY (or Ctrl+C to keep amdgpu)"
-
-  mount -o remount,rw /boot 2>/dev/null || true
-  cp -f "$conf" "$bak" 2>/dev/null || true
-
-  if grep -q '^ *amdgpu=' "$conf" 2>/dev/null; then
-    sed -i 's/^ *amdgpu=.*/amdgpu=false/' "$conf"
-  else
-    printf '\n# Force radeon for Sea Islands (GCN 2.x)\namdgpu=false\n' >> "$conf"
-  fi
-
-  sync
-  box_hash
-  box_center "batocera-boot.conf updated (${GREEN}amdgpu=false${NOCOLOR})."
-  box_center "Reboot to load the radeon driver and enable interlace."
-  box_hash
-  echo "Sea Islands: wrote amdgpu=false to $conf (backup at $bak)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
-
-  # --- Safe immediate reboot (with cancel window) ---
-  box_empty
-  box_center "Reboot required to load ${GREEN}radeon${NOCOLOR}."
-  box_center "System will reboot in 15 seconds…  (press Ctrl+C to cancel)"
-  box_hash
-
-  sync
-  mount -o remount,ro /boot 2>/dev/null || true
-
-  for s in $(seq 15 -1 1); do
-    printf "\rRebooting in %2d s…  " "$s"
-    sleep 1
-  done
-  echo
-  echo "Sea Islands: initiating reboot now." >> /userdata/system/logs/BUILD_15KHz_Batocera.log
-  reboot
-}
-# -------------------------------------------------------------------------------
-
-
-########################################################################################
-# --- Bind selected connector to owning AMD card — load env + banner END ---       #####
-########################################################################################
-
 echo "#######################################################################"
 echo "##                         CRT Output Selected                       ##"
 echo "#######################################################################"
@@ -418,6 +330,5 @@ echo
 echo -n -e "   PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "
 read -r
 
-# Log to the build log (like the old code did)
 echo "CRT output selected: ${video_output}" | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
 

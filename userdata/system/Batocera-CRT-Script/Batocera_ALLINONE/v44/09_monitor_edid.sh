@@ -1,25 +1,11 @@
 
-########################################################################################
-#####################              15KHz/25KHz/31KHz                  ##################
-########################################################################################
 CRT_Freq="15KHz"
-
-
-
-
-
-########################################################################################
-#####################               GENERAL  MONITOR                  ##################
-########################################################################################
-
-
 
 if [ ! -f "/etc/switchres.ini.bak" ];then
 	cp /etc/switchres.ini /etc/switchres.ini.bak
 fi
 
 echo
-#########################################################################################
 declare -a type_of_monitor=( 	"generic_15" "ntsc" "pal" "arcade_15" "arcade_15ex" "arcade_25" "arcade_31" \
 				"arcade_15_25" "arcade_15_31" "arcade_15_25_31" "vesa_480" "vesa_600" "vesa_768" "vesa_1024" \
 				"pc_31_120" "pc_70_120" "h9110" "polo" "pstar" "k7000" "k7131" "d9200" "d9400" "d9800" \
@@ -28,7 +14,6 @@ declare -a type_of_monitor=( 	"generic_15" "ntsc" "pal" "arcade_15" "arcade_15ex
 categories=(			"Generic CRT standards 15 KHz" "Arcade fixed frequency 15 KHz" "Arcade fixed frequency 25/31KHz" \
 	    			"Arcade multisync 15/25/31 KHz" "VESA GTF" "PC monitor 120 Hz" "Hantarex" "Wells Gardner" "Makvision" \
 	    			"Wei-Ya" "Nanao" "Rodotron")
-#########################################################################################
 declare -A monitor_categories
 monitor_categories["Generic CRT standards 15 KHz"]="generic_15 ntsc pal"
 monitor_categories["Arcade fixed frequency 15 KHz"]="arcade_15 arcade_15ex"
@@ -42,7 +27,6 @@ monitor_categories["Makvision"]="m2929"
 monitor_categories["Wei-Ya"]="m3129"
 monitor_categories["Nanao"]="ms2930 ms929"
 monitor_categories["Rodotron"]="r666b" 
-#########################################################################################
 counter=0
 echo "#######################################################################"
 echo "##                     your type of monitor                          ##"
@@ -229,15 +213,11 @@ echo -e "				Your choice is :  ${GREEN}$EDID_resolution${NOCOLOR}"
 
 IFS="x@ " read -r H_RES_EDID V_RES_EDID FREQ_EDID <<< "$EDID_resolution"
 
-
-################################################################################################################################
-##  HERE FOR NVIDIA-DRIVERS (BEFORE THE EDID IN 99-NVIDIA.CONF) : ADD 1 ON H RESOLUTION (EmulationStation) 
-##  TO AVOID THE CONFLICT WITH GEOMETRY TOOLS FOR SAME RESOLTION OF ES
-################################################################################################################################
+# Proprietary NVIDIA: the EDID width is one pixel wider than EmulationStation,
+# so the geometry tool does not treat them as the same mode.
 if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]); then
 	H_RES_EDID=$((H_RES_EDID+1))
 fi
-################################################################################################################################
 
 RES_EDID="${H_RES_EDID}x${V_RES_EDID}"
 if [ "$FREQ_EDID" == "50" ] || [ "$FREQ_EDID" == "60" ]; then 
@@ -248,8 +228,7 @@ else
 	echo "problems of frame rate to determine progressif or interlace"
 fi
 
-# --- Decide whether the EDID itself should be generated with +1 horizontal ---
-# Default: no pre-bump (nounset-safe)
+# Start set. The post-EDID bump later in this file is skipped while this stays 1.
 _EDID_PRE_BUMP=1
 
 # Normalize casing once
@@ -319,12 +298,8 @@ else
   fi
 fi
 
-################################################################################################################################
-
 #if [ "$TYPE_OF_CARD" == "NVIDIA" ]&&[ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then 
 MODE=$(switchres $H_RES_EDID $V_RES_EDID $FREQ_EDID -f $FORCED_EDID -i switchres.ini -c ) > /dev/null 2>/dev/null
-################################################################################################################################
-################################################################################################################################
 MODELINE_PARAMETERS=$(echo "$MODE" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')
 read -r Pixel_Clock H_res HF_Porch H_Sync HB_Porch V_res VF_Porch V_Sync VB_Porch Inter HSync VSync <<< "$MODELINE_PARAMETERS"
 if [[ "$MODELINE_PARAMETERS" == *"interlace"* ]]; then
@@ -335,8 +310,6 @@ fi
 Frame_Rate=$(echo "$(echo "$(echo "$Pixel_Clock*1000000" | bc -l)/$(($((H_res+$((HB_Porch-H_res))))*$((V_res+$((VB_Porch-V_res))))))" | bc -l)*$Interlace" | bc -l)
 Frame_Rate=$(printf "%.2f" $Frame_Rate)
 Resolution_es=""es.resolution=""${H_RES_EDID}"x"${V_RES_EDID}"."${Frame_Rate}"000"
-################################################################################################################################
-###############################################################################################################################
 MODELINE_CUSTOM="\"${RES_EDID}\" $(echo "$MODE" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
 monitor_name_MAME=$monitor_firmware
 echo "monitor mame = $monitor_name_MAME"  >> /userdata/system/logs/BUILD_15KHz_Batocera.log

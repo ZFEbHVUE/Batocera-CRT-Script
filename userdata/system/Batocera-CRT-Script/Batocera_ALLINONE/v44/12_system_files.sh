@@ -1,7 +1,5 @@
 
-#############################################################################
-##            Single 20-modesetting.conf for AMD (v42-safe) START          ##
-#############################################################################
+# Replace 20-amdgpu.conf and 20-radeon.conf with 20-modesetting.conf.
 
 # First time using the script backup the 20-amdgpu.conf & 20-radeon.conf
 if [ ! -f "/etc/X11/xorg.conf.d/20-amdgpu.conf.bak" ];then
@@ -21,21 +19,13 @@ done
 cp /userdata/system/Batocera-CRT-Script/etc_configs/Monitors_config/20-modesetting.conf /etc/X11/xorg.conf.d/20-modesetting.conf
 chmod 644 /etc/X11/xorg.conf.d/20-modesetting.conf
 
-#############################################################################
-##            Single 20-modesetting.conf for AMD (v42-safe) END            ##
-#############################################################################
-
-##################################################################################################
 python_directory=$(find /usr/lib/ -maxdepth 1 -type d -name "python*" -exec basename {} \; -quit)
 new_path="/usr/lib/${python_directory}/site-packages/batocera_launch/devices/"
 if [ ! -f "${new_path}video.py.bak" ];then
 	cp "${new_path}video.py" 		"${new_path}video.py.bak"
 fi
-##################################################################################################
 
-
-
-## Only for Batocera >= V32
+# This installer only has a v44 arm.
 case $Version_of_batocera in
 
     v44)		
@@ -60,8 +50,7 @@ case $Version_of_batocera in
 		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/get_monitorRange  /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange
 
-		# v43 only: Add PSXC2 standalone aspect ratio 10:7 (1.43:1 — custom).
-		# Remove when v44 ships IF this is added upstream.
+		# Disabled. The 10:7 EmulationStation aspect choice was a v43 patch and is not applied here.
 		#cp /usr/share/emulationstation/es_features.cfg /usr/share/emulationstation/es_features.cfg.bak && sed -i '/<choice name="Widescreen (16:9)" value="16:9" \/>/a\          <choice name="10:7 (1.43:1 — custom)" value="10:7" />' /usr/share/emulationstation/es_features.cfg
 
 	;;
@@ -91,16 +80,11 @@ if [ ! -f "/usr/bin/start" ];then
 	chmod 755 /usr/bin/start
 fi
 
-
-#######################################################################################
-## Remove Beta name from splash screen if using a beta.
-#######################################################################################
+# Remove the beta name from the splash screen when this image is a beta.
 if [ -f "/usr/share/batocera/splash/splash.srt" ];then
 	mv /usr/share/batocera/splash/splash.srt /usr/share/batocera/splash/splash.srt.bak
 fi
-#######################################################################################
-## make splash screen rotation if using tate mode (right or left).
-#######################################################################################
+# Rotate the splash logo when the screen is in TATE.
 if [ ! -f "/usr/share/batocera/splash/boot-logo.png.bak" ]; then
 	cp /usr/share/batocera/splash/boot-logo.png /usr/share/batocera/splash/boot-logo.png.bak
 fi

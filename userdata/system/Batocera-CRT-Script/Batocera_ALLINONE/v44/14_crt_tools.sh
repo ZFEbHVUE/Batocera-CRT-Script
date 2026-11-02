@@ -1,7 +1,5 @@
-#######################################################################################
-# Create files for adjusting your CRT
-#######################################################################################
-# Pin CRT tools to internal drive to avoid mergerfs scattering to external drives
+# Create files for adjusting the CRT.
+# Pin CRT tools to the internal drive so mergerfs does not scatter them onto external drives.
 if [ -d "/userdata/.roms_base" ]; then
   CRT_ROMS="/userdata/.roms_base"
 else

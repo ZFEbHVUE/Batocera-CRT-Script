@@ -1,6 +1,4 @@
-#######################################################################################
-# Add VNC server files to /lib & /usr/lib for v41
-#######################################################################################
+# Copy the VNC server libraries and binaries.
 #mv /lib/libcrypt.so.1 /lib/libcrypt.so.1.bak
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libcrypt.so.1 /lib/libcrypt.so.1 
 cp /userdata/system/Batocera-CRT-Script/install-vnc_server_batocera/libcrypt.so.1 /usr/lib/libcrypt.so.1

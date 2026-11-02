@@ -1,10 +1,5 @@
 
-# ─────────────────────────────────────────────────────────────────────────────
-# New output detection & persistence (terminal-only) as a function Start
-# Call this AFTER GPU preflight (e.g., after the R9 380/380X block).
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Deterministic XR ↔ DRM resolver with logging
+# Deterministic XR to DRM resolver with logging
 #
 # Behavior:
 # 1) Deterministic path: read CONNECTOR_ID for the given XRandR output via `xrandr --prop`,
@@ -92,7 +87,7 @@ map_xrandr_to_drm() {
   fi
 
   # ------------------------------------------------------------
-  # 2) Fallback: original heuristic from this script
+  # 2) Fallback: alias match, then family and index
   #     - Exact alias match (e.g., HDMI-1 == HDMI-A-1, DVI-I-1 stays DVI-I-1)
   #     - Else family+index with DVI-I > DVI-D > DVI-A
   #     - Honors preferred card if provided
@@ -112,7 +107,7 @@ map_xrandr_to_drm() {
   esac
 
   # Canonicalize some user-facing tokens to families we recognize
-  # DisplayPort -> DP, USB-C -> DP, HDMI -> HDMI/HDMI-A (handled later)
+  # DisplayPort and USB-C become DP. HDMI and HDMI-A stay as written.
   case "$xr_type_full" in
     DisplayPort) xr_type_full="DP" ;;
     USB-C|USBC|Type-C|USB) xr_type_full="DP" ;;
@@ -319,6 +314,20 @@ output_detection_and_persist() {
   timestamp() { date +"%Y.%m.%d,%H.%M.%S"; }
   sanitize_conn() { sed 's/\r//g' | sed 's/[^A-Za-z0-9._:+-]//g'; }
   create_flag_file() { echo "$(timestamp)" > "$FLAG_FILE"; }
+  scan_outputs() {
+    local ln n st
+    mapfile -t XR < <(DISPLAY=${DISPLAY:-:0} xrandr --query 2>/dev/null \
+      | awk '/^[^ ]+[[:space:]]+(connected|disconnected)/ {print $1, $2}' \
+      | grep -Eiv '^(Writeback|Virtual|VIRTUAL)')
+    ALL_OUTS=()
+    CONN_OUTS=()
+    for ln in "${XR[@]}"; do
+      n="${ln%% *}"; st="${ln##* }"
+      [ -n "$n" ] || continue
+      [ "$st" = "connected" ] && CONN_OUTS+=("$n")
+      ALL_OUTS+=("$n")
+    done
+  }
 
   box_title "Output detection (XRandR only)"
   echo "XRandR-only path engaged" >> "$LOG_FILE"
@@ -328,20 +337,7 @@ output_detection_and_persist() {
   CONN_OUTS=()
   for attempt in 1 2 3 4 5; do
 	if DISPLAY=${DISPLAY:-:0} xrandr --query >/dev/null 2>&1; then
-	mapfile -t XR < <(DISPLAY=${DISPLAY:-:0} xrandr --query 2>/dev/null \
-		| awk '/^[^ ]+[[:space:]]+(connected|disconnected)/ {print $1, $2}' \
-		| grep -Eiv '^(Writeback|Virtual|VIRTUAL)')
-
-      ALL_OUTS=()
-      CONN_OUTS=()
-      for ln in "${XR[@]}"; do
-        n="${ln%% *}"; st="${ln##* }"
-        [ -n "$n" ] || continue
-        case "$st" in
-          connected) CONN_OUTS+=("$n");;
-        esac
-        ALL_OUTS+=("$n")
-      done
+      scan_outputs
       [ ${#ALL_OUTS[@]} -gt 0 ] && break
     fi
     sleep 1
@@ -395,18 +391,7 @@ output_detection_and_persist() {
 
   # --- Quick, one-shot rescan via xrandr (no retries, no sleeps) ---
   quick_rescan_outputs() {
-	mapfile -t XR < <(DISPLAY=${DISPLAY:-:0} xrandr --query 2>/dev/null \
-	  | awk '/^[^ ]+[[:space:]]+(connected|disconnected)/ {print $1, $2}' \
-	  | grep -Eiv '^(Writeback|Virtual|VIRTUAL)')
-
-    ALL_OUTS=()
-    CONN_OUTS=()
-    for ln in "${XR[@]}"; do
-      n="${ln%% *}"; st="${ln##* }"
-      [ -n "$n" ] || continue
-      [ "$st" = "connected" ] && CONN_OUTS+=("$n")
-      ALL_OUTS+=("$n")
-    done
+    scan_outputs
     echo "Quick rescan: found ${#ALL_OUTS[@]} outputs; connected=${#CONN_OUTS[@]}" >> "$LOG_FILE"
   }
 
@@ -544,7 +529,3 @@ done
   echo "  Ignored: ${OTHERS[*]}"
   echo
 }
-
-# ─────────────────────────────────────────────────────────────────────────────
-# New output detection & persistence (terminal-only) as a function End!
-# ─────────────────────────────────────────────────────────────────────────────
