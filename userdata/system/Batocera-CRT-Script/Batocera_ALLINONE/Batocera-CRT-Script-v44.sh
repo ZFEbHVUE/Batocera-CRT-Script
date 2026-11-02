@@ -4979,15 +4979,9 @@ chmod 644 /etc/X11/xorg.conf.d/20-modesetting.conf
 
 ##################################################################################################
 python_directory=$(find /usr/lib/ -maxdepth 1 -type d -name "python*" -exec basename {} \; -quit)
-new_path1="/usr/lib/${python_directory}/site-packages/configgen/"
-# Check if the file exists and make a backup
-if [ ! -f "${new_path1}emulatorlauncher.py.bak" ]; then
-    echo "Backing up emulatorlauncher.py"
-    cp "${new_path1}emulatorlauncher.py" 	"${new_path1}emulatorlauncher.py.bak"
-fi
-new_path2="/usr/lib/${python_directory}/site-packages/configgen/utils/"
-if [ ! -f "/${new_path2}videoMode.py.bak" ];then
-	cp "${new_path2}videoMode.py" 		"${new_path2}videoMode.py.bak"
+new_path="/usr/lib/${python_directory}/site-packages/batocera_launch/devices/"
+if [ ! -f "${new_path}video.py.bak" ];then
+	cp "${new_path}video.py" 		"${new_path}video.py.bak"
 fi
 ##################################################################################################
 
@@ -4996,11 +4990,9 @@ fi
 ## Only for Batocera >= V32
 case $Version_of_batocera in
 
-    v44)
-		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Configgen/emulatorlauncher.py_v44_ZFEbHVUE	"${new_path1}emulatorlauncher.py"
-		chmod 755  "${new_path1}emulatorlauncher.py"
-		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Configgen/VideoMode.py-v44_ZFEbHVUE		"${new_path2}videoMode.py"
-		chmod 755 "${new_path2}videoMode.py"
+    v44)		
+		cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/Configgen/Video.py-v44_ZFEbHVUE		"${new_path}video.py"
+		chmod 755 "${new_path}video.py"
 
 		if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then
 			cp /userdata/system/Batocera-CRT-Script/UsrBin_configs/batocera-resolution-v44_Nvidia_driver_MYZAR_ZFEbHVUE-MultiScreen 	/usr/bin/batocera-resolution
