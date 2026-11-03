@@ -107,38 +107,92 @@ get_bound_driver() {
 }
 fi
 
+# v44 no longer reads amdgpu=false. Sea Islands (CIK) binds radeon only when
+# the kernel command line disables amdgpu for CIK and enables radeon for CIK.
+SEA_ISLANDS_RADEON_PARAMS="amdgpu.cik_support=0 radeon.cik_support=1"
+SEA_ISLANDS_RADEON_MARKER="/userdata/system/Batocera-CRT-Script/.sea_islands_radeon"
+
+# Add the radeon parameters to APPEND lines. A LABEL crt entry is the CRT boot
+# on a dual-boot system, so the Wayland entry is left alone. Stock syslinux has
+# no LABEL crt, and every APPEND line is updated.
+sea_islands_patch_syslinux() {
+  local f="$1" tmp
+  tmp="${f}.patched"
+  if grep -q '^LABEL crt$' "$f"; then
+    awk -v params="$SEA_ISLANDS_RADEON_PARAMS" '
+      /^LABEL crt$/ { in_crt=1 }
+      /^LABEL / && !/^LABEL crt$/ { in_crt=0 }
+      in_crt && /^[[:space:]]*APPEND / && $0 !~ /radeon\.cik_support=1/ {
+        print $0 " " params
+        next
+      }
+      { print }
+    ' "$f" > "$tmp" || return 1
+  else
+    awk -v params="$SEA_ISLANDS_RADEON_PARAMS" '
+      /^[[:space:]]*APPEND / && $0 !~ /radeon\.cik_support=1/ {
+        print $0 " " params
+        next
+      }
+      { print }
+    ' "$f" > "$tmp" || return 1
+  fi
+  mv -f "$tmp" "$f"
+  chmod 755 "$f" 2>/dev/null || true
+}
+
 if ! declare -F offer_switch_to_radeon >/dev/null 2>&1; then
 offer_switch_to_radeon() {
-  local conf="/boot/batocera-boot.conf"
-  local bak="/boot/batocera-boot.conf.bak_sea_islands"
-  echo "Sea Islands: offering driver switch; editing $conf with backup $bak" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+  local LOG_FILE="/userdata/system/logs/BUILD_15KHz_Batocera.log"
+  local f patched=0
+  local SYS_CAND="/boot/EFI/syslinux.cfg /boot/EFI/BOOT/syslinux.cfg /boot/EFI/batocera/syslinux.cfg /boot/boot/syslinux.cfg /boot/boot/syslinux/syslinux.cfg"
+
+  echo "Sea Islands: offering radeon switch via kernel command line" >> "$LOG_FILE"
 
   box_hash
   box_center "Sea Islands (GCN 2.x / DCE 8.x) detected under ${GREEN}amdgpu${NOCOLOR}."
   box_center "Interlace is ${RED}unsupported${NOCOLOR} on amdgpu for this family."
   box_empty
-  box_center "Recommended: switch to ${GREEN}radeon${NOCOLOR} driver in /boot/batocera-boot.conf"
-  box_center "(this sets: amdgpu=false)"
+  box_center "Recommended: load the ${GREEN}radeon${NOCOLOR} driver for this card."
+  box_center "The kernel boot line will include:"
+  box_center "${SEA_ISLANDS_RADEON_PARAMS}"
   box_hash
   prompt_centered_tty "PRESS ${BLUE}ENTER${NOCOLOR} TO APPLY (or Ctrl+C to keep amdgpu)"
 
   mount -o remount,rw /boot 2>/dev/null || true
-  cp -f "$conf" "$bak" 2>/dev/null || true
 
-  if grep -q '^ *amdgpu=' "$conf" 2>/dev/null; then
-    sed -i 's/^ *amdgpu=.*/amdgpu=false/' "$conf"
-  else
-    printf '\n# Force radeon for Sea Islands (GCN 2.x)\namdgpu=false\n' >> "$conf"
+  for f in $SYS_CAND; do
+    [ -f "$f" ] || continue
+    cp -f "$f" "${f}.bak" 2>/dev/null || true
+    if [ ! -f "${f}.initial" ]; then
+      cp -f "$f" "${f}.initial" 2>/dev/null || true
+    fi
+    if ! sea_islands_patch_syslinux "$f"; then
+      echo "Sea Islands: failed to update $f" | tee -a "$LOG_FILE"
+      continue
+    fi
+    patched=1
+    echo "Sea Islands: added ${SEA_ISLANDS_RADEON_PARAMS} to $f" | tee -a "$LOG_FILE"
+  done
+
+  if [ "$patched" -eq 0 ]; then
+    box_hash
+    box_center "${RED}No syslinux.cfg found. The radeon driver was not enabled.${NOCOLOR}"
+    box_hash
+    echo "Sea Islands: no syslinux.cfg to update" >> "$LOG_FILE"
+    exit 1
   fi
+
+  mkdir -p "$(dirname "$SEA_ISLANDS_RADEON_MARKER")"
+  printf '%s\n' "$SEA_ISLANDS_RADEON_PARAMS" > "$SEA_ISLANDS_RADEON_MARKER"
+  echo "Sea Islands: marker written to $SEA_ISLANDS_RADEON_MARKER" >> "$LOG_FILE"
 
   sync
   box_hash
-  box_center "batocera-boot.conf updated (${GREEN}amdgpu=false${NOCOLOR})."
+  box_center "Kernel boot line updated."
   box_center "Reboot to load the radeon driver and enable interlace."
   box_hash
-  echo "Sea Islands: wrote amdgpu=false to $conf (backup at $bak)" >> /userdata/system/logs/BUILD_15KHz_Batocera.log
 
-  # --- Safe immediate reboot (with cancel window) ---
   box_empty
   box_center "Reboot required to load ${GREEN}radeon${NOCOLOR}."
   box_center "System will reboot in 15 seconds…  (press Ctrl+C to cancel)"
@@ -152,7 +206,7 @@ offer_switch_to_radeon() {
     sleep 1
   done
   echo
-  echo "Sea Islands: initiating reboot now." >> /userdata/system/logs/BUILD_15KHz_Batocera.log
+  echo "Sea Islands: initiating reboot now." >> "$LOG_FILE"
   reboot
 }
 fi

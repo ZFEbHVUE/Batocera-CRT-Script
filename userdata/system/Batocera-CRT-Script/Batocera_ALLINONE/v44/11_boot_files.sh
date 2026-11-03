@@ -113,6 +113,17 @@ chmod 755 /boot/batocera-boot.conf
 
 mount -o remount,rw /boot 2>/dev/null || true
 
+# The Sea Islands prompt reboots before this file runs. The next install
+# rebuilds syslinux from scratch, so keep the radeon parameters on that boot line.
+if [ -f "${SEA_ISLANDS_RADEON_MARKER:-/userdata/system/Batocera-CRT-Script/.sea_islands_radeon}" ]; then
+  case " ${drivers_amd:-} " in
+    *" radeon.cik_support=1 "*) ;;
+    *) drivers_amd="${drivers_amd:+$drivers_amd }${SEA_ISLANDS_RADEON_PARAMS:-amdgpu.cik_support=0 radeon.cik_support=1}" ;;
+  esac
+  echo "Sea Islands: keeping ${drivers_amd} on the CRT boot line" \
+    | tee -a /userdata/system/logs/BUILD_15KHz_Batocera.log
+fi
+
 if [ "$IS_DUALBOOT_INSTALL" = true ]; then
   #########################################################################
   # Dual-boot: preserve the multi-entry syslinux.cfg structure.
