@@ -1,6 +1,6 @@
-# Batocera-CRT-Script v44 - step 04: backup restore
+# Batocera-CRT-Script v44 - step 04: backup
 # First-run system backup (BACKUP/ + backup.file), HD monitor mode capture for the HD/CRT mode switcher,
-# restore to stock Batocera, and the "backup found" menu (backup_restore_main).
+# and the "backup found" menu (backup_restore_main). Restore lives in step 24.
 BASE_DIR="/userdata/Batocera-CRT-Script-Backup"; CHECK_FILE="$BASE_DIR/backup.file"; BACKUP_ROOT="$BASE_DIR/BACKUP"
 LEGACY_DIR="${CRTD}"; LEGACY_FILE="$LEGACY_DIR/backup.file"; mkdir -p "$BASE_DIR" "$BACKUP_ROOT"
 if [ -f "$LEGACY_FILE" ] && [ ! -f "$CHECK_FILE" ]; then
@@ -10,24 +10,7 @@ FILES_TO_HANDLE=(
   "/boot/batocera-boot.conf" "/boot/boot/syslinux.cfg" "/boot/boot/syslinux/syslinux.cfg" "/boot/EFI/syslinux.cfg"
   "/boot/EFI/batocera/syslinux.cfg" "/boot/EFI/BOOT/syslinux.cfg" "/userdata/system/batocera.conf"
 )
-EXTRA_DELETE_FILES=(
-  "/userdata/system/99-nvidia.conf" "/userdata/system/batocera.conf.bak" "/userdata/system/batocera.conf"
-  "/userdata/system/es.arg.override" "/userdata/system/videomodes.conf" "/userdata/system/videomodes.conf.bak"
-  "/userdata/system/configs/multimedia_keys.conf" "/userdata/system/configs/emulationstation/es_systems_crt.cfg"
-  "/userdata/system/configs/mame/mame.ini" "/userdata/system/configs/mame/mame.ini.bak"
-  "/userdata/system/configs/mame/plugin.ini" "/userdata/system/configs/mame/ui.ini"
-  "/userdata/system/configs/mame/ini/vertical.ini" "/boot/boot/overlay" "/boot/batocera-boot.conf.bak"
-  "/boot/boot-custom.sh"
-)
-SYSLINUX_DIRS=(
-  "/boot/boot" "/boot/boot/syslinux" "/boot/EFI" "/boot/EFI/batocera" "/boot/EFI/BOOT"
-)
-DIRS_TO_REMOVE=(
-  "/userdata/system/scripts" "/userdata/system/configs/retroarch" "/userdata/roms/crt"
-)
 msg() { printf "%s\n" "$*"; }
-press_enter() { printf "\nPress ENTER to continue "; read -r _; }
-press_enter_to_reboot() { printf "\nPress ENTER to reboot "; read -r _; reboot; }
 make_parent_and_copy_preserve() {
   local src="$1" dst="$2" dstdir; dstdir="$(dirname "$dst")"; mkdir -p "$dstdir"
   if [ -e "$src" ]; then
@@ -196,94 +179,6 @@ backup_once() {
 }
 remount_boot_rw() {
   msg "==> Remounting /boot as read-write…"; mount -o remount,rw /boot 2>/dev/null || true
-}
-delete_if_exists() {
-  local p="$1"
-  if [ -e "$p" ] || [ -L "$p" ]; then
-    rm -rf "$p"; msg "   Deleted: $p"
-  fi
-}
-purge_syslinux_variants() {
-  msg "==> Purging syslinux backup/initial variants where present…"
-  for d in "${SYSLINUX_DIRS[@]}"; do
-    [ -d "$d" ] || continue
-    for name in "syslinux.cfg.bak" "syslinux.cfg.initial"; do
-      local p="$d/$name"
-      if [ -e "$p" ] || [ -L "$p" ]; then
-        rm -f "$p"; msg "   Deleted: $p"
-      fi
-    done
-  done
-}
-restore_file_from_backup() {
-  local target="$1"; local backup_src="$BACKUP_ROOT$target"
-  if [ -e "$backup_src" ]; then
-    mkdir -p "$(dirname "$target")"; cp -a "$backup_src" "$target"; msg "   Restored: $target"; return 0
-  else
-    msg "   (missing in backup, skipped): $target"; return 1
-  fi
-}
-restore_all() {
-  local LOG_FILE="${CRT_LOG}"; box_hash; box_center "${BOLD}Restore to stock Batocera${NOCOLOR}"; box_empty
-  box_center "This will remove the script and restore system files from backup."
-  box_center "Your ${GREEN}games and save files${NOCOLOR} will ${GREEN}NOT${NOCOLOR} be deleted."; box_hash
-  if [ ! -d "$BACKUP_ROOT" ]; then
-    box_hash; box_center "${RED}Backup folder not found:${NOCOLOR}"; box_center "${BLUE}${BACKUP_ROOT}${NOCOLOR}"
-    box_empty; box_center "Aborting restore to avoid leaving the system in a bad state."; box_hash; return 1
-  fi
-  box_empty; box_center "Preparing boot partition for restore…"; box_empty; remount_boot_rw; box_empty
-  box_center "Removing modified/managed files…"; box_empty
-  for f in "${FILES_TO_HANDLE[@]}"; do delete_if_exists "$f"; done
-  for f in "${EXTRA_DELETE_FILES[@]}"; do delete_if_exists "$f"; done
-  box_empty; box_center "Purging syslinux.cfg variants…"; box_empty; purge_syslinux_variants; box_empty
-  box_center "Removing folders…"; box_empty
-  for d in "${DIRS_TO_REMOVE[@]}"; do delete_if_exists "$d"; done
-  box_empty; box_center "Restoring files from backup…"; box_empty
-  for f in "${FILES_TO_HANDLE[@]}"; do restore_file_from_backup "$f"; done
-  box_empty; box_center "Cleaning up mode switcher flags…"; box_empty
-  local mode_switcher_flag="${CRTD}/Geometry_modeline/.mode_switcher_first_run"
-  if [ -f "$mode_switcher_flag" ]; then
-    rm -f "$mode_switcher_flag"; box_center "Mode switcher first-run flag removed"
-  fi
-  if [ -d "$BASE_DIR/mode_backups" ]; then
-    rm -rf "$BASE_DIR/mode_backups"; box_center "HD/CRT mode backups removed"
-  fi
-  if [ -d /boot/crt ]; then
-    box_empty; box_center "Removing dual-boot CRT environment…"; box_empty; remount_boot_rw; rm -rf /boot/crt/
-    box_center "/boot/crt/ removed"
-    if [ -f /boot/boot/overlay ]; then
-      rm -f /boot/boot/overlay; box_center "/boot/boot/overlay removed (factory Wayland restored)"
-    fi
-    if [ -f /boot/boot-custom.sh ]; then
-      rm -f /boot/boot-custom.sh; box_center "/boot/boot-custom.sh removed"
-    fi
-    local f
-    for f in /boot/EFI/batocera/syslinux.cfg \
-             /boot/boot/syslinux.cfg \
-             /boot/boot/syslinux/syslinux.cfg; do
-      if [ -f "$f" ] && grep -q '^LABEL crt' "$f"; then
-        sed -i '/^LABEL crt$/,/^$/d' "$f"; sed -i '/^DEFAULT crt$/d' "$f"
-        if ! grep -q 'MENU DEFAULT' "$f"; then sed -i '/^LABEL batocera$/a\	MENU DEFAULT' "$f"; fi
-        sed -i 's/Batocera HD - Wayland (\^normal)/Batocera.linux (^normal)/' "$f"
-        sed -i 's/Batocera HD - Wayland (\^verbose)/Batocera.linux (^verbose)/' "$f"
-        box_center "$(basename "$(dirname "$f")")/syslinux.cfg restored"
-      fi
-    done
-    if [ -d /sys/firmware/efi ]; then
-      local grub_cfg="/boot/EFI/BOOT/grub.cfg"
-      if [ -f "$grub_cfg" ]; then
-        sed -i '/menuentry "Batocera CRT (X11)"/,/^}/d' "$grub_cfg"
-        sed -i 's/menuentry "Batocera HD (Wayland)"/menuentry "Batocera.linux (normal)"/' "$grub_cfg"
-        sed -i 's/menuentry "Batocera HD (verbose)"/menuentry "Batocera.linux (verbose)"/' "$grub_cfg"
-        sed -i 's/set default="1"/set default="0"/' "$grub_cfg"; sed -i 's/set timeout="3"/set timeout="1"/' "$grub_cfg"
-        box_center "grub.cfg fallback restored"
-      fi
-    fi
-    mount -o remount,ro /boot 2>/dev/null
-    rm -f "${CRT_SCRIPT_DIR:-/userdata/system/Batocera-CRT-Script}/batocera-save-crt-overlay"
-    rm -f "${PHASE_FLAG:-/userdata/system/Batocera-CRT-Script/.install_phase}"; box_center "Dual-boot cleanup complete"
-  fi
-  hbox "${GREEN}Restore complete.${NOCOLOR} A reboot is required."; press_enter_to_reboot
 }
 prompt_when_backup_exists() {
   local LOG_FILE="${CRT_LOG}"; box_hash; box_center "${BOLD}A backup was found${NOCOLOR}"; box_empty

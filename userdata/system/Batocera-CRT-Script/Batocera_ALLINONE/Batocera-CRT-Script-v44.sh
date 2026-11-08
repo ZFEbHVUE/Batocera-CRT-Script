@@ -14,6 +14,8 @@ set -u   # from here on, an unset variable stops the install (as in the original
 source "$V44_DIR/04_backup_restore.sh"
 source "$V44_DIR/05_version_check.sh"
 source "$V44_DIR/06_dualboot_phase1.sh"
+# Step 24 is sourced here, before routing, because routing calls restore_all as it loads.
+source "$V44_DIR/24_restore.sh"
 source "$V44_DIR/07_install_routing.sh"
 source "$V44_DIR/08_boot_custom.sh"
 source "$V44_DIR/09_output_detection.sh"
