@@ -62,8 +62,17 @@ if [ -n "$video_output_xrandr" ]; then
         > "${MODE_BACKUP_BASE}/crt_mode/video_settings/video_output.txt"
 fi
 if [ "$BOOT_RESOLUTION_ES" == "1" ]; then echo $Resolution_es >> "$file_BatoceraConf"; fi
+# Resolution_es is a calculated rate with a .000 suffix. It matches no key in
+# batocera-resolution listModes, so EmulationStation shows AUTO and does not
+# keep the mode picked for this monitor. Use the videomodes.conf key instead,
+# in batocera.conf and in the boot file that the first CRT boot actually applies.
 if [ -n "$_crt_boot_mode" ]; then
     sed -i '/^es\.resolution=/d' "$file_BatoceraConf"; echo "es.resolution=$_crt_boot_mode" >> "$file_BatoceraConf"
+    if [ "${BOOT_RESOLUTION:-0}" = "1" ] && [ -f /boot/batocera-boot.conf ]; then
+        mount -o remount,rw /boot 2>/dev/null || true
+        sed -i "s|.*es\\.resolution=.*|es.resolution=${_crt_boot_mode}|" /boot/batocera-boot.conf
+        echo "es.resolution set to videomodes key ${_crt_boot_mode}" >> "$CRT_LOG"
+    fi
 fi
 append_crt_script_settings_start
 if [ "$ES_rotation" == "NORMAL" ] || [ "$ES_rotation" == "INVERTED" ]; then
