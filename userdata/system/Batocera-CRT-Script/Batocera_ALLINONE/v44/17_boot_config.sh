@@ -34,6 +34,15 @@ if [ "$TYPE_OF_CARD" == "NVIDIA" ]; then
 	sed -i "s/.*splash.screen.enabled=.*/splash.screen.enabled=0/" /boot/batocera-boot.conf
 else sed -i "s/.*splash.screen.enabled=.*/#splash.screen.enabled=0/" /boot/batocera-boot.conf; fi
 chmod 755 /boot/batocera-boot.conf; mount -o remount,rw /boot 2>/dev/null || true
+# The Sea Islands prompt reboots before this file runs. The next install rebuilds
+# syslinux from scratch, so keep the radeon parameters on that boot line.
+if [ -f "${SEA_ISLANDS_RADEON_MARKER:-/userdata/system/Batocera-CRT-Script/.sea_islands_radeon}" ]; then
+  case " ${drivers_amd:-} " in
+    *" radeon.cik_support=1 "*) ;;
+    *) drivers_amd="${drivers_amd:+$drivers_amd }${SEA_ISLANDS_RADEON_PARAMS:-amdgpu.cik_support=0 radeon.cik_support=1}" ;;
+  esac
+  echo "Sea Islands: keeping ${drivers_amd} on the CRT boot line" | tee -a "$CRT_LOG"
+fi
 if [ "$IS_DUALBOOT_INSTALL" = true ]; then
   CRT_APPEND_LINE="label=BATOCERA console=tty3 quiet loglevel=0 vt.global_cursor_default=0 mitigations=off ${drivers_amd} ${polling_rate} drm.edid_firmware=${video_output}:edid/${monitor_firmware}.bin video=${video_output}:${boot_resolution}"
   for f in /boot/EFI/batocera/syslinux.cfg \
