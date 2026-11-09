@@ -5,6 +5,7 @@ Check the [💻 Hardware Compatibility](https://github.com/ZFEbHVUE/Batocera-CRT
 Attempting to install on unsupported hardware may result in display issues or failure to output a proper CRT signal.
 
 📚 **Full Documentation**  
+The wiki home page is a Quick Start guide. Read it first.
 Read the Wiki for detailed usage and configuration:  
 🔗 [Batocera-CRT-Script Wiki](https://github.com/ZFEbHVUE/Batocera-CRT-Script/wiki)
 
