@@ -1,6 +1,6 @@
 # Batocera-CRT-Script v44 - step 04: backup
 # First-run system backup (BACKUP/ + backup.file), HD monitor mode capture for the HD/CRT mode switcher,
-# and the "backup found" menu (backup_restore_main). Restore lives in step 24.
+# and the "backup found" menu (backup_restore_main). Restore lives in step 25.
 BASE_DIR="/userdata/Batocera-CRT-Script-Backup"; CHECK_FILE="$BASE_DIR/backup.file"; BACKUP_ROOT="$BASE_DIR/BACKUP"
 LEGACY_DIR="${CRTD}"; LEGACY_FILE="$LEGACY_DIR/backup.file"; mkdir -p "$BASE_DIR" "$BACKUP_ROOT"
 if [ -f "$LEGACY_FILE" ] && [ ! -f "$CHECK_FILE" ]; then

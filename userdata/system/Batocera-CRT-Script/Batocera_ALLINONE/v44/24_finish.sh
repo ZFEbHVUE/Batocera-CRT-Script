@@ -1,4 +1,4 @@
-# Batocera-CRT-Script v44 - step 23: finish
+# Batocera-CRT-Script v44 - step 24: finish
 # boot-custom.sh, Phase 2 overlay save, then reboot (or power-off for dual-boot).
 chmod 755 "$file_BatoceraConf"; maybe_install_boot_custom_sh
 if [ "$IS_PHASE2" = true ]; then

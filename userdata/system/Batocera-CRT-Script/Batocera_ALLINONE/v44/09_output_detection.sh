@@ -268,11 +268,7 @@ done
     echo
   } > "$CONF_FILE"
   chmod 644 "$CONF_FILE"
-  if declare -f box_hash >/dev/null 2>&1; then
-    hbox "Saving 10-monitor.conf to persistent storage — please wait (can take ~10–30s)"
-  else echo "Saving 10-monitor.conf to persistent storage — please wait (can take ~10–30s)"; fi
-  t0="$(date +%s)"
-  batocera-save-overlay >>"$LOG_FILE" 2>&1 || { echo "WARN: batocera-save-overlay failed; changes may not persist after reboot." >>"$LOG_FILE"; }
-  t1="$(date +%s)"; echo "batocera-save-overlay duration: $((t1 - t0))s" >>"$LOG_FILE"; create_flag_file || true; echo
-  echo "Saved $CONF_FILE"; echo "  Keep   : $CHOSEN"; echo "  Ignored: ${OTHERS[*]}"; echo
+  CRT_WROTE_10_MONITOR=1
+  echo "Wrote $CONF_FILE. Overlay save waits for the install review." >> "$LOG_FILE"
+  echo "Selected $CONF_FILE"; echo "  Keep   : $CHOSEN"; echo "  Ignored: ${OTHERS[*]}"; echo
 }

@@ -2,7 +2,7 @@
 # Monitor profile and EDID resolution, switchres EDID (/lib/firmware/edid), modeline and
 # videomodes.conf -> monitor_firmware, H_RES_EDID x V_RES_EDID, RES_EDID, Resolution_es, MODELINE_CUSTOM.
 CRT_Freq="15KHz"
-if [ ! -f "/etc/switchres.ini.bak" ];then cp /etc/switchres.ini /etc/switchres.ini.bak; fi
+if [ ! -f "/etc/switchres.ini.bak" ];then cp /etc/switchres.ini /etc/switchres.ini.bak; CRT_SWITCHRES_BAK_NEW=1; fi
 echo
 declare -a type_of_monitor=( "generic_15" "ntsc" "pal" "arcade_15" "arcade_15ex" "arcade_25" "arcade_31" \
 				"arcade_15_25" "arcade_15_31" "arcade_15_25_31" "vesa_480" "vesa_600" "vesa_768" "vesa_1024" \
@@ -185,11 +185,5 @@ Resolution_es=""es.resolution=""${H_RES_EDID}"x"${V_RES_EDID}"."${Frame_Rate}"00
 MODELINE_CUSTOM="\"${RES_EDID}\" $(echo "$MODE" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
 monitor_name_MAME=$monitor_firmware; echo "monitor mame = $monitor_name_MAME" >> "$CRT_LOG"
 Name_VideoModes="videomodes.conf_"$monitor_firmware
-if [ "$Amd_NvidiaND_IntelDP" == "1" ]; then
-	cp "$CRTD"/System_configs/VideoModes/Amd_NvidiaND_IntelDP/$Name_VideoModes /userdata/system/videomodes.conf
-elif [ "$Intel_Nvidia_NOUV" == "1" ]; then
-	cp "$CRTD"/System_configs/VideoModes/Intel_NvidiaNOUV/$Name_VideoModes /userdata/system/videomodes.conf
-else echo "Problems"; fi
-chmod 644 /userdata/system/videomodes.conf; chmod 644 /userdata/system/videomodes.conf
-cp /userdata/system/videomodes.conf /userdata/system/videomodes.conf.bak; boot_resolution="e"
+boot_resolution="e"
 echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "; read; echo
