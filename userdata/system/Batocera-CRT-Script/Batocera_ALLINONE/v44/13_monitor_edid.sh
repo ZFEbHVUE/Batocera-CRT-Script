@@ -19,6 +19,40 @@ monitor_categories["VESA GTF"]="vesa_480 vesa_600 vesa_768 vesa_1024"
 monitor_categories["PC monitor 120 Hz"]="pc_31_120 pc_70_120"; monitor_categories["Hantarex"]="h9110 polo pstar"
 monitor_categories["Wells Gardner"]="k7000 k7131 d9200 d9400 d9800"; monitor_categories["Makvision"]="m2929"
 monitor_categories["Wei-Ya"]="m3129"; monitor_categories["Nanao"]="ms2930 ms929"; monitor_categories["Rodotron"]="r666b"
+CRT_KEEP_GEOMETRY=0
+CRT_GEOMETRY_SNAPSHOT=""
+CRT_GEOMETRY_RANGES=""
+monitor_firmware=""
+log_file="/userdata/system/logs/BootRes.log"
+_crt_monitor_now=$(awk '/^[[:space:]]*monitor[[:space:]]+/ { print $2; exit }' /etc/switchres.ini 2>/dev/null || true)
+if [ "$_crt_monitor_now" = "custom" ]; then
+  CRT_GEOMETRY_SNAPSHOT=$(mktemp) || CRT_GEOMETRY_SNAPSHOT=""
+  [ -n "$CRT_GEOMETRY_SNAPSHOT" ] && cp -a /etc/switchres.ini "$CRT_GEOMETRY_SNAPSHOT"
+  CRT_GEOMETRY_RANGES=$(awk '/^[[:space:]]*crt_range[0-9]+[[:space:]]+/ && $2 != "auto" { print $1 "  " $2 }' /etc/switchres.ini)
+  echo ""
+  echo "A custom monitor profile is already saved."
+  echo "That profile holds your geometry adjustments."
+  echo "Switchres uses those ranges while the monitor line says custom."
+  if [ -n "$CRT_GEOMETRY_RANGES" ]; then
+    printf '%s\n' "$CRT_GEOMETRY_RANGES"
+  else
+    echo "No custom range lines were found."
+  fi
+  echo ""
+  echo "1  Keep this geometry"
+  echo "2  Pick a new monitor profile"
+  echo -n "                                  "
+  while true; do
+    read -r _geo_choice
+    case "${_geo_choice:-}" in
+      1) CRT_KEEP_GEOMETRY=1; monitor_firmware="custom"; echo "Geometry: Keep"; break ;;
+      2) CRT_KEEP_GEOMETRY=0; echo "Geometry: Pick a new monitor profile"; break ;;
+      *) echo -n "Enter 1 or 2: " ;;
+    esac
+  done
+  echo "Geometry choice: ${CRT_KEEP_GEOMETRY}" >> "$CRT_LOG"
+fi
+if [ "${CRT_KEEP_GEOMETRY}" != 1 ]; then
 counter=0; b71; echo "##                     your type of monitor                          ##"; b71
 for category in "${categories[@]}"; do
   echo ""; echo "	$category :"; monitors="${monitor_categories[$category]}"
@@ -26,7 +60,7 @@ for category in "${categories[@]}"; do
   for i in "${!monitor_array[@]}"; do echo "						$((counter + i + 1)) : ${monitor_array[i]}"; done
   counter=$((counter + ${#monitor_array[@]}))
 done
-log_file="/userdata/system/logs/BootRes.log"; echo ""; b71
+echo ""; b71
 echo "##                 Make your choice for monitor type                 ##"; b71
 echo -n "                                  "
 while true; do
@@ -34,7 +68,9 @@ while true; do
   if [[ "$monitor_choice" =~ ^[0-9]+$ ]] && (( monitor_choice >= 1 && monitor_choice <= ${#type_of_monitor[@]} )); then break; fi
   echo -n "Invalid choice. Please enter a number between 1 and ${#type_of_monitor[@]}: "
 done
-monitor_firmware=${type_of_monitor[monitor_choice-1]}; IFE=0; Amd_NvidiaND_IntelDP=0; Intel_Nvidia_NOUV=0
+monitor_firmware=${type_of_monitor[monitor_choice-1]}
+fi
+IFE=0; Amd_NvidiaND_IntelDP=0; Intel_Nvidia_NOUV=0
 if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]) || ([ "$TYPE_OF_CARD" == "AMD/ATI" ]) || ([ "$TYPE_OF_CARD" == "INTEL" ] && [[ $video_output == *"DP"* ]]); then
     	matrix=("arcade_15 320x240@60 640x480@30 768x576@25" "arcade_15_25 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@30" "arcade_15_31 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@30"
             	"arcade_15_25_31 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@25" "arcade_15ex 320x240@60 640x480@25 768 x576@25"
@@ -67,8 +103,10 @@ else
     Intel_Nvidia_NOUV=1
 fi
 monitor_firmware_info=""
+resolution_profile="$monitor_firmware"
+[ "${CRT_KEEP_GEOMETRY}" = 1 ] && resolution_profile="generic_15"
 for line in "${matrix[@]}"; do
-  if [[ "$line" == "$monitor_firmware"* ]]; then
+  if [[ "$line" == "$resolution_profile"* ]]; then
    monitor_firmware_info="$line"
     break
   fi
@@ -85,7 +123,11 @@ for ((i = 1; i <= max_choice; i++)); do
     is_disabled[i]=1; has_disabled_resolution=1
   else is_disabled[i]=0; fi
 done
-echo "	Information for monitor ${monitor_info[0]}:"
+if [ "${CRT_KEEP_GEOMETRY}" = 1 ]; then
+  echo "	Boot resolutions while keeping custom geometry:"
+else
+  echo "	Information for monitor ${monitor_info[0]}:"
+fi
 if (( has_disabled_resolution )); then
   b71; echo "##             NOTE: 240p BOOT / ES THEME NOT SUPPORTED              ##"; e71
   echo "## WHY THIS IS DISABLED                                              ##"
@@ -185,5 +227,6 @@ Resolution_es=""es.resolution=""${H_RES_EDID}"x"${V_RES_EDID}"."${Frame_Rate}"00
 MODELINE_CUSTOM="\"${RES_EDID}\" $(echo "$MODE" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')"
 monitor_name_MAME=$monitor_firmware; echo "monitor mame = $monitor_name_MAME" >> "$CRT_LOG"
 Name_VideoModes="videomodes.conf_"$monitor_firmware
+if [ "${CRT_KEEP_GEOMETRY}" = 1 ]; then Name_VideoModes="videomodes.conf_generic_15"; fi
 boot_resolution="e"
 echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO CONTINUE "; read; echo

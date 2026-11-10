@@ -6,8 +6,13 @@ if [ "$IS_PHASE2" = true ]; then
   crt_overlay="${CRT_SCRIPT_DIR}/batocera-save-crt-overlay"
   if [ -x "$crt_overlay" ]; then
     box_center "Saving CRT configuration overlay..."
-    "$crt_overlay" || err_box "Warning: overlay save returned non-zero"
-  else err_box "batocera-save-crt-overlay not found — deploy may have been skipped"; fi
+    if declare -F crt59_run >/dev/null 2>&1; then
+      crt59_run 24_finish crt_overlay_save "$crt_overlay" || err_box "Warning: overlay save returned non-zero"
+    else "$crt_overlay" || err_box "Warning: overlay save returned non-zero"; fi
+  else
+    if declare -F crt59_event >/dev/null 2>&1; then crt59_event ERROR 24_finish crt_overlay_save outcome missing || :; fi
+    err_box "batocera-save-crt-overlay not found — deploy may have been skipped"
+  fi
   rm -f "$PHASE_FLAG"; box_center "Phase flag removed."
   box_center "CRT remains the default boot entry for first-boot setup."; box_empty; ok_box "Dual-boot Phase 2 complete."
 fi
@@ -27,5 +32,8 @@ else
   else
     sync; reboot
   fi
+fi
+if declare -F crt59_event >/dev/null 2>&1; then
+  crt59_event WARN 24_finish finish_reached outcome unverified reason legacy_success_gate || :
 fi
 exit 0

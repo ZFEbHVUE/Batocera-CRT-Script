@@ -2,7 +2,9 @@
 # /boot/batocera-boot.conf (drivers, es.resolution, splash) and syslinux.cfg
 # (dual-boot: LABEL crt APPEND only; single boot: rendered from the template).
 b71; echo "##               mount -o remount, rw /boot                          ##" | tee -a "$CRT_LOG"; b71
-mount -o remount, rw /boot
+if declare -F crt59_run >/dev/null 2>&1; then
+  crt59_run 17_boot_config boot_remount_rw mount -o remount, rw /boot
+else mount -o remount, rw /boot; fi
 if [ ! -f "/boot/batocera-boot.conf.bak" ];then cp /boot/batocera-boot.conf /boot/batocera-boot.conf.bak; fi
 cp /boot/batocera-boot.conf /boot/batocera-boot.conf.tmp
 if [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]; then

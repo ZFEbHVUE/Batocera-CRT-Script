@@ -24,10 +24,16 @@ _crt_boot_line=$(grep "Boot_" /userdata/system/videomodes.conf 2>/dev/null \
 _crt_boot_mode="${_crt_boot_line%%:*}"
 file="/userdata/system/es.arg.override"
 screensizeoffset_x_new=00; screensizeoffset_y_new=00; screenoffset_x_new=00; screenoffset_y_new=00
-if [ -f "$file" ]; then rm $file; fi
-touch $file; echo "screensizeoffset_x $screensizeoffset_x_new" > "$file"
-echo "screensizeoffset_y $screensizeoffset_y_new" >> "$file"; echo "screenoffset_x $screenoffset_x_new" >> "$file"
-echo "screenoffset_y $screenoffset_y_new" >> "$file"; chmod 644 $file
+if [ "${CRT_KEEP_ES_POSITION:-0}" = 1 ] && [ -s "${CRT_PRIOR_ES_ARGS:-}" ]; then
+	cp -a "$CRT_PRIOR_ES_ARGS" "$file"
+	echo "Kept the EmulationStation menu position" >> "$CRT_LOG"
+else
+	if [ -f "$file" ]; then rm $file; fi
+	touch $file; echo "screensizeoffset_x $screensizeoffset_x_new" > "$file"
+	echo "screensizeoffset_y $screensizeoffset_y_new" >> "$file"; echo "screenoffset_x $screenoffset_x_new" >> "$file"
+	echo "screenoffset_y $screenoffset_y_new" >> "$file"
+fi
+chmod 644 $file
 file_BatoceraConf="/userdata/system/batocera.conf"
 append_crt_script_settings_start() {
 	{
@@ -83,7 +89,12 @@ else
 	es_arg="--screensize "$V_RES_EDID" "$H_RES_EDID" --screenoffset 00 00"
 fi
 echo $es_customsargs >> "$file_BatoceraConf"
+sed -i '/^[[:space:]]*bcc[.]disabled[[:space:]]*=/d' "$file_BatoceraConf"
 cat >> "$file_BatoceraConf" <<'EOF'
+###################################################
+#  DISABLE - Batocera Control Center
+#  The BCC interface is unsuitable for low CRT resolutions.
+bcc.disabled=1
 ###################################################
 #	CRT CONFIG RETROARCH
 ###################################################

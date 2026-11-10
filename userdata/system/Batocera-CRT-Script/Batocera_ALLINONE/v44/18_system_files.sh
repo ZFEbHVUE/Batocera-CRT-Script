@@ -17,8 +17,16 @@ case $Version_of_batocera in
 		else cp "$CRTD"/UsrBin_configs/batocera-resolution-v44_MYZAR_ZFEbHVUE-MultiScreen /usr/bin/batocera-resolution; fi
 		cp "$CRTD"/UsrBin_configs/emulationstation-standalone-v44_ZFEbHVUE-MultiScreen /usr/bin/emulationstation-standalone
 		chmod 755 /usr/bin/batocera-resolution; chmod 755 /usr/bin/emulationstation-standalone
-		sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" "$CRTD"/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
-		sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
+		if [ "${CRT_KEEP_GEOMETRY:-0}" = 1 ] && [ -s "${CRT_GEOMETRY_SNAPSHOT:-}" ]; then
+			cp -a "$CRT_GEOMETRY_SNAPSHOT" /etc/switchres.ini
+			sed -i "s/^[[:space:]]*dotclock_min[[:space:]].*/    dotclock_min              $dotclock_min/" /etc/switchres.ini
+			sed -i "s/^[[:space:]]*super_width[[:space:]].*/	super_width               $super_width/" /etc/switchres.ini
+			sed -i "s/^[[:space:]]*interlace_force_even[[:space:]].*/        interlace_force_even      $IFE/" /etc/switchres.ini
+			echo "Kept custom geometry. Wrote dotclock ${dotclock_min} and super-res ${super_width}." >> "$CRT_LOG"
+		else
+			sed -e "s/\[monitor-name\]/$monitor_name_MAME/g" -e "s/\[super_width\]/$super_width/g" -e "s/\[dotclock_min_value\]/$dotclock_min/g" "$CRTD"/etc_configs/switchres.ini-generic-v36 > /etc/switchres.ini
+			sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
+		fi
  		chmod 755 /etc/switchres.ini
 		cp "$CRTD"/UsrBin_configs/get_monitorRange /usr/bin/get_monitorRange
 		chmod 755 /usr/bin/get_monitorRange ;;

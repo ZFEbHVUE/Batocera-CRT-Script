@@ -74,4 +74,6 @@ chmod 755 "$UD_MEDIA_KEYS/crt-mode-switch-combo" "$UD_MEDIA_KEYS/crt-mode-switch
 mkdir -p /userdata/system/services
 cp "$CRTD"/extra/media_keys/crt_mode_switch_watcher /userdata/system/services/crt_mode_switch_watcher
 chmod 755 /userdata/system/services/crt_mode_switch_watcher; cp "$CRTD"/extra/Kodi/Kodi.sh /userdata/roms/ports
-chmod 755 /userdata/roms/ports/Kodi.sh; batocera-save-overlay
+chmod 755 /userdata/roms/ports/Kodi.sh; if declare -F crt59_run >/dev/null 2>&1; then
+  crt59_run 20_crt_tools overlay_save batocera-save-overlay
+else batocera-save-overlay; fi

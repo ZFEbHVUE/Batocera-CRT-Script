@@ -10,6 +10,10 @@ case "${version_Batocera}" in
     echo "Unknown or unsupported Batocera version: ${version_Batocera}"; Version_of_batocera="unknown"
     VERSION_BATOCERA_NUM=0 ;;
 esac
+if declare -F crt59_event >/dev/null 2>&1; then
+  if [ "$Version_of_batocera" = v44 ]; then crt59_event INFO 05_version_check version_check outcome ok || :;
+  else crt59_event ERROR 05_version_check version_check outcome rejected || :; fi
+fi
 if [ "$Version_of_batocera" != "v44" ]; then
   box_hash; box_center "${RED}WRONG BATOCERA VERSION${NOCOLOR}"; box_center "This script requires Batocera v44."
   box_center "Detected: ${version_Batocera}"; box_center "Please use the correct script for your version."; box_hash

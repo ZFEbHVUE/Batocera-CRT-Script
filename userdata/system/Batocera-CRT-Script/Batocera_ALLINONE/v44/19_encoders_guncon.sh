@@ -13,11 +13,10 @@ echo "##   ENTER or type 0 to skip this step.                              ##"; 
 echo "##                     RECOMMENDED: PRESS 0 OR ENTER                 ##"; e71; b71
 echo -n "                                  "; read Encoder_choice
 Encoder_choice="$(echo "${Encoder_choice:-}" | sed -e 's/,/ /g' -e 's/[[:space:]]\+/ /g' -e 's/^ //; s/ $//')"
+CRT_ENCODER_NAMES=()
 if [ -z "$Encoder_choice" ] || [ "x$Encoder_choice" = "x0" ]; then
   echo "No USB Arcade encoder(s) has been chosen"
 else
-  RUNTIME_DIR="/userdata/system/configs/xarcade2jstick"
-  LEGACY_DIR="/usr/share/batocera/datainit/system/configs/xarcade2jstick"; mkdir -p "$RUNTIME_DIR"
   for i in $Encoder_choice; do
     case "$i" in
       ''|*[!0-9]*) echo "Skipping invalid selection: $i"; continue ;;
@@ -27,10 +26,7 @@ else
       echo "Skipping out-of-range selection: $i"; continue
     fi
     name="${Encoder_inputs[$idx]}"; echo -e "                    your choice is : ${name}"
-    touch "$RUNTIME_DIR/$name" 2>/dev/null || echo "Warning: could not create $RUNTIME_DIR/$name"
-    if [ -d "$LEGACY_DIR" ] && touch "$LEGACY_DIR/.writable_test" 2>/dev/null; then
-      rm -f "$LEGACY_DIR/.writable_test"; mkdir -p "$LEGACY_DIR"; touch "$LEGACY_DIR/$name" 2>/dev/null || true
-    fi
+    CRT_ENCODER_NAMES+=("$name")
   done
 fi
 echo "####################################################################################"
@@ -81,13 +77,16 @@ else
 	echo -e "                    CUSTOM frequency resolution  = ${GREEN}${Guncon2_freq}${NOCOLOR}" | tee -a "$CRT_LOG"
 	Guncon2_res=($Guncon2_x"x"$Guncon2_y)
 fi
-echo ""; b71; e71; echo "##                   BEFORE PRESSING ENTER, PLEASE READ              ##"; e71
-echo "##  The authors of this script take no responsibility for any damage ##"
-echo "##               caused to your CRT or connected hardware.           ##"; e71
-echo "##   Before continuing, make sure you have properly connected your   ##"
-echo "##   display cables and verified that your setup supports 15 kHz.    ##"; e71
-echo "##        Always power off your system safely before reconnecting    ##"
-echo "##             or adjusting video cables and CRT displays.           ##"; e71
-echo "##          When you’re ready, reboot Batocera and enjoy your        ##"
-echo "##                        15 kHz experience!                         ##"; e71; b71; echo ""
-echo -n -e "                       PRESS ${BLUE}ENTER${NOCOLOR} TO FINISH "; read
+apply_encoder_selection() {
+  [ "${#CRT_ENCODER_NAMES[@]}" -eq 0 ] && return 0
+  local RUNTIME_DIR="/userdata/system/configs/xarcade2jstick"
+  local LEGACY_DIR="/usr/share/batocera/datainit/system/configs/xarcade2jstick"
+  local name
+  mkdir -p "$RUNTIME_DIR"
+  for name in "${CRT_ENCODER_NAMES[@]}"; do
+    touch "$RUNTIME_DIR/$name" 2>/dev/null || echo "Warning: could not create $RUNTIME_DIR/$name"
+    if [ -d "$LEGACY_DIR" ] && touch "$LEGACY_DIR/.writable_test" 2>/dev/null; then
+      rm -f "$LEGACY_DIR/.writable_test"; mkdir -p "$LEGACY_DIR"; touch "$LEGACY_DIR/$name" 2>/dev/null || true
+    fi
+  done
+}
