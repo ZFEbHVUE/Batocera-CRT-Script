@@ -74,15 +74,43 @@ backup_overlay_file() {
     
     # Ensure overlay backup directory exists
     mkdir -p "${backup_dir}/overlay" 2>/dev/null || true
-    
+
+    if [ -L "$overlay_path" ] || [ -L "$backup_overlay_path" ]; then
+        echo "[$(date +"%H:%M:%S")]: ERROR: Refusing a symlink in the ${mode} overlay backup path" >> "$LOG_FILE"
+        return 1
+    fi
+
     # If overlay exists, save it to mode backup
-    if [ -f "$overlay_path" ]; then
+    if [ -s "$overlay_path" ]; then
         echo "[$(date +"%H:%M:%S")]: Backing up overlay file to ${mode} mode backup..." >> "$LOG_FILE"
-        cp -a "$overlay_path" "$backup_overlay_path" 2>/dev/null || {
-            echo "[$(date +"%H:%M:%S")]: ERROR: Failed to backup overlay file" >> "$LOG_FILE"
-            return 1
-        }
+        if [ "$mode" = "crt" ]; then
+            local staged="${backup_overlay_path}.partial"
+            rm -f "$staged"
+            cp -a "$overlay_path" "$staged" 2>/dev/null || {
+                rm -f "$staged"
+                echo "[$(date +"%H:%M:%S")]: ERROR: Failed to stage the CRT overlay backup" >> "$LOG_FILE"
+                return 1
+            }
+            if ! cmp -s "$overlay_path" "$staged"; then
+                rm -f "$staged"
+                echo "[$(date +"%H:%M:%S")]: ERROR: Staged CRT overlay does not match the active file" >> "$LOG_FILE"
+                return 1
+            fi
+            mv -f "$staged" "$backup_overlay_path" || {
+                rm -f "$staged"
+                echo "[$(date +"%H:%M:%S")]: ERROR: Failed to publish the CRT overlay backup" >> "$LOG_FILE"
+                return 1
+            }
+        else
+            cp -a "$overlay_path" "$backup_overlay_path" 2>/dev/null || {
+                echo "[$(date +"%H:%M:%S")]: ERROR: Failed to backup overlay file" >> "$LOG_FILE"
+                return 1
+            }
+        fi
         echo "[$(date +"%H:%M:%S")]: Successfully backed up overlay file (size: $(stat -c%s "$backup_overlay_path" 2>/dev/null || echo "unknown") bytes)" >> "$LOG_FILE"
+    elif [ "$mode" = "crt" ]; then
+        echo "[$(date +"%H:%M:%S")]: ERROR: Active CRT overlay is missing or empty. The previous backup was left in place" >> "$LOG_FILE"
+        return 1
     else
         echo "[$(date +"%H:%M:%S")]: No overlay file exists (system is vanilla)" >> "$LOG_FILE"
         # Remove backup overlay if it exists (cleanup)
@@ -101,7 +129,12 @@ restore_overlay_file() {
     local backup_dir="${MODE_BACKUP_DIR}/${mode}_mode"
     local overlay_path="/boot/boot/overlay"
     local backup_overlay_path="${backup_dir}/overlay/overlay.${mode}"
-    
+
+    if [ "$mode" = "crt" ] && { [ -L "$backup_overlay_path" ] || [ ! -s "$backup_overlay_path" ]; }; then
+        echo "[$(date +"%H:%M:%S")]: ERROR: Saved CRT overlay is missing or empty. Restore stopped before touching /boot" >> "$LOG_FILE"
+        return 1
+    fi
+
     # Mount boot partition as read-write
     mount -o remount,rw /boot 2>/dev/null || {
         echo "[$(date +"%H:%M:%S")]: ERROR: Failed to remount /boot as read-write" >> "$LOG_FILE"
@@ -137,7 +170,9 @@ restore_overlay_file() {
             }
             echo "[$(date +"%H:%M:%S")]: Successfully restored CRT overlay (size: $(stat -c%s "$overlay_path" 2>/dev/null || echo "unknown") bytes)" >> "$LOG_FILE"
         else
-            echo "[$(date +"%H:%M:%S")]: WARNING: No CRT overlay backup found - CRT Script may not be fully installed" >> "$LOG_FILE"
+            echo "[$(date +"%H:%M:%S")]: ERROR: No CRT overlay backup found - CRT Script may not be fully installed" >> "$LOG_FILE"
+            mount -o remount,ro /boot 2>/dev/null || true
+            return 1
         fi
     fi
     
@@ -572,7 +607,7 @@ backup_mode_files() {
     if is_dualboot_system; then
         echo "[$(date +"%H:%M:%S")]: Dual-boot: skipping overlay backup (each kernel has its own overlay)" >> "$LOG_FILE"
     else
-        backup_overlay_file "$mode"
+        backup_overlay_file "$mode" || return 1
     fi
     
     #############################################################################
@@ -699,7 +734,15 @@ restore_mode_files() {
         source_mode="hd"
     fi
     local source_backup_dir="${MODE_BACKUP_DIR}/${source_mode}_mode"
-    
+
+    if [ "$mode" = "crt" ] && ! is_dualboot_system; then
+        local crt_saved="${MODE_BACKUP_DIR}/crt_mode/overlay/overlay.crt"
+        if [ -L "$crt_saved" ] || [ ! -s "$crt_saved" ]; then
+            echo "[$(date +"%H:%M:%S")]: ERROR: Saved CRT overlay is missing or empty. Restore stopped before touching /boot" >> "$LOG_FILE"
+            return 1
+        fi
+    fi
+
     # Remount /boot as read-write if needed
     if ! mount -o remount,rw /boot 2>/dev/null; then
         echo "[$(date +"%H:%M:%S")]: ERROR: Failed to remount /boot as read-write" >> "$LOG_FILE"
@@ -730,7 +773,7 @@ restore_mode_files() {
             echo "[$(date +"%H:%M:%S")]: Dual-boot CRT: overlay at /boot/crt/overlay managed by boot environment" >> "$LOG_FILE"
         fi
     else
-        restore_overlay_file "$mode"
+        restore_overlay_file "$mode" || return 1
     fi
     
     #############################################################################

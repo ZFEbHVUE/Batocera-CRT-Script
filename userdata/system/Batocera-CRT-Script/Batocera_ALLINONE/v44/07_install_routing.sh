@@ -1,0 +1,70 @@
+# Batocera-CRT-Script v44 - step 07: install routing
+# Entry routing: Phase 2 flag, or an X11 rerun when the Wayland dual-boot is already
+# installed. Wayland with no CRT kernel -> Phase 1 then power-off.
+# Plain X11 -> standard install. Then the first-run backup or the "backup found" menu.
+PHASE_FLAG="${CRTD}/.install_phase"; CRT_SCRIPT_DIR="${CRTD}"; IS_PHASE2=false; IS_DUALBOOT_INSTALL=false
+detect_display_stack() {
+  if [ -n "$(ls /run/user/*/wayland-* 2>/dev/null)" ] || pgrep -x labwc > /dev/null 2>&1; then
+    DISPLAY_STACK="wayland"
+  else DISPLAY_STACK="x11"; fi
+}
+# The boot partition is mounted at /boot. Syslinux's /boot/linux is /boot/boot/linux here.
+# Phase 1 leaves the X11 CRT kernel at /boot/crt/linux.
+crt_dualboot_installed() {
+  [ -f /boot/crt/linux ] && [ -f /boot/boot/linux ]
+}
+begin_phase2() {
+  IS_PHASE2=true; IS_DUALBOOT_INSTALL=true
+  if declare -F log_event >/dev/null 2>&1; then
+    log_event INFO 07_install_routing selected_route route phase2 || :
+  fi
+  # Never rewrite the Batocera native saver, including before Confirm.
+  # Phase 2's own dedicated CRT overlay saver is invoked after verification.
+  if declare -F log_event >/dev/null 2>&1; then
+    log_event INFO 07_install_routing native_saver_preserved outcome ok || :
+  fi
+  hbox "Resuming CRT Script — Phase 2 of 2"; box_empty; box_center "X11 detected. Dual-boot is already configured."
+  box_center "Continuing with CRT display setup..."; box_empty; box_hash; echo ""; sleep 2
+}
+_dualboot_installer_poweroff() {
+  # Final dedicated CRT save already succeeded in step 24. Do not save the HD
+  # overlay again using the stock saver at poweroff.
+  sync 2>/dev/null || true; sync 2>/dev/null || true
+  echo o > /proc/sysrq-trigger
+}
+if [ -f "$PHASE_FLAG" ] && [ "$(cat "$PHASE_FLAG" 2>/dev/null)" = "2" ]; then
+  begin_phase2
+else
+  detect_display_stack
+  if [ "$DISPLAY_STACK" = "wayland" ]; then
+    if [ -f "$CHECK_FILE" ]; then
+      box_hash; box_center "${BOLD}A previous installation was detected (Wayland)${NOCOLOR}"; box_empty
+      box_center "Run the dual-boot installer again (Press 1)"; box_center "Restore to stock Batocera (Press 2)"
+      box_empty; box_center "Your games and save files will ${GREEN}NOT${NOCOLOR} be deleted."; box_hash
+      # Sourced at script scope: `local` is invalid outside a function.
+      wl_choice=""
+      while :; do
+        box_empty; box_center "Your choice [1/2]:"; box_empty
+        if [ -e /dev/tty ]; then
+          IFS= read -r wl_choice </dev/tty || wl_choice=""
+        else IFS= read -r wl_choice || wl_choice=""; fi
+        wl_choice="${wl_choice:-1}"
+        case "$wl_choice" in
+          1) break ;;
+          2) if declare -F log_event >/dev/null 2>&1; then
+               log_event INFO 07_install_routing restore_requested operation restore_all || :
+             fi
+             restore_all; exit 0 ;;
+          *) box_center "Please enter 1 or 2." ;;
+        esac
+      done
+    fi
+    box_hash; box_center "Wayland display stack detected."; box_center "X11 is required for CRT mode."; box_hash
+    box_empty; box_center "A second X11 Batocera boot entry will be set up"
+    box_center "alongside your existing Wayland install."; box_center "Your ROMs, saves, and BIOS files will be shared."
+    box_empty; box_hash; echo ""; sleep 2; run_phase1; exit 0
+  elif crt_dualboot_installed; then
+    begin_phase2
+  fi
+fi
+backup_restore_main || exit 1
