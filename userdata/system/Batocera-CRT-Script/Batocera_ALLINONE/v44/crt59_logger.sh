@@ -45,6 +45,11 @@ crt59_event() {
     key=$1; value=$2; shift 2
     case "$key" in
       phase|rc|outcome|operation|reason|choice|component|stage|count|route|checked|matched|missing|mismatch|mhz|pixels|hz) ;;
+      range)
+        [[ "$value" =~ ^[0-9.,-]{1,160}$ ]] || { crt59_reject_event invalid_value; return 2; }
+        line+=" $key=$value"
+        continue
+        ;;
       *) crt59_reject_event invalid_field; return 2 ;;
     esac
     [[ "$value" =~ ^[a-zA-Z0-9_.-]{1,64}$ ]] || { crt59_reject_event invalid_value; return 2; }
@@ -84,6 +89,52 @@ crt59_log_confirmed_settings() {
   else
     crt59_event INFO installer confirmed_usb_polling operation default || :
   fi
+  local profile_name range_name range_value range_count es_file es_key es_line es_value
+  if [[ "${CRT_KEEP_GEOMETRY:-0}" == 1 ]]; then
+    crt59_event INFO installer confirmed_geometry operation keep || :
+    crt59_event INFO installer confirmed_monitor_profile component custom || :
+    range_count=0
+    while read -r range_name range_value; do
+      [[ -n "$range_name" ]] || continue
+      if [[ "$range_name" =~ ^crt_range[0-9]+$ && "$range_value" =~ ^[0-9.,-]{1,160}$ ]]; then
+        crt59_event INFO installer confirmed_crt_range component "$range_name" range "$range_value" || :
+        range_count=$((range_count + 1))
+      fi
+    done <<< "${CRT_GEOMETRY_RANGES:-}"
+    if (( range_count == 0 )); then
+      crt59_event INFO installer confirmed_crt_range operation unspecified || :
+    fi
+  else
+    crt59_event INFO installer confirmed_geometry operation new_profile || :
+    profile_name=${monitor_firmware:-}
+    if [[ "$profile_name" =~ ^[a-zA-Z0-9_.-]{1,64}$ ]]; then
+      crt59_event INFO installer confirmed_monitor_profile component "$profile_name" || :
+    else
+      crt59_event INFO installer confirmed_monitor_profile operation unspecified || :
+    fi
+  fi
+  if [[ "${CRT_KEEP_ES_POSITION:-0}" == 1 && -s "${CRT_PRIOR_ES_ARGS:-}" ]]; then
+    crt59_event INFO installer confirmed_es_position operation keep || :
+    es_file=$CRT_PRIOR_ES_ARGS
+  else
+    crt59_event INFO installer confirmed_es_position operation reset || :
+    es_file=""
+  fi
+  for es_key in screenoffset_x screenoffset_y screensizeoffset_x screensizeoffset_y; do
+    es_value=""
+    if [[ -n "$es_file" ]]; then
+      es_line=$(grep -E "^${es_key}[[:space:]]" "$es_file" 2>/dev/null | head -1)
+      es_value=${es_line#"$es_key"}
+      es_value=${es_value#"${es_value%%[![:space:]]*}"}
+    else
+      es_value=0
+    fi
+    if [[ "$es_value" =~ ^-?[0-9]{1,4}$ ]]; then
+      crt59_event INFO installer "confirmed_${es_key}" pixels "$es_value" || :
+    else
+      crt59_event INFO installer "confirmed_${es_key}" operation unspecified || :
+    fi
+  done
 }
 
 crt59_module_begin() {
