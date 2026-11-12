@@ -1,7 +1,7 @@
 # Batocera-CRT-Script v44 - step 10: welcome
 # Start of the install log, dedication and welcome screens.
 RED='\033[0;31m'; GREEN='\033[0;32m'; BLUE='\033[1;34m'; NOCOLOR='\033[0m'; BOOT_RESOLUTION=1; BOOT_RESOLUTION_ES=1
-echo; echo "[$(date +"%H:%M:%S")]: BUILD_15KHz_Batocera START" >> "$CRT_LOG"; printf "%s\n" "$border"; empty_line
+echo; printf "%s\n" "$border"; empty_line
 center "- DEDICATION -"; empty_line; center "IN MEMORY OF SERGI CLARA (PSAKHIS)"; empty_line; center "REST IN PEACE"
 empty_line; printf "%s\n\n" "$border"
 center_plain "This release is dedicated to Sergi Clara (\"psakhis\") of GroovyArcade."

@@ -2,15 +2,15 @@
 # Batocera-CRT-Script v44 installer - entry point.
 # The install steps are in ./v44/. Each one is sourced into this shell, in this order,
 # so the variables and functions set by a step are seen by the next ones.
-CRT_LOG=/userdata/system/logs/BUILD_15KHz_Batocera.log CRTD=/userdata/system/Batocera-CRT-Script TCD=/userdata/system/logs/TYPE_OF_CARD_DRIVERS.info
+CRT_LOG=/dev/null LOG_FILE=/dev/null CRTD=/userdata/system/Batocera-CRT-Script TCD=/userdata/system/logs/TYPE_OF_CARD_DRIVERS.info
 V44_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)/v44"
 [ -f "$V44_DIR/01_tui_helpers.sh" ] || V44_DIR="$CRTD/Batocera_ALLINONE/v44"
 if [ ! -f "$V44_DIR/01_tui_helpers.sh" ]; then echo "Batocera-CRT-Script: install steps not found in $V44_DIR" >&2; exit 1; fi
-# Phase 59: optional structured diagnostic log, separate from legacy CRT_LOG.
-if [ -f "$V44_DIR/crt59_logger.sh" ]; then
+# Phase 59: one structured diagnostic log. The old console transcript is discarded.
+if [ -f "$V44_DIR/crt59_logger.sh" ] && [ ! -L "$V44_DIR/crt59_logger.sh" ]; then
   source "$V44_DIR/crt59_logger.sh"
   crt59_init "${CRT59_LOG_DIR:-/userdata/system/logs}" || \
-    printf '%s\n' 'CRT diagnostic log unavailable; using legacy log' >&2
+    printf '%s\n' 'CRT diagnostic log unavailable; terminal output remains active' >&2
 fi
 if declare -F crt59_module_begin >/dev/null 2>&1; then crt59_module_begin 01_tui_helpers; fi
 source "$V44_DIR/01_tui_helpers.sh"
@@ -97,7 +97,7 @@ if declare -F crt59_module_end >/dev/null 2>&1; then crt59_module_end 19_encoder
     crt59_event INFO 23_install_review choice_recorded choice "${REVIEW_CHOICE:-unknown}" || :
   fi
   case "$REVIEW_CHOICE" in
-    1) break ;;
+    1) if declare -F crt59_log_confirmed_settings >/dev/null 2>&1; then crt59_log_confirmed_settings; fi; break ;;
     2) discard_unconfirmed_install_files; continue ;;
     *) discard_unconfirmed_install_files
        box_center "Install cancelled. The boot partition was not changed."; exit 0 ;;

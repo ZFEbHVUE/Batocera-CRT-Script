@@ -9,7 +9,7 @@ say_press_key() { box_center "Press ${BLUE}$1${NOCOLOR} to continue…"; }
 ok_box() { box_hash; box_center "${GREEN}✔ $*${NOCOLOR}"; box_hash; }
 warn_box() { box_hash; box_center "${YELLOW}⚠ $*${NOCOLOR}"; box_hash; }
 err_box() { box_hash; box_center "${RED}✖ $*${NOCOLOR}"; box_hash; }
-LOG_FILE="${LOG_FILE:-/userdata/system/logs/BUILD_15KHz_Batocera.log}"
+LOG_FILE="${LOG_FILE:-/dev/null}"
 type _log_tee >/dev/null 2>&1 || _log_tee() { tee -a "$LOG_FILE"; }
 if [ -t 1 ]; then
   cols=$(tput cols 2>/dev/null || printf "%s" 80)

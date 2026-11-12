@@ -1,9 +1,17 @@
 # Batocera-CRT-Script v44 - step 09: output detection
 # Output detection: xrandr name -> DRM connector (CONNECTOR_ID), X authority, the output menu and
 # /etc/X11/xorg.conf.d/10-monitor.conf (written by persist_10_monitor_conf after confirm; an old file -> backup + reboot).
+crt72_map_event() {
+  local method="${1:-unknown}" connector="${2:-unknown}"
+  case "$method" in connector_id|exact_alias|family_match|heuristic) ;; *) method=unknown ;; esac
+  [[ "$connector" =~ ^(DP|HDMI-A|HDMI|DVI-I|DVI-D|DVI-A|VGA|eDP|LVDS)-[0-9]+(-[0-9]+)*$ ]] || connector=unknown
+  if declare -F crt59_event >/dev/null 2>&1; then
+    crt59_event INFO 09_output_detection connector_mapping operation "$method" component "$connector" || :
+  fi
+}
 map_xrandr_to_drm() {
   local xr="$1"; local pref_card="${2:-${AMD_CARD_INDEX:-}}"; [ -z "$xr" ] && return 1
-  local _LOG="${LOG_FILE:-/userdata/system/logs/BUILD_15KHz_Batocera.log}"
+  local _LOG="${LOG_FILE:-/dev/null}"
   local MAP_LOG_VERBOSE="${MAP_LOG_VERBOSE:-0}"
   _log() { echo "map_xrandr_to_drm: $*" >> "$_LOG"; }
   _log "------------------------------------------------------------"
@@ -31,7 +39,7 @@ map_xrandr_to_drm() {
         local base card_idx drm_out; base="$(basename -- "$match")"
         if [[ "$base" =~ ^card([0-9]+)-(.+)$ ]]; then
           card_idx="${BASH_REMATCH[1]}"; drm_out="${BASH_REMATCH[2]}"
-          _log "CID match: XR='${xr}' CID=${cid} -> ${base} (card=${card_idx})"; printf '%s\n' "$drm_out"; return 0
+          _log "CID match: XR='${xr}' CID=${cid} -> ${base} (card=${card_idx})"; crt72_map_event connector_id "$drm_out"; printf '%s\n' "$drm_out"; return 0
         fi
       else _log "CID not found in sysfs for XR='${xr}' CID=${cid}; falling back to heuristic."; fi
     else _log "No CONNECTOR_ID for XR='${xr}'; falling back to heuristic."; fi
@@ -75,7 +83,7 @@ map_xrandr_to_drm() {
       best_exact="$drm_name"; best_exact_card="$card_idx"
       _log "EXACT alias: XR='${xr}' -> '${drm_name}' (card${card_idx})"
       if [ -n "$pref_card" ]; then
-        printf '%s\n' "$best_exact"; return 0
+        crt72_map_event exact_alias "$best_exact"; printf '%s\n' "$best_exact"; return 0
       fi
       continue
     fi
@@ -104,11 +112,11 @@ map_xrandr_to_drm() {
   done
   shopt -u nullglob
   if [ -n "$best_exact" ]; then
-    _log "RESOLVE exact (card${best_exact_card}): '${best_exact}'"; printf '%s\n' "$best_exact"; return 0
+    _log "RESOLVE exact (card${best_exact_card}): '${best_exact}'"; crt72_map_event exact_alias "$best_exact"; printf '%s\n' "$best_exact"; return 0
   fi
   if [ -n "$best_family" ]; then
     _log "RESOLVE family (card${best_family_card} rank=${best_family_rank}): '${best_family}'"
-    printf '%s\n' "$best_family"; return 0
+    crt72_map_event family_match "$best_family"; printf '%s\n' "$best_family"; return 0
   fi
   local guess=""
   case "$xr_type_full" in
@@ -121,7 +129,7 @@ map_xrandr_to_drm() {
     USB-C|USBC|Type-C|USB) guess="DP-${xr_index_chain}" ;;
     *) guess="${xr_type_full}-${xr_index_chain}" ;;
   esac
-  _log "RESOLVE guess: '${guess}'"; printf '%s\n' "$guess"; return 0
+  _log "RESOLVE guess: '${guess}'"; crt72_map_event heuristic "$guess"; printf '%s\n' "$guess"; return 0
 }
 log_drm_map_snapshot() {
   echo "---- DRM connector snapshot (pref card: ${AMD_CARD_INDEX:-*}) ----" >> "$LOG_FILE"
@@ -148,7 +156,7 @@ ensure_x_authority() {
   fi
   if [ -n "$xauth" ] && [ -f "$xauth" ]; then
     export XAUTHORITY="$xauth"
-    echo "ensure_x_authority: using XAUTHORITY=$xauth" >> "${LOG_FILE:-/tmp/crt_script.log}" 2>/dev/null
+    echo "ensure_x_authority: using XAUTHORITY=$xauth" >> "${LOG_FILE:-/dev/null}" 2>/dev/null
   fi
   if ! xrandr --query >/dev/null 2>&1; then xhost +local: >/dev/null 2>&1 || true; fi
   xrandr --query >/dev/null 2>&1
