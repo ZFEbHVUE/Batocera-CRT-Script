@@ -82,11 +82,20 @@ apply_encoder_selection() {
   local RUNTIME_DIR="/userdata/system/configs/xarcade2jstick"
   local LEGACY_DIR="/usr/share/batocera/datainit/system/configs/xarcade2jstick"
   local name
-  mkdir -p "$RUNTIME_DIR"
+  # Selected runtime encoder markers are required; a failed touch must not
+  # be masked by the next iteration or the optional legacy installation path.
+  write_run 19_encoders_guncon encoder_runtime_dir mkdir -p "$RUNTIME_DIR"
   for name in "${CRT_ENCODER_NAMES[@]}"; do
-    touch "$RUNTIME_DIR/$name" 2>/dev/null || echo "Warning: could not create $RUNTIME_DIR/$name"
+    # Input names come from /dev/input/by-id; do not allow path traversal.
+    case "$name" in ''|.|..|*/*) write_abort 19_encoders_guncon encoder_marker_name_unsafe 1 ;; esac
+    [[ ! -L "$RUNTIME_DIR/$name" && ! -d "$RUNTIME_DIR/$name" ]] || write_abort 19_encoders_guncon encoder_marker_unsafe 1
+    write_run 19_encoders_guncon encoder_runtime_marker touch "$RUNTIME_DIR/$name"
+    [[ -f "$RUNTIME_DIR/$name" && ! -L "$RUNTIME_DIR/$name" ]] || write_abort 19_encoders_guncon encoder_marker_readback 1
     if [ -d "$LEGACY_DIR" ] && touch "$LEGACY_DIR/.writable_test" 2>/dev/null; then
-      rm -f "$LEGACY_DIR/.writable_test"; mkdir -p "$LEGACY_DIR"; touch "$LEGACY_DIR/$name" 2>/dev/null || true
+      # The legacy data-init mirror is best effort and is not the runtime path.
+      if ! rm -f "$LEGACY_DIR/.writable_test" || ! mkdir -p "$LEGACY_DIR" || ! touch "$LEGACY_DIR/$name" 2>/dev/null; then
+        diag_event 19_encoders_guncon encoder_legacy_marker optional_mirror failed || :
+      fi
     fi
   done
 }

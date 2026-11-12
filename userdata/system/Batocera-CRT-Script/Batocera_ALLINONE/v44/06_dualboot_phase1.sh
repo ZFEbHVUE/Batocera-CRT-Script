@@ -61,7 +61,8 @@ download_x11_image() {
   while true; do
     rm -f "$part_file"
     if wget --progress=bar:force -O "$part_file" "$IMAGE_URL" 2>&1; then
-      mv "$part_file" "$IMAGE_PATH"; ok_box "Download complete: ${filename}"; local md5_url="${X11_MD5_URL}"
+      write_run 06_dualboot_phase1 image_download_commit mv "$part_file" "$IMAGE_PATH"
+      ok_box "Download complete: ${filename}"; local md5_url="${X11_MD5_URL}"
       local md5_dest="${IMAGE_PATH}.md5"
       if wget -q -O "$md5_dest" "$md5_url" 2>/dev/null; then
         ok_box "MD5 checksum downloaded: ${filename}.md5"
@@ -138,7 +139,7 @@ prompt_image_source() {
             IMAGE_PATH="$IMAGE_CANDIDATES"
             return 0 ;;
           2) ;;
-          *) exit 0 ;;
+          *) session_note_cancel phase1_image_selection; exit 0 ;;
         esac
       else
         hbox "Multiple X11 Images Found"; box_empty; local i=1
@@ -161,7 +162,7 @@ prompt_image_source() {
           return 0
         elif [ "$multi_choice" -eq $((count + 1)) ]; then
           :
-        else exit 0; fi
+        else session_note_cancel phase1_image_selection; exit 0; fi
       fi
     else
       hbox "X11 Image Not Found"; box_empty; box_center "No Batocera x86_64 image found on /userdata or USB drives."
@@ -181,7 +182,7 @@ prompt_image_source() {
       case "$nf_choice" in
         1) continue ;;
         2) ;;
-        *) exit 0 ;;
+        *) session_note_cancel phase1_image_selection; exit 0 ;;
       esac
     fi
     IMAGE_URL="$X11_IMAGE_URL"; hbox "Download X11 Batocera Image"; box_empty; box_center "Image: ${IMAGE_URL}"
@@ -192,7 +193,7 @@ prompt_image_source() {
         check_disk_space
         download_x11_image
         return 0 ;;
-      *) exit 0 ;;
+      *) session_note_cancel phase1_image_selection; exit 0 ;;
     esac
   done
 }
@@ -225,7 +226,10 @@ extract_x11_to_boot_crt() {
       err_box "Missing expected file: ${req_file}"; exit 1
     fi
   done
-  remount_boot_rw; mkdir -p /boot/crt; box_center "Copying batocera (X11 squashfs ~3.2GB)..."
+  # Do not use the legacy remount_boot_rw helper here: it masks mount failures.
+  write_run 06_dualboot_phase1 phase1_boot_remount mount -o remount,rw /boot
+  write_run 06_dualboot_phase1 phase1_crt_dir_create mkdir -p /boot/crt
+  box_center "Copying batocera (X11 squashfs ~3.2GB)..."
   cp "$mnt/boot/batocera" /boot/crt/batocera || { umount "$mnt"; err_box "Copy failed: batocera"; exit 1; }
   box_center "Copying rufomaculata (board squashfs ~1.1GB)..."
   cp "$mnt/boot/rufomaculata" /boot/crt/rufomaculata || { umount "$mnt"; err_box "Copy failed: rufomaculata"; exit 1; }
@@ -233,7 +237,8 @@ extract_x11_to_boot_crt() {
   cp "$mnt/boot/linux" /boot/crt/linux || { umount "$mnt"; err_box "Copy failed: linux"; exit 1; }
   box_center "Copying initrd.gz (staging for patch)..."
   cp "$mnt/boot/initrd.gz" /boot/crt/initrd-src.gz || { umount "$mnt"; err_box "Copy failed: initrd.gz"; exit 1; }
-  umount "$mnt"; rmdir "$mnt" 2>/dev/null; [ -n "$decompressed" ] && rm -f "$decompressed"; local magic
+  write_run 06_dualboot_phase1 image_source_unmount umount "$mnt"
+  rmdir "$mnt" 2>/dev/null; [ -n "$decompressed" ] && rm -f "$decompressed"; local magic
   magic=$(xxd -l 4 /boot/crt/batocera 2>/dev/null | awk '{print $2$3}' | cut -c1-8)
   if [ "$magic" != "68737173" ]; then
     err_box "Extracted batocera file is not a valid squashfs"; rm -rf /boot/crt; exit 1
@@ -247,16 +252,21 @@ patch_initrd() {
   fi
   hbox "Patching initrd for CRT boot path"; box_empty; local workdir="/tmp/initrd-crt-work"; rm -rf "$workdir"
   mkdir -p "$workdir/extracted"; cd "$workdir/extracted" || exit 1
-  gunzip < /boot/crt/initrd-src.gz | bsdtar -xf - 2>/dev/null
+  if ! (set -o pipefail; gunzip < /boot/crt/initrd-src.gz | bsdtar -xf - 2>/dev/null); then
+    write_abort 06_dualboot_phase1 initrd_extract 1
+  fi
   if [ ! -f init ]; then
     err_box "initrd does not contain an init script"; cd /; rm -rf "$workdir"; exit 1
   fi
   local before_count
   before_count=$(grep -c '/boot_root/boot/' init 2>/dev/null || echo 0)
-  sed -i 's|/boot_root/boot/|/boot_root/crt/|g' init; local after_count
+  write_run 06_dualboot_phase1 initrd_patch_paths sed -i 's|/boot_root/boot/|/boot_root/crt/|g' init
+  local after_count
   after_count=$(grep -c '/boot_root/boot/' init 2>/dev/null || echo 0)
   box_center "Patched ${before_count} path references (${after_count} remaining)"
-  bsdtar --format=newc -cf /tmp/initrd-crt.cpio . 2>/dev/null; gzip -9 < /tmp/initrd-crt.cpio > /boot/crt/initrd-crt.gz
+  write_run 06_dualboot_phase1 initrd_archive_pack bsdtar --format=newc -cf /tmp/initrd-crt.cpio .
+  gzip -9 < /tmp/initrd-crt.cpio > /boot/crt/initrd-crt.gz || write_abort 06_dualboot_phase1 initrd_archive_gzip "$?"
+  write_run 06_dualboot_phase1 initrd_archive_integrity gzip -t /boot/crt/initrd-crt.gz
   rm -f /tmp/initrd-crt.cpio
   if [ ! -s /boot/crt/initrd-crt.gz ]; then
     err_box "Failed to create initrd-crt.gz"; cd /; rm -rf "$workdir"; exit 1
@@ -264,8 +274,10 @@ patch_initrd() {
   cd /; rm -rf "$workdir"; rm -f /boot/crt/initrd-src.gz; ok_box "initrd-crt.gz created at /boot/crt/initrd-crt.gz"
 }
 deploy_crt_overlay_script() {
-  local target="${CRT_SCRIPT_DIR}/batocera-save-crt-overlay"; mkdir -p "$CRT_SCRIPT_DIR"
-  cat > "$target" <<'OVERLAY_SCRIPT'
+  local target="${CRT_SCRIPT_DIR}/batocera-save-crt-overlay"
+  write_run 06_dualboot_phase1 overlay_writer_directory mkdir -p "$CRT_SCRIPT_DIR"
+  if [ -L "$target" ]; then write_abort 06_dualboot_phase1 unsafe_overlay_writer_target 1; fi
+  cat > "$target" <<'OVERLAY_SCRIPT' || write_abort 06_dualboot_phase1 overlay_writer_write "$?"
 #!/bin/sh
 OVERLAYFILE="/boot/crt/overlay"
 OVERLAYMOUNT="/overlay/saved"
@@ -339,10 +351,38 @@ sync
 echo "Success."
 exit 0
 OVERLAY_SCRIPT
-  chmod 755 "$target"; ok_box "batocera-save-crt-overlay deployed to ${target}"
+  write_run 06_dualboot_phase1 overlay_writer_permissions chmod 755 "$target"
+  [ -f "$target" ] && [ -x "$target" ] && [ -s "$target" ] || write_abort 06_dualboot_phase1 overlay_writer_readback 1
+  ok_box "batocera-save-crt-overlay deployed to ${target}"
+}
+write_phase1_syslinux_valid() {
+  local path="$1"
+  awk '
+    /^DEFAULT crt$/ { defaults++ }
+    /^LABEL crt$/ { labels++; active=1; next }
+    /^LABEL / { active=0 }
+    active && /^[[:space:]]*LINUX \/crt\/linux$/ { kernel++ }
+    active && /^[[:space:]]*INITRD \/crt\/initrd-crt\.gz$/ { initrd++ }
+    active && /^[[:space:]]*APPEND / { append++ }
+    active && /^[[:space:]]*MENU DEFAULT$/ { menu++ }
+    END { exit !(defaults==1 && labels==1 && kernel==1 && initrd==1 && append==1 && menu==1) }
+  ' "$path"
+}
+write_phase1_boot_files_valid() {
+  local file magic
+  for file in batocera rufomaculata linux initrd-crt.gz; do
+    [ -f "/boot/crt/$file" ] && [ ! -L "/boot/crt/$file" ] && [ -s "/boot/crt/$file" ] || return 1
+  done
+  for file in batocera rufomaculata; do
+    magic=$(od -An -tx1 -N4 "/boot/crt/$file" 2>/dev/null | tr -d ' \n')
+    [ "$magic" = 68737173 ] || return 1
+  done
+  gzip -t /boot/crt/initrd-crt.gz >/dev/null 2>&1
 }
 update_boot_config() {
-  hbox "Updating boot configuration"; box_empty; remount_boot_rw; local syslinux_files=""; local f
+  hbox "Updating boot configuration"; box_empty
+  write_run 06_dualboot_phase1 boot_entry_remount mount -o remount,rw /boot
+  local syslinux_files=""; local f
   for f in /boot/EFI/batocera/syslinux.cfg \
            /boot/boot/syslinux.cfg \
            /boot/boot/syslinux/syslinux.cfg; do [ -f "$f" ] && syslinux_files="$syslinux_files $f"; done
@@ -355,9 +395,9 @@ update_boot_config() {
     if grep -q '^LABEL crt' "$f" 2>/dev/null; then
       box_center "CRT entry already in ${parent_dir}/syslinux.cfg — skipping"
     else
-      sed -i 's/Batocera\.linux (\^normal)/Batocera HD - Wayland (^normal)/' "$f"
-      sed -i 's/Batocera\.linux (\^verbose)/Batocera HD - Wayland (^verbose)/' "$f"
-      cat >> "$f" <<'CRTSYSLINUX'
+      sed -i 's/Batocera\.linux (\^normal)/Batocera HD - Wayland (^normal)/' "$f" || write_abort 06_dualboot_phase1 boot_entry_edit "$?"
+      sed -i 's/Batocera\.linux (\^verbose)/Batocera HD - Wayland (^verbose)/' "$f" || write_abort 06_dualboot_phase1 boot_entry_edit "$?"
+      cat >> "$f" <<'CRTSYSLINUX' || write_abort 06_dualboot_phase1 boot_entry_append "$?"
 
 LABEL crt
 	MENU LABEL Batocera CRT (X11)
@@ -367,19 +407,23 @@ LABEL crt
 CRTSYSLINUX
       box_center "CRT entry added to ${parent_dir}/syslinux.cfg"
     fi
-    sed -i '/^[[:space:]]*MENU DEFAULT[[:space:]]*$/d' "$f"; sed -i '/^LABEL crt$/a\	MENU DEFAULT' "$f"
+    write_run 06_dualboot_phase1 boot_menu_reset sed -i '/^[[:space:]]*MENU DEFAULT[[:space:]]*$/d' "$f"
+    write_run 06_dualboot_phase1 boot_menu_default sed -i '/^LABEL crt$/a\	MENU DEFAULT' "$f"
     if grep -q '^DEFAULT ' "$f"; then
-      sed -i 's/^DEFAULT .*/DEFAULT crt/' "$f"
-    else sed -i '1i\DEFAULT crt' "$f"; fi
+      sed -i 's/^DEFAULT .*/DEFAULT crt/' "$f" || write_abort 06_dualboot_phase1 boot_entry_edit "$?"
+    else
+      write_run 06_dualboot_phase1 boot_default_insert sed -i '1i\DEFAULT crt' "$f"
+    fi
+    write_run 06_dualboot_phase1 boot_entry_readback write_phase1_syslinux_valid "$f"
     box_center "Default set to CRT in ${parent_dir}/syslinux.cfg"
   done
   if [ -d /sys/firmware/efi ]; then
     local grub_cfg="/boot/EFI/BOOT/grub.cfg"
     if [ -f "$grub_cfg" ]; then
       if ! grep -q 'Batocera CRT (X11)' "$grub_cfg" 2>/dev/null; then
-        sed -i 's/menuentry "Batocera\.linux (normal)"/menuentry "Batocera HD (Wayland)"/' "$grub_cfg"
-        sed -i 's/menuentry "Batocera\.linux (verbose)"/menuentry "Batocera HD (verbose)"/' "$grub_cfg"
-        sed -i 's/set timeout="1"/set timeout="3"/' "$grub_cfg"; local insert_line
+        sed -i 's/menuentry "Batocera\.linux (normal)"/menuentry "Batocera HD (Wayland)"/' "$grub_cfg" || write_abort 06_dualboot_phase1 boot_entry_edit "$?"
+        sed -i 's/menuentry "Batocera\.linux (verbose)"/menuentry "Batocera HD (verbose)"/' "$grub_cfg" || write_abort 06_dualboot_phase1 boot_entry_edit "$?"
+        sed -i 's/set timeout="1"/set timeout="3"/' "$grub_cfg" || write_abort 06_dualboot_phase1 boot_entry_edit "$?"; local insert_line
         insert_line=$(awk '/Batocera HD \(Wayland\)/{found=1} found && /^\}/{print NR; exit}' "$grub_cfg")
         if [ -n "$insert_line" ]; then
           sed -i "${insert_line}a\\
@@ -388,9 +432,9 @@ menuentry \"Batocera CRT (X11)\" {\\
     echo Booting Batocera.linux... CRT Mode (X11)\\
     linux /crt/linux label=BATOCERA console=tty3 quiet loglevel=0 vt.global_cursor_default=0\\
     initrd /crt/initrd-crt.gz\\
-}" "$grub_cfg"
+}" "$grub_cfg" || write_abort 06_dualboot_phase1 grub_entry_insert "$?"
         else
-          cat >> "$grub_cfg" <<'CRTENTRY'
+          cat >> "$grub_cfg" <<'CRTENTRY' || write_abort 06_dualboot_phase1 grub_entry_append "$?"
 
 menuentry "Batocera CRT (X11)" {
     echo Booting Batocera.linux... CRT Mode (X11)
@@ -400,10 +444,13 @@ menuentry "Batocera CRT (X11)" {
 CRTENTRY
         fi
       fi
-      sed -i 's/set default="0"/set default="1"/' "$grub_cfg"; box_center "grub.cfg fallback also updated"
+      write_run 06_dualboot_phase1 grub_default_edit sed -i 's/set default="0"/set default="1"/' "$grub_cfg"
+      grep -q 'Batocera CRT (X11)' "$grub_cfg" || write_abort 06_dualboot_phase1 grub_entry_readback 1
+      box_center "grub.cfg fallback also updated"
     fi
   fi
-  mount -o remount,ro /boot 2>/dev/null; box_empty; ok_box "Boot configuration updated (syslinux)"
+  write_run 06_dualboot_phase1 boot_entry_remount_ro mount -o remount,ro /boot
+  box_empty; ok_box "Boot configuration updated (syslinux)"
 }
 prompt_cleanup_source_image() {
   local md5_file="${IMAGE_PATH}.md5"; hbox "Cleanup"; box_empty; local fsize
@@ -421,23 +468,56 @@ prompt_cleanup_source_image() {
 run_phase1() {
   box_hash; box_center "Dual-Boot Install — Phase 1 of 2"
   box_center "Setting up X11 boot environment alongside Wayland"; box_hash; echo ""; sleep 1
-  if [ ! -s /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/video_settings/hd_mode_list.txt ]; then capture_hd_monitor_list; fi
-  prompt_image_source
-  if ! validate_md5; then
+  if [ ! -s /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/video_settings/hd_mode_list.txt ]; then
+    session_phase1_step hd_monitor_capture capture_hd_monitor_list || write_abort 06_dualboot_phase1 hd_monitor_capture "$?"
+  fi
+  session_phase1_step image_source_selection prompt_image_source || write_abort 06_dualboot_phase1 image_source_selection "$?"
+  if ! session_phase1_step image_checksum_check validate_md5; then
+    diag_event 06_dualboot_phase1 image_checksum image_checksum_check failed
     echo ""; echo "  (1) Continue without MD5 verification"; echo "  (2) Abort"; echo ""; read -r md5_choice
     case "$md5_choice" in
-      1) echo "  Proceeding without checksum verification..." ;;
-      *) exit 1 ;;
+      1) if declare -F log_event >/dev/null 2>&1; then
+           log_event WARN 06_dualboot_phase1 image_checksum_override outcome skipped reason user_override || :
+         fi
+         echo "  Proceeding without checksum verification..." ;;
+      *) if declare -F log_event >/dev/null 2>&1; then
+           log_event ERROR 06_dualboot_phase1 image_checksum_override outcome cancelled reason checksum_rejected || :
+         fi
+         exit 1 ;;
     esac
+  else
+    diag_event 06_dualboot_phase1 image_checksum image_checksum_check passed
   fi
-  check_disk_space; extract_x11_to_boot_crt; patch_initrd; update_boot_config; deploy_crt_overlay_script
-  prompt_cleanup_source_image; mkdir -p "$(dirname "$PHASE_FLAG")"; echo "2" > "$PHASE_FLAG"; echo ""
+  session_phase1_step disk_space_check check_disk_space || write_abort 06_dualboot_phase1 disk_space_check "$?"
+  session_phase1_step x11_image_extract extract_x11_to_boot_crt || write_abort 06_dualboot_phase1 x11_image_extract "$?"
+  session_phase1_step crt_initrd_patch patch_initrd || write_abort 06_dualboot_phase1 crt_initrd_patch "$?"
+  session_phase1_step boot_entry_update update_boot_config || write_abort 06_dualboot_phase1 boot_entry_update "$?"
+  session_phase1_step crt_overlay_writer_deploy deploy_crt_overlay_script || write_abort 06_dualboot_phase1 crt_overlay_writer_deploy "$?"
+  # These presence probes document observed state; they are not a Phase 1
+  # integrity gate and cannot independently validate the kernel/boot images.
+  session_phase1_probes
+  # A read-only check before marking Phase 1 pending. Not proof of bootability.
+  write_run 06_dualboot_phase1 phase1_boot_payload_readback write_phase1_boot_files_valid
+  session_phase1_step source_image_cleanup prompt_cleanup_source_image
+  session_set_step phase1_marker_write
+  write_run 06_dualboot_phase1 phase1_marker_directory mkdir -p "$(dirname "$PHASE_FLAG")"
+  printf '%s\n' 2 > "$PHASE_FLAG" || write_abort 06_dualboot_phase1 phase1_marker_write "$?"
+  echo ""
+  if [[ -f "$PHASE_FLAG" && "$(cat "$PHASE_FLAG" 2>/dev/null)" == 2 ]]; then
+    diag_event 06_dualboot_phase1 phase1_marker phase1_marker_write present
+  else
+    diag_event 06_dualboot_phase1 phase1_marker phase1_marker_write missing
+    err_box "Phase 1 marker was not saved. Installation cannot hand off to Phase 2."
+    exit 1
+  fi
   hbox "${GREEN}${BOLD}Phase 1 Complete!${NOCOLOR}"; box_empty; box_center "The X11 boot environment is installed."
   box_center "Boot is configured to load X11 on next restart."; box_empty; box_center "WHAT HAPPENS NEXT:"; box_empty
   box_center "1) System SHUTS DOWN."; box_center "2) Press the POWER BUTTON to boot into X11."
   box_center "3) Re-run this CRT Script from X11."; box_center "   It will detect Phase 2 automatically and continue"
   box_center "   with CRT display configuration."; box_empty; box_center "Your ROMs, saves, and BIOS files are shared."
   box_center "Nothing from your Wayland install is lost."; box_empty; box_hash; box_empty
+  # Phase 1 is a pending Phase 2 handoff, not a verified installation.
+  session_phase1_handoff
   box_center "${GREEN}${BOLD}Press ENTER to shut down...${NOCOLOR}"; box_empty; box_hash; echo ""; read -r
   _dualboot_installer_poweroff
 }

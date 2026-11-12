@@ -15,14 +15,21 @@ crt_dualboot_installed() {
 }
 begin_phase2() {
   IS_PHASE2=true; IS_DUALBOOT_INSTALL=true
-  if grep -q 'OVERLAYFILE="/boot/boot/overlay"' /usr/bin/batocera-save-overlay 2>/dev/null; then
-    sed -i 's|OVERLAYFILE="/boot/boot/overlay"|OVERLAYFILE="/boot/crt/overlay"|' /usr/bin/batocera-save-overlay
+  if declare -F log_event >/dev/null 2>&1; then
+    log_event INFO 07_install_routing selected_route route phase2 || :
+  fi
+  # Never rewrite the Batocera native saver, including before Confirm.
+  # Phase 2's own dedicated CRT overlay saver is invoked after verification.
+  if declare -F log_event >/dev/null 2>&1; then
+    log_event INFO 07_install_routing native_saver_preserved outcome ok || :
   fi
   hbox "Resuming CRT Script — Phase 2 of 2"; box_empty; box_center "X11 detected. Dual-boot is already configured."
   box_center "Continuing with CRT display setup..."; box_empty; box_hash; echo ""; sleep 2
 }
 _dualboot_installer_poweroff() {
-  batocera-save-overlay 2>/dev/null || true; sync 2>/dev/null || true; sync 2>/dev/null || true
+  # Final dedicated CRT save already succeeded in step 24. Do not save the HD
+  # overlay again using the stock saver at poweroff.
+  sync 2>/dev/null || true; sync 2>/dev/null || true
   echo o > /proc/sysrq-trigger
 }
 if [ -f "$PHASE_FLAG" ] && [ "$(cat "$PHASE_FLAG" 2>/dev/null)" = "2" ]; then
@@ -34,7 +41,8 @@ else
       box_hash; box_center "${BOLD}A previous installation was detected (Wayland)${NOCOLOR}"; box_empty
       box_center "Run the dual-boot installer again (Press 1)"; box_center "Restore to stock Batocera (Press 2)"
       box_empty; box_center "Your games and save files will ${GREEN}NOT${NOCOLOR} be deleted."; box_hash
-      local wl_choice=""
+      # Sourced at script scope: `local` is invalid outside a function.
+      wl_choice=""
       while :; do
         box_empty; box_center "Your choice [1/2]:"; box_empty
         if [ -e /dev/tty ]; then
@@ -43,7 +51,10 @@ else
         wl_choice="${wl_choice:-1}"
         case "$wl_choice" in
           1) break ;;
-          2) restore_all; exit 0 ;;
+          2) if declare -F log_event >/dev/null 2>&1; then
+               log_event INFO 07_install_routing restore_requested operation restore_all || :
+             fi
+             restore_all; exit 0 ;;
           *) box_center "Please enter 1 or 2." ;;
         esac
       done

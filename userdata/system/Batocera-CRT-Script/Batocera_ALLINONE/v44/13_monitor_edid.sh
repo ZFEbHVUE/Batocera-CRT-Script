@@ -2,7 +2,7 @@
 # Monitor profile and EDID resolution, switchres EDID (/lib/firmware/edid), modeline and
 # videomodes.conf -> monitor_firmware, H_RES_EDID x V_RES_EDID, RES_EDID, Resolution_es, MODELINE_CUSTOM.
 CRT_Freq="15KHz"
-if [ ! -f "/etc/switchres.ini.bak" ];then cp /etc/switchres.ini /etc/switchres.ini.bak; CRT_SWITCHRES_BAK_NEW=1; fi
+stage_begin /etc/switchres.ini || { echo "CRT EDID staging failed." >&2; exit 1; }
 echo
 declare -a type_of_monitor=( "generic_15" "ntsc" "pal" "arcade_15" "arcade_15ex" "arcade_25" "arcade_31" \
 				"arcade_15_25" "arcade_15_31" "arcade_15_25_31" "vesa_480" "vesa_600" "vesa_768" "vesa_1024" \
@@ -20,14 +20,12 @@ monitor_categories["PC monitor 120 Hz"]="pc_31_120 pc_70_120"; monitor_categorie
 monitor_categories["Wells Gardner"]="k7000 k7131 d9200 d9400 d9800"; monitor_categories["Makvision"]="m2929"
 monitor_categories["Wei-Ya"]="m3129"; monitor_categories["Nanao"]="ms2930 ms929"; monitor_categories["Rodotron"]="r666b"
 CRT_KEEP_GEOMETRY=0
-CRT_GEOMETRY_SNAPSHOT=""
+CRT_GEOMETRY_SNAPSHOT="$STAGE_ORIGINAL_SWITCHRES"
 CRT_GEOMETRY_RANGES=""
 monitor_firmware=""
 log_file="/userdata/system/logs/BootRes.log"
 _crt_monitor_now=$(awk '/^[[:space:]]*monitor[[:space:]]+/ { print $2; exit }' /etc/switchres.ini 2>/dev/null || true)
 if [ "$_crt_monitor_now" = "custom" ]; then
-  CRT_GEOMETRY_SNAPSHOT=$(mktemp) || CRT_GEOMETRY_SNAPSHOT=""
-  [ -n "$CRT_GEOMETRY_SNAPSHOT" ] && cp -a /etc/switchres.ini "$CRT_GEOMETRY_SNAPSHOT"
   CRT_GEOMETRY_RANGES=$(awk '/^[[:space:]]*crt_range[0-9]+[[:space:]]+/ && $2 != "auto" { print $1 "  " $2 }' /etc/switchres.ini)
   echo ""
   echo "A custom monitor profile is already saved."
@@ -166,9 +164,20 @@ while true; do
 done
 EDID_resolution=${monitor_info[EDID_resolution_choice]}
 echo -e "				Your choice is :  ${GREEN}$EDID_resolution${NOCOLOR}"
+CRT_BOOTRES_MONITOR_TYPE="$monitor_firmware"
+# Keep the original base monitor identity used by the Geometry tool when
+# preserving an already calibrated monitor custom profile.
+if [ "${CRT_KEEP_GEOMETRY:-0}" = 1 ] && [ -r "$log_file" ]; then
+  _crt_prior_monitor=$(sed -n 's/^Monitor Type: //p' "$log_file" | head -n 1)
+  case "$_crt_prior_monitor" in
+    ''|custom|*[!A-Za-z0-9_-]*) ;;
+    *) CRT_BOOTRES_MONITOR_TYPE="$_crt_prior_monitor" ;;
+  esac
+fi
 {
-    echo "Monitor Type: $monitor_firmware"; echo "Boot Resolution: $EDID_resolution"
-} > "$log_file"
+    echo "Monitor Type: $CRT_BOOTRES_MONITOR_TYPE"; echo "Boot Resolution: $EDID_resolution"
+} > "$STAGE_BOOTRES"
+
 IFS="x@ " read -r H_RES_EDID V_RES_EDID FREQ_EDID <<< "$EDID_resolution"
 if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]); then H_RES_EDID=$((H_RES_EDID+1)); fi
 RES_EDID="${H_RES_EDID}x${V_RES_EDID}"
@@ -187,17 +196,22 @@ if [[ ( "$_TC_NORM" == "NVIDIA" && ( "$_DRV_NORM" == "NVIDIA_DRIVERS" || "$_DRV_
     | tee -a "$CRT_LOG" >/dev/null
 fi
 FORCED_EDID="${H_RES_EDID}x${V_RES_EDID}@${FREQ_EDID}"; Name_monitor_EDID=$monitor_firmware
-sed -i "s/.*monitor         .*/        monitor                   $Name_monitor_EDID/" /etc/switchres.ini
+sed -i "s/.*monitor         .*/        monitor                   $Name_monitor_EDID/" "$STAGE_WORK_SWITCHRES"
 DOTCLOCK_MIN_SWITCHRES=0
-sed -i "s/.*dotclock_min        .*/    dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" /etc/switchres.ini
-sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" /etc/switchres.ini
-switchres $H_RES_EDID $V_RES_EDID $FREQ_EDID -f $FORCED_EDID -i switchres.ini -e > /dev/null 2>/dev/null
+sed -i "s/.*dotclock_min        .*/    dotclock_min              $DOTCLOCK_MIN_SWITCHRES/" "$STAGE_WORK_SWITCHRES"
+sed -i "s/.*interlace_force_even   .*/        interlace_force_even      $IFE/" "$STAGE_WORK_SWITCHRES"
+if ! ( cd "$STAGE_DIR" && { if declare -F diag_run >/dev/null 2>&1; then diag_run 13_monitor_edid edid_generation switchres "$H_RES_EDID" "$V_RES_EDID" "$FREQ_EDID" -f "$FORCED_EDID" -i "$STAGE_WORK_SWITCHRES" -e > /dev/null 2>/dev/null; else switchres "$H_RES_EDID" "$V_RES_EDID" "$FREQ_EDID" -f "$FORCED_EDID" -i "$STAGE_WORK_SWITCHRES" -e > /dev/null 2>/dev/null; fi; } ); then
+  echo "Switchres EDID generation failed; no existing configuration changed." >&2; exit 1
+fi
 echo "EDID build: switchres $H_RES_EDID $V_RES_EDID $FREQ_EDID -f $FORCED_EDID -i switchres.ini -e  (IFE=$IFE, engine=${DISPLAY_ENGINE}${DISPLAY_VERSION:+ ${DISPLAY_VERSION}})" \
   | tee -a "$CRT_LOG" >/dev/null
-Name_monitor_EDID+=".bin"; mkdir -p /lib/firmware/edid
-patch_edid=$(pwd)
-cp $patch_edid/$Name_monitor_EDID /lib/firmware/edid/; chmod 644 /lib/firmware/edid/$Name_monitor_EDID
-rm $patch_edid/$Name_monitor_EDID; _TC_NORM="${TYPE_OF_CARD^^}"; _DRV_NORM="${Drivers_Nvidia_CHOICE^^}"
+Name_monitor_EDID+=".bin"
+STAGE_EDID="$STAGE_DIR/$Name_monitor_EDID"
+if ! stage_valid_edid "$STAGE_EDID"; then
+  echo "Switchres produced an invalid EDID; no existing configuration changed." >&2; exit 1
+fi
+if declare -F diag_probe >/dev/null 2>&1; then diag_probe 13_monitor_edid staged_edid_valid "$STAGE_EDID"; fi
+_TC_NORM="${TYPE_OF_CARD^^}"; _DRV_NORM="${Drivers_Nvidia_CHOICE^^}"
 echo "DEBUG: EDID post-adjust check -> TYPE_OF_CARD='${TYPE_OF_CARD}' (norm='${_TC_NORM}'), Drivers_Nvidia_CHOICE='${Drivers_Nvidia_CHOICE}' (norm='${_DRV_NORM}'), H_RES_EDID(before)=${H_RES_EDID}" \
   | tee -a "$CRT_LOG" >/dev/null
 if (( _EDID_PRE_BUMP )); then
@@ -215,7 +229,7 @@ else
       | tee -a "$CRT_LOG" >/dev/null
   fi
 fi
-MODE=$(switchres $H_RES_EDID $V_RES_EDID $FREQ_EDID -f $FORCED_EDID -i switchres.ini -c ) > /dev/null 2>/dev/null
+MODE=$(switchres "$H_RES_EDID" "$V_RES_EDID" "$FREQ_EDID" -f "$FORCED_EDID" -i "$STAGE_WORK_SWITCHRES" -c)
 MODELINE_PARAMETERS=$(echo "$MODE" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')
 read -r Pixel_Clock H_res HF_Porch H_Sync HB_Porch V_res VF_Porch V_Sync VB_Porch Inter HSync VSync <<< "$MODELINE_PARAMETERS"
 if [[ "$MODELINE_PARAMETERS" == *"interlace"* ]]; then

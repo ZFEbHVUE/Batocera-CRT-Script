@@ -166,6 +166,12 @@ backup_once() {
       miss_count=$((miss_count+1))
     fi
   done
+  if declare -F log_event >/dev/null 2>&1; then
+    log_event INFO 04_backup_restore baseline_backup_inventory outcome recorded count "$ok_count" || :
+    if (( miss_count > 0 )); then
+      log_event WARN 04_backup_restore baseline_backup_missing outcome partial count "$miss_count" || :
+    fi
+  fi
   mkdir -p "$BASE_DIR"; date +"%Y-%m-%d %H:%M:%S" > "$CHECK_FILE"
   if [ ! -s /userdata/Batocera-CRT-Script-Backup/mode_backups/hd_mode/video_settings/hd_mode_list.txt ]; then capture_hd_monitor_list; fi
   box_hash; box_center "System restore backup created"; box_empty

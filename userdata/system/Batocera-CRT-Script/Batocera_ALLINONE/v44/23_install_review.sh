@@ -117,17 +117,8 @@ EOF
   read_review_choice "Change answers"
 }
 discard_unconfirmed_install_files() {
-  if [ -n "${CRT_GEOMETRY_SNAPSHOT:-}" ] && [ -s "$CRT_GEOMETRY_SNAPSHOT" ]; then
-    cp -a "$CRT_GEOMETRY_SNAPSHOT" /etc/switchres.ini
-  fi
-  if [ "${CRT_SWITCHRES_BAK_NEW:-0}" = 1 ] && [ -f /etc/switchres.ini.bak ]; then
-    cp -f /etc/switchres.ini.bak /etc/switchres.ini
-    rm -f /etc/switchres.ini.bak
-    CRT_SWITCHRES_BAK_NEW=0
-  fi
-  if [ -n "${Name_monitor_EDID:-}" ]; then
-    rm -f "/lib/firmware/edid/${Name_monitor_EDID}"
-  fi
+  # Only discard private generated data. Never delete or restore live user EDIDs.
+  stage_discard
 }
 install_selected_videomodes() {
   local src=""
@@ -143,7 +134,9 @@ install_selected_videomodes() {
     err_box "Missing videomodes file: ${src}"
     return 1
   fi
-  cp "$src" /userdata/system/videomodes.conf
-  chmod 644 /userdata/system/videomodes.conf
-  cp /userdata/system/videomodes.conf /userdata/system/videomodes.conf.bak
+  # All three writes are mandatory once the user has confirmed the plan.
+  # Do not let a later successful command hide a failed copy or chmod.
+  cp "$src" /userdata/system/videomodes.conf || return $?
+  chmod 644 /userdata/system/videomodes.conf || return $?
+  cp /userdata/system/videomodes.conf /userdata/system/videomodes.conf.bak || return $?
 }
