@@ -54,6 +54,22 @@ stage_valid_edid() {
   '
 }
 
+# Create a missing destination directory. Refuse a symlink anywhere in the path.
+stage_dir_ready() {
+  local directory="$1" parent
+  [ -n "$directory" ] && [ "$directory" != "/" ] || return 1
+  if [ -L "$directory" ]; then
+    return 1
+  fi
+  if [ -d "$directory" ]; then
+    return 0
+  fi
+  parent=$(dirname -- "$directory") || return 1
+  [ -d "$parent" ] && [ ! -L "$parent" ] || return 1
+  mkdir -- "$directory" || return 1
+  [ -d "$directory" ] && [ ! -L "$directory" ]
+}
+
 # Single-file, same-directory staging. Never follow symlink targets.
 stage_install() {
   local source="$1" target="$2" mode="$3" directory temp
@@ -77,7 +93,14 @@ stage_commit() {
   stage_valid_edid "$STAGE_EDID" && [ -s "$STAGE_BOOTRES" ] || return 1
   # Stop if another process or wizard action changed original calibration while reviewing.
   cmp -s -- "$STAGE_SOURCE_SWITCHRES" "$STAGE_ORIGINAL_SWITCHRES" || return 1
-  [ -d "$edid_dir" ] || return 1
+  if ! stage_dir_ready "$edid_dir"; then
+    printf '%s\n' 'CRT EDID directory is missing or cannot be created.' >&2
+    return 1
+  fi
+  if ! stage_dir_ready "$(dirname -- "$bootres_target")"; then
+    printf '%s\n' 'CRT boot resolution directory is missing or cannot be created.' >&2
+    return 1
+  fi
   edid_target="$edid_dir/$selected_name"
   [ ! -L "$edid_target" ] && [ ! -L "$bootres_target" ] || return 1
   if [ -e "$edid_target" ]; then
