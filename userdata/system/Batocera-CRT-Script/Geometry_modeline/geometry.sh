@@ -56,15 +56,91 @@ making_boot_writable() {
     mount -o remount,rw /boot
 }
 
+GEOMETRY_SYSLINUX_CFGS=(
+    /boot/boot/syslinux.cfg
+    /boot/boot/syslinux/syslinux.cfg
+    /boot/EFI/syslinux.cfg
+    /boot/EFI/BOOT/syslinux.cfg
+    /boot/EFI/batocera/syslinux.cfg
+)
+
+geometry_overlay_saver() {
+    local crt="${CRT_SCRIPT_DIR:-/userdata/system/Batocera-CRT-Script}/batocera-save-crt-overlay"
+    if grep -q 'BOOT_IMAGE=/crt/linux' /proc/cmdline 2>/dev/null; then
+        if [ -f "$crt" ] && [ -x "$crt" ] && [ ! -L "$crt" ]; then
+            printf '%s\n' "$crt"
+            return 0
+        fi
+    fi
+    if command -v batocera-save-overlay >/dev/null 2>&1; then
+        printf '%s\n' batocera-save-overlay
+        return 0
+    fi
+    return 1
+}
+
+geometry_revert_switchres_monitor() {
+    local preset="$1" swini="/etc/switchres.ini"
+    [ -n "$preset" ] || return 1
+    [ -f "$swini" ] || return 1
+    awk -v preset="$preset" '
+        !seen && $0 ~ /^[[:space:]]*monitor[[:space:]]+/ {
+            print "     monitor                   " preset
+            seen=1
+            next
+        }
+        { print }
+        END { if (!seen) print "     monitor                   " preset }
+    ' "$swini" > "${swini}.tmp" && mv "${swini}.tmp" "$swini"
+}
+
+geometry_sync_syslinux_edid() {
+    local bin="$1" path
+    [ -n "$bin" ] && [[ "$bin" == *.bin ]] || return 1
+    mount -o remount,rw /boot 2>/dev/null || return 1
+    for path in "${GEOMETRY_SYSLINUX_CFGS[@]}"; do
+        [ -f "$path" ] || continue
+        grep -q 'drm\.edid_firmware=' "$path" 2>/dev/null || continue
+        sed -i "s|:edid/[^[:space:]]*\\.bin|:edid/${bin}|g" "$path"
+    done
+    return 0
+}
+
+geometry_verify_boot_edid() {
+    local want="$1" edid_dir=/lib/firmware/edid path found=0
+    [ -f "${edid_dir}/${want}" ] || return 1
+    for path in "${GEOMETRY_SYSLINUX_CFGS[@]}"; do
+        [ -f "$path" ] || continue
+        grep -q 'drm\.edid_firmware=' "$path" 2>/dev/null || continue
+        found=1
+        grep -m1 'drm\.edid_firmware=' "$path" | grep -Fq ":edid/${want}" || return 1
+    done
+    [ "$found" -eq 1 ]
+}
+
+geometry_finalize_edid_boot() {
+    local edid_bin="$1"
+    geometry_sync_syslinux_edid "$edid_bin" || return 1
+    geometry_verify_boot_edid "$edid_bin" || return 1
+    saving_overlay_file || return 1
+    return 0
+}
+
 # Function to save overlay file without progress bar
 saving_overlay_file() {
-    batocera-save-overlay
-    local exit_status=$?
+    local saver exit_status
+    saver=$(geometry_overlay_saver) || {
+        dialog --title "Error" --msgbox "No overlay save utility found (CRT or stock)." 10 50
+        return 1
+    }
+    "$saver"
+    exit_status=$?
     if [ $exit_status -eq 0 ]; then
         dialog --title "Overlay Saved" --msgbox "Overlay file saved successfully. Please reboot to apply the changes" 10 40
     else
         dialog --title "Error" --msgbox "Failed to save overlay file." 10 40
     fi
+    return "$exit_status"
 }
 
 # Check if both files exist before performing the backup
@@ -407,23 +483,37 @@ else
         case $response in
             0)  # User selected Yes, so proceed with overwriting
                 mv "$edid_file" "$edid_workdir/custom.bin"
-                # Remove existing custom.bin if it exists
-                rm -f /lib/firmware/edid/custom.bin
-                mv "$edid_workdir/custom.bin" /lib/firmware/edid/
+                if ! install -D -m 0644 "$edid_workdir/custom.bin" /lib/firmware/edid/custom.bin; then
+                    rm -rf "$edid_workdir"
+                    dialog --title "EDID Error" \
+                           --msgbox "Could not install custom.bin. Boot configuration was not changed." 10 60
+                    clear_terminal
+                fi
                 rm -rf "$edid_workdir"
+                if ! geometry_finalize_edid_boot custom.bin; then
+                    dialog --title "EDID Error" \
+                           --msgbox "custom.bin was written but boot and overlay are out of sync.\nDo not reboot until you run Restore in Geometry or reinstall the CRT boot EDID." 12 70
+                    clear_terminal
+                fi
                 dialog --title "EDID File Generated" \
-                       --msgbox "EDID file 'custom.bin' generated and moved to /lib/firmware/edid/" 10 40
+                       --msgbox "EDID custom.bin, boot, and overlay saved.\nReboot when ready." 10 50
                 ;;
-            1)  # User selected No, so exit the script
+            1|255)
                 rm -rf "$edid_workdir"
-                dialog --title "EDID File Not Overwritten" \
-                       --msgbox "EDID file 'custom.bin' is not overwritten." 10 40
-                clear_terminal
-                ;;
-            255)  # Dialog was canceled
-                rm -rf "$edid_workdir"
-                dialog --title "EDID File Not Overwritten" \
-                       --msgbox "EDID file 'custom.bin' is not overwritten." 10 40
+                geometry_revert_switchres_monitor "${monitor_type:-generic_15}"
+                fallback_bin="${monitor_type:-generic_15}.bin"
+                if [ ! -f "/lib/firmware/edid/${fallback_bin}" ]; then
+                    dialog --title "EDID Warning" \
+                           --msgbox "EDID not overwritten. Keeping ${fallback_bin}, but that file is missing on disk.\nDo not reboot until the install EDID is restored." 12 70
+                    clear_terminal
+                fi
+                if ! geometry_finalize_edid_boot "$fallback_bin"; then
+                    dialog --title "EDID Warning" \
+                           --msgbox "Timing saved in switchres.ini, but boot could not be aligned with ${fallback_bin}.\nDo not reboot until you restore or run Geometry again." 12 70
+                    clear_terminal
+                fi
+                dialog --title "EDID Not Overwritten" \
+                       --msgbox "Custom timing kept. Boot still uses ${fallback_bin}.\nOverlay saved; safe to reboot." 10 55
                 clear_terminal
                 ;;
         esac
@@ -434,33 +524,6 @@ else
         clear_terminal
     fi
 
-    # Define the file paths to update EDID references in syslinux configurations
-    paths=(
-        "/boot/boot/syslinux.cfg"
-        "/boot/boot/syslinux/syslinux.cfg"
-        "/boot/EFI/syslinux.cfg"
-        "/boot/EFI/BOOT/syslinux.cfg"
-        "/boot/EFI/batocera/syslinux.cfg"
-    )
-
-    # Iterate over the file paths and update EDID references
-    for path in "${paths[@]}"; do
-        if [ -f "$path" ]; then
-            # Use sed to edit the file
-            sed -i 's|:edid/[^[:space:]]*\.bin|:edid/custom.bin|g' "$path"
-            echo "File $path edited successfully."
-        else
-            echo "File not found: $path"
-        fi
-    done
-
-    # Clear the terminal
-    clear
-
-    # Call the function to save overlay file
-    saving_overlay_file
-
-    # Clear the terminal
     clear
 fi
 
