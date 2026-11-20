@@ -516,12 +516,25 @@ run_phase1() {
     err_box "Phase 1 marker was not saved. Installation cannot hand off to Phase 2."
     exit 1
   fi
-  hbox "${GREEN}${BOLD}Phase 1 Complete!${NOCOLOR}"; box_empty; box_center "The X11 boot environment is installed."
-  box_center "Boot is configured to load X11 on next restart."; box_empty; box_center "WHAT HAPPENS NEXT:"; box_empty
-  box_center "1) System SHUTS DOWN."; box_center "2) Press the POWER BUTTON to boot into X11."
-  box_center "3) Re-run this CRT Script from X11."; box_center "   It will detect Phase 2 automatically and continue"
-  box_center "   with CRT display configuration."; box_empty; box_center "Your ROMs, saves, and BIOS files are shared."
-  box_center "Nothing from your Wayland install is lost."; box_empty; box_hash; box_empty
+  hbox "${GREEN}${BOLD}Phase 1 Complete!${NOCOLOR}"; box_empty
+  box_center "The X11 boot environment is installed."
+  box_center "Boot is configured to load X11 on next restart."
+  box_empty
+  box_center "You are still in HD mode."
+  box_center "Keep the HD monitor connected."
+  box_center "Do not turn on the CRT yet."
+  box_center "The next reboot still shows the HD monitor, not 15kHz CRT output."
+  box_empty
+  box_center "WHAT HAPPENS NEXT:"; box_empty
+  box_center "1) System SHUTS DOWN."
+  box_center "2) Press the POWER BUTTON to boot into X11 (HD monitor)."
+  box_center "3) Re-run this CRT Script from X11."
+  box_center "   It will detect Phase 2 automatically and continue"
+  box_center "   with CRT display configuration."
+  box_empty
+  box_center "Your ROMs, saves, and BIOS files are shared."
+  box_center "Nothing from your Wayland install is lost."
+  box_empty; box_hash; box_empty
   # Phase 1 is a pending Phase 2 handoff, not a verified installation.
   session_phase1_handoff
   box_center "${GREEN}${BOLD}Press ENTER to shut down...${NOCOLOR}"; box_empty; box_hash; echo ""; read -r
