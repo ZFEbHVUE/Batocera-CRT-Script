@@ -18,10 +18,9 @@ begin_phase2() {
   if declare -F log_event >/dev/null 2>&1; then
     log_event INFO 07_install_routing selected_route route phase2 || :
   fi
-  # Never rewrite the Batocera native saver, including before Confirm.
-  # Phase 2's own dedicated CRT overlay saver is invoked after verification.
-  if declare -F log_event >/dev/null 2>&1; then
-    log_event INFO 07_install_routing native_saver_preserved outcome ok || :
+  # Dual-boot Phase 2 (same as PR #466): stock batocera-save-overlay must persist to CRT overlay.
+  if grep -q 'OVERLAYFILE="/boot/boot/overlay"' /usr/bin/batocera-save-overlay 2>/dev/null; then
+    sed -i 's|OVERLAYFILE="/boot/boot/overlay"|OVERLAYFILE="/boot/crt/overlay"|' /usr/bin/batocera-save-overlay
   fi
   hbox "Resuming CRT Script — Phase 2 of 2"; box_empty; box_center "X11 detected. Dual-boot is already configured."
   box_center "Continuing with CRT display setup..."; box_empty; box_hash; echo ""; sleep 2
