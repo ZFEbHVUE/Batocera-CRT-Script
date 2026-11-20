@@ -1,8 +1,12 @@
 # Batocera-CRT-Script v44 - step 06: dualboot phase1
 # Dual-boot Phase 1 (Wayland installs): find/download the X11 image, check MD5 and space, extract it to
 # /boot/crt, patch the initrd, add the CRT boot entries, deploy batocera-save-crt-overlay (run_phase1).
+# X11 image targets x86-64-v1+ (Old Desktop/Laptop): batocera-x86_64-*.img.gz on batocera.org/download.
+# Image host matches the download page; MD5 lives on the o2switch stable mirror (same as v43).
 BETA_BASE="https://mirrors.o2switch.fr/batocera/x86_64/butterfly/last"
 STABLE_BASE="https://mirrors.o2switch.fr/batocera/x86_64/stable/last"
+KATAPULT_IMAGE_BASE="https://sour-silent-prune.6fcff5d8.katapult.cloud/images"
+MD5_MIRROR_BASE="https://mirrors.o2switch.fr/batocera/x86_64/stable/last"
 find_image() {
     local base="$1"
     curl -s "$base/" \
@@ -19,7 +23,8 @@ fi
 if [ -z "$IMG_NAME" ]; then
     echo "ERROR: Batocera v$TARGET_VER not found on either channel" >&2; exit 1
 fi
-X11_IMAGE_URL="$BATO_BASE/$IMG_NAME"; X11_MD5_URL="$BATO_BASE/${IMG_NAME}.md5"
+X11_IMAGE_URL="${KATAPULT_IMAGE_BASE}/${IMG_NAME}"
+X11_MD5_URL="${MD5_MIRROR_BASE}/${IMG_NAME}.md5"
 sanitize_image_url() {
   IMAGE_URL="${IMAGE_URL%.md5}"; IMAGE_URL="${IMAGE_URL% }"
 }
@@ -82,6 +87,7 @@ download_x11_image() {
           echo ""; echo "  Paste the direct download link for the X11 image (.img.gz, not .md5):"; echo ""
           printf "  URL: "; read -r IMAGE_URL; sanitize_image_url
           filename=$(basename "$IMAGE_URL")
+          X11_MD5_URL="${MD5_MIRROR_BASE}/${filename}.md5"
           IMAGE_PATH="${dest_dir}/${filename}"
           part_file="${IMAGE_PATH}.part" ;;
         *) exit 1 ;;
