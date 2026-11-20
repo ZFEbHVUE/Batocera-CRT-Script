@@ -71,7 +71,7 @@ fi
 IFE=0; Amd_NvidiaND_IntelDP=0; Intel_Nvidia_NOUV=0
 if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]) || ([ "$TYPE_OF_CARD" == "AMD/ATI" ]) || ([ "$TYPE_OF_CARD" == "INTEL" ] && [[ $video_output == *"DP"* ]]); then
     	matrix=("arcade_15 320x240@60 640x480@30 768x576@25" "arcade_15_25 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@30" "arcade_15_31 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@30"
-            	"arcade_15_25_31 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@25" "arcade_15ex 320x240@60 640x480@25 768 x576@25"
+            	"arcade_15_25_31 320x240@60 640x480@30 768x576@25 1024x576@25 1024x768@25" "arcade_15ex 320x240@60 640x480@25 768x576@25"
             	"arcade_25 498x384@60 512x384@60 1024x768@30 1072x800@25" "arcade_31 640x480@60" "d9200 320x240@60 640x480@60 768x576@50 800x600@60 1028x576@50"
             	"d9400 320x240@60 640x480@60 768x576@50 800x600@60 1028x576@50" "d9800 320x240@60 640x480@60 768x576@50 800x600@60 1028x576@50"
             	"generic_15 320x240@60 640x480@30 768x576@25" "h9110 320x240@60 640x480@30 768x576@25 1028x576@25" "k7000 320x240@60 640x480@30 768x576@25 1028x576@25"
@@ -179,22 +179,21 @@ fi
 } > "$STAGE_BOOTRES"
 
 IFS="x@ " read -r H_RES_EDID V_RES_EDID FREQ_EDID <<< "$EDID_resolution"
-if ([ "$TYPE_OF_CARD" == "NVIDIA" ] && [ "$Drivers_Nvidia_CHOICE" == "Nvidia_Drivers" ]); then H_RES_EDID=$((H_RES_EDID+1)); fi
-RES_EDID="${H_RES_EDID}x${V_RES_EDID}"
-if [ "$FREQ_EDID" == "50" ] || [ "$FREQ_EDID" == "60" ]; then
-	RES_EDID_SCANNING="${H_RES_EDID}x${V_RES_EDID}p"
-elif [ "$FREQ_EDID" == "25" ] || [ "$FREQ_EDID" == "30" ]; then
-	RES_EDID_SCANNING="${H_RES_EDID}x${V_RES_EDID}i"
-else echo "problems of frame rate to determine progressif or interlace"; fi
-_EDID_PRE_BUMP=1; _TC_NORM="${TYPE_OF_CARD^^}"; _DRV_NORM="${Drivers_Nvidia_CHOICE^^}"
+# Normalize once before deriving the EDID, modeline and resolution labels.
+_TC_NORM="${TYPE_OF_CARD^^}"; _DRV_NORM="${Drivers_Nvidia_CHOICE^^}"
 if [[ ( "$_TC_NORM" == "NVIDIA" && ( "$_DRV_NORM" == "NVIDIA_DRIVERS" || "$_DRV_NORM" == "NOUVEAU" ) ) \
    || "$_TC_NORM" == "AMD" || "$_TC_NORM" == "AMD/ATI" \
    || "$_TC_NORM" == "INTEL" ]]; then
   H_RES_EDID=$(( H_RES_EDID + 1 ))
-  _EDID_PRE_BUMP=1
   echo "DEBUG: EDID PRE-bump applied; EDID will be generated at ${H_RES_EDID}x${V_RES_EDID}" \
     | tee -a "$CRT_LOG" >/dev/null
 fi
+RES_EDID="${H_RES_EDID}x${V_RES_EDID}"
+if [ "$FREQ_EDID" == "50" ] || [ "$FREQ_EDID" == "60" ]; then
+	RES_EDID_SCANNING="${RES_EDID}p"
+elif [ "$FREQ_EDID" == "25" ] || [ "$FREQ_EDID" == "30" ]; then
+	RES_EDID_SCANNING="${RES_EDID}i"
+else echo "problems of frame rate to determine progressif or interlace"; fi
 FORCED_EDID="${H_RES_EDID}x${V_RES_EDID}@${FREQ_EDID}"; Name_monitor_EDID=$monitor_firmware
 sed -i "s/.*monitor         .*/        monitor                   $Name_monitor_EDID/" "$STAGE_WORK_SWITCHRES"
 DOTCLOCK_MIN_SWITCHRES=0
@@ -211,24 +210,6 @@ if ! stage_valid_edid "$STAGE_EDID"; then
   echo "Switchres produced an invalid EDID; no existing configuration changed." >&2; exit 1
 fi
 if declare -F diag_probe >/dev/null 2>&1; then diag_probe 13_monitor_edid staged_edid_valid "$STAGE_EDID"; fi
-_TC_NORM="${TYPE_OF_CARD^^}"; _DRV_NORM="${Drivers_Nvidia_CHOICE^^}"
-echo "DEBUG: EDID post-adjust check -> TYPE_OF_CARD='${TYPE_OF_CARD}' (norm='${_TC_NORM}'), Drivers_Nvidia_CHOICE='${Drivers_Nvidia_CHOICE}' (norm='${_DRV_NORM}'), H_RES_EDID(before)=${H_RES_EDID}" \
-  | tee -a "$CRT_LOG" >/dev/null
-if (( _EDID_PRE_BUMP )); then
-  echo "DEBUG: Skipping post-EDID bump because pre-bump was applied; H_RES_EDID=${H_RES_EDID}" \
-    | tee -a "$CRT_LOG" >/dev/null
-else
-  if [[ ( "${_TC_NORM}" == "NVIDIA" && "${_DRV_NORM}" == "NOUVEAU" ) \
-     || "${_TC_NORM}" == "AMD" || "${_TC_NORM}" == "AMD/ATI" \
-     || "${_TC_NORM}" == "INTEL" ]]; then
-    H_RES_EDID=$(( H_RES_EDID + 1 ))
-    echo "DEBUG: Post-EDID bump applied; H_RES_EDID(after)=${H_RES_EDID}" \
-      | tee -a "$CRT_LOG" >/dev/null
-  else
-    echo "DEBUG: No post-EDID bump for (${_TC_NORM}/${_DRV_NORM}); H_RES_EDID remains ${H_RES_EDID}" \
-      | tee -a "$CRT_LOG" >/dev/null
-  fi
-fi
 MODE=$(switchres "$H_RES_EDID" "$V_RES_EDID" "$FREQ_EDID" -f "$FORCED_EDID" -i "$STAGE_WORK_SWITCHRES" -c)
 MODELINE_PARAMETERS=$(echo "$MODE" | sed -n 's/.*Modeline "[^"]*" \([0-9.]\+\) \([0-9 ]\+\) \(.*\)/\1 \2 \3/p')
 read -r Pixel_Clock H_res HF_Porch H_Sync HB_Porch V_res VF_Porch V_Sync VB_Porch Inter HSync VSync <<< "$MODELINE_PARAMETERS"
