@@ -32,11 +32,28 @@ echo
 echo "Download complete."
 echo
 
+preserve_dir="$(mktemp -d)"
+overlay_keep="${preserve_dir}/batocera-save-crt-overlay"
+phase_keep="${preserve_dir}/.install_phase"
+if [ -f "${DEST}/batocera-save-crt-overlay" ] && [ ! -L "${DEST}/batocera-save-crt-overlay" ]; then
+  cp -a "${DEST}/batocera-save-crt-overlay" "$overlay_keep"
+fi
+if [ -f "${DEST}/.install_phase" ] && [ ! -L "${DEST}/.install_phase" ]; then
+  cp -a "${DEST}/.install_phase" "$phase_keep"
+fi
+
 rm -rf "$DEST" "/userdata/system/${ZIP_ROOT}"
 unzip -qq "$ZIP_FILE" "${ZIP_ROOT}/userdata/system/Batocera-CRT-Script/*" -d /userdata/system/
 mkdir -p "$DEST"
 mv "/userdata/system/${ZIP_ROOT}/userdata/system/Batocera-CRT-Script/"* "$DEST/"
-rm -rf "$ZIP_FILE" "/userdata/system/${ZIP_ROOT}"
+if [ -f "$overlay_keep" ]; then
+  cp -a "$overlay_keep" "${DEST}/batocera-save-crt-overlay"
+  chmod 755 "${DEST}/batocera-save-crt-overlay"
+fi
+if [ -f "$phase_keep" ]; then
+  cp -a "$phase_keep" "${DEST}/.install_phase"
+fi
+rm -rf "$ZIP_FILE" "/userdata/system/${ZIP_ROOT}" "$preserve_dir"
 
 if [ ! -f "$INSTALLER" ]; then
   echo "Expected installer not found: $INSTALLER" >&2

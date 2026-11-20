@@ -279,88 +279,12 @@ patch_initrd() {
   fi
   cd /; rm -rf "$workdir"; rm -f /boot/crt/initrd-src.gz; ok_box "initrd-crt.gz created at /boot/crt/initrd-crt.gz"
 }
-deploy_crt_overlay_script() {
-  local target="${CRT_SCRIPT_DIR}/batocera-save-crt-overlay"
-  write_run 06_dualboot_phase1 overlay_writer_directory mkdir -p "$CRT_SCRIPT_DIR"
-  if [ -L "$target" ]; then write_abort 06_dualboot_phase1 unsafe_overlay_writer_target 1; fi
-  cat > "$target" <<'OVERLAY_SCRIPT' || write_abort 06_dualboot_phase1 overlay_writer_write "$?"
-#!/bin/sh
-OVERLAYFILE="/boot/crt/overlay"
-OVERLAYMOUNT="/overlay/saved"
-OVERLAYRAM="/overlay/overlay"
-OVERLAYSIZE=100 # M
-
-PATH=$PATH:/sbin
-
-createOverlayIfNeeded() {
-    COISIZE=$1
-    test -e "${OVERLAYFILE}" && return 0
-    echo "Creating an overlay file on the /boot filesystem..."
-    dd if=/dev/zero of="${OVERLAYFILE}" bs=${COISIZE}M count=1 || return 1
-    echo "Formating the overlay file in ext4..."
-    mkfs.ext4 "${OVERLAYFILE}"                         || return 1
-}
-
-echo "Making /boot writable..."
-if ! mount -o remount,rw /boot
-then
-    exit 1
+if [ -f "$V44_DIR/crt_overlay_writer.sh" ] && [ ! -L "$V44_DIR/crt_overlay_writer.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$V44_DIR/crt_overlay_writer.sh"
+else
+  err_box "CRT overlay writer helper missing; cannot deploy batocera-save-crt-overlay."; exit 1
 fi
-
-if test $# -eq 1
-then
-    if echo "$1" | grep -qE '[1-9][0-9]*'
-       then
-           echo "removing the existing overlay"
-           rm -f "${OVERLAYFILE}" || exit 1
-           OVERLAYSIZE=$1
-    fi
-fi
-
-if ! createOverlayIfNeeded "${OVERLAYSIZE}"
-then
-    mount -o remount,ro /boot
-    exit 1
-fi
-
-echo "Mounting the overlay file..."
-if ! mount -o rw "${OVERLAYFILE}" "${OVERLAYMOUNT}"
-then
-    mount -o remount,ro /boot
-    exit 1
-fi
-
-echo "Saving the real overlay to disk..."
-if ! rsync -av --delete --exclude="/.cache" "${OVERLAYRAM}/" "${OVERLAYMOUNT}"
-then
-    umount "${OVERLAYMOUNT}"
-    mount -o remount,ro /boot
-    exit 1
-fi
-
-echo "Umounting the overlay file..."
-if ! umount "${OVERLAYMOUNT}"
-then
-    mount -o remount,ro /boot
-    exit 1
-fi
-
-echo "Making /boot read only..."
-if ! mount -o remount,ro /boot
-then
-    exit 1
-fi
-
-echo "Synchronizing..."
-sync
-
-echo "Success."
-exit 0
-OVERLAY_SCRIPT
-  write_run 06_dualboot_phase1 overlay_writer_permissions chmod 755 "$target"
-  [ -f "$target" ] && [ -x "$target" ] && [ -s "$target" ] || write_abort 06_dualboot_phase1 overlay_writer_readback 1
-  ok_box "batocera-save-crt-overlay deployed to ${target}"
-}
 write_phase1_syslinux_valid() {
   local path="$1"
   awk '

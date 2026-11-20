@@ -51,6 +51,17 @@ if [ "$IS_PHASE2" = true ]; then
   hbox "Phase 2: Saving CRT overlay and finalizing dual-boot..."; box_empty
   crt_overlay="${CRT_SCRIPT_DIR}/batocera-save-crt-overlay"
   if [ ! -f "$crt_overlay" ] || [ -L "$crt_overlay" ] || [ ! -x "$crt_overlay" ]; then
+    if [ -f "$V44_DIR/crt_overlay_writer.sh" ] && [ ! -L "$V44_DIR/crt_overlay_writer.sh" ]; then
+      # shellcheck source=/dev/null
+      source "$V44_DIR/crt_overlay_writer.sh"
+      if ! deploy_crt_overlay_script 24_finish; then
+        if declare -F log_event >/dev/null 2>&1; then
+          log_event ERROR 24_finish crt_overlay_redeploy outcome failed || :
+        fi
+      fi
+    fi
+  fi
+  if [ ! -f "$crt_overlay" ] || [ -L "$crt_overlay" ] || [ ! -x "$crt_overlay" ]; then
     if declare -F log_event >/dev/null 2>&1; then
       log_event ERROR 24_finish crt_overlay_save outcome failed reason writer_missing_or_unsafe || :
     fi
