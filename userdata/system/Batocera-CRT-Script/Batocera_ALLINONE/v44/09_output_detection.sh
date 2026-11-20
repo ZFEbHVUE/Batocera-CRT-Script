@@ -197,9 +197,11 @@ output_detection_and_persist() {
   if [ -f "$CONF_FILE" ]; then
     box_hash; box_center "Existing Xorg monitor configuration detected:"; box_center "$CONF_FILE"; box_empty
     box_center "This file must be removed and the system must reboot before setup runs again."
-    backup="${CONF_FILE}.$(timestamp)"; mv -- "$CONF_FILE" "$backup"; chmod 000 "$backup" || true
+    backup="${CONF_FILE}.$(timestamp)"
+    mv -- "$CONF_FILE" "$backup"; chmod 000 "$backup" || true
     box_center "Backed up to: $backup"; batocera-save-overlay >>"$LOG_FILE" 2>&1 || true; box_empty
-    box_center "System will reboot to finish cleanup."; prompt_centered_tty "PRESS ${GREEN}ENTER${NOCOLOR} TO CONTINUE"
+    box_center "System will reboot to finish cleanup."
+    prompt_centered_tty "PRESS ${GREEN}ENTER${NOCOLOR} TO CONTINUE"
     box_hash; reboot; exit 0
   fi
   if [ ${#CONN_OUTS[@]} -eq 0 ]; then box_left "0 connected outputs reported by xrandr. You can still pick a port to keep active."; fi
