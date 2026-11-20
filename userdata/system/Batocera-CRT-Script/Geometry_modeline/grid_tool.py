@@ -21,7 +21,8 @@ import time
 
 from geometry import (Choice, Screen, Display, SessionCursor, draw_xbox360,
                       ensure_es_hide_window, focus_switchres_grid, hide_emulationstation,
-                      install_termination_handlers, open_log, stop_native)
+                      install_termination_handlers, open_log, show_emulationstation,
+                      stop_native)
 
 RESOLUTIONS = {'640x480@60': ('640', '480', '60'), '320x240@60': ('320', '240', '60')}
 EXIT_CODES = {0, 1, 2, 3, 64, 65, 66, 67, 68, 69}
@@ -298,6 +299,11 @@ def main(argv=None):
     except (OSError,ValueError,RuntimeError,KeyboardInterrupt) as error:
         print('Grid Tool stopped: '+str(error),file=sys.stderr);return 1
     finally:
+        try:
+            with open_log(Path('/userdata/system/logs/grid-tool.log')) as log:
+                show_emulationstation(log)
+        except (OSError, ValueError, RuntimeError):
+            pass
         try:pygame.quit()
         finally:
             if cursor:cursor.close()

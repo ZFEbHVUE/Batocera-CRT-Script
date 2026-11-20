@@ -357,6 +357,23 @@ def hide_emulationstation(log) -> None:
         log.write('EmulationStation unmap skipped: ' + str(error) + '\n')
 
 
+def show_emulationstation(log) -> None:
+    """Remap ES after native grid/calibration; hide_emulationstation leaves it unmapped."""
+    env = x11_display_env()
+    try:
+        found = subprocess.run(['xdotool', 'search', '--class', 'emulationstation'],
+                                 capture_output=True, text=True, env=env, timeout=2, check=False)
+        for window_id in (found.stdout or '').split():
+            if not window_id.isdigit():
+                continue
+            subprocess.run(['xdotool', 'windowmap', '--sync', window_id], env=env, timeout=2, check=False)
+            subprocess.run(['xdotool', 'windowactivate', '--sync', window_id], env=env, timeout=2, check=False)
+            subprocess.run(['xdotool', 'windowraise', window_id], env=env, timeout=1, check=False)
+            log.write('EmulationStation window remapped (wid ' + window_id + ')\n')
+    except (OSError, subprocess.SubprocessError) as error:
+        log.write('EmulationStation remap skipped: ' + str(error) + '\n')
+
+
 _focus_logged_wid = ''
 
 def focus_switchres_grid(log) -> bool:
@@ -933,6 +950,11 @@ def main(argv=None) -> int:
         try:
             if backend: backend.close()
         finally:
+            try:
+                with open_log(Path('/userdata/system/logs/geometry-ui.log')) as log:
+                    show_emulationstation(log)
+            except (OSError, ValueError, RuntimeError):
+                pass
             try:
                 pygame.quit()
             finally:
