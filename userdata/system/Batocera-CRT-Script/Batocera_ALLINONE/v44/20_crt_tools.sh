@@ -13,9 +13,15 @@ write_run 20_crt_tools crt_svg_install cp "$CRTD/Geometry_modeline/CRT.svg" /usr
 write_run 20_crt_tools crt_scripts_permissions chmod 755 \
   "$CRT_ROMS/crt/es_adjust_tool.sh" "$CRT_ROMS/crt/geometry.sh" "$CRT_ROMS/crt/grid_tool.sh" \
   "$CRTD/Geometry_modeline/es_tool.sh" "$CRTD/Geometry_modeline/es_tool_legacy.sh" \
-  "$CRTD/Geometry_modeline/geometry.sh" "$CRTD/Geometry_modeline/grid_tool.sh"
+  "$CRTD/Geometry_modeline/geometry.sh" "$CRTD/Geometry_modeline/geometry_bash.sh" \
+  "$CRTD/Geometry_modeline/grid_tool.sh"
 write_run 20_crt_tools crt_keys_permissions chmod 0644 \
   "$CRTD/Geometry_modeline/es_tool.py" \
+  "$CRTD/Geometry_modeline/geometry.py" \
+  "$CRTD/Geometry_modeline/geometry_backend.py" \
+  "$CRTD/Geometry_modeline/geometry_ui_bridge.py" \
+  "$CRTD/Geometry_modeline/geometry_runtime_guard.py" \
+  "$CRTD/Geometry_modeline/grid_tool.py" \
   "$CRT_ROMS/crt/es_adjust_tool.sh.keys" "$CRT_ROMS/crt/geometry.sh.keys" "$CRT_ROMS/crt/grid_tool.sh.keys"
 if [[ -f "$CRTD/Geometry_modeline/crt/mode_switcher.sh" ]]; then
   if [[ -f "$CRTD/Geometry_modeline/mode_switcher.sh" ]]; then

@@ -16,6 +16,9 @@ preflight() {
     25_restore.sh edid_hold.sh
     log/diagnostics.sh log/session.sh
     verify/install.sh verify/preflight.sh verify/writes.sh verify/overlay.sh
+    ../../Geometry_modeline/grid_tool.py
+    ../../Geometry_modeline/geometry.py ../../Geometry_modeline/geometry_backend.py
+    ../../Geometry_modeline/geometry_ui_bridge.py ../../Geometry_modeline/geometry_runtime_guard.py
   )
   [[ -d "$directory" ]] || return 1
   for name in "${required[@]}"; do

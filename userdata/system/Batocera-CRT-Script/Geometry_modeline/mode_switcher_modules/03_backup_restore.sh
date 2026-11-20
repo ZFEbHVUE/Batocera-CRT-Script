@@ -1424,11 +1424,19 @@ BOOTCUSTOM_EOF
             echo "[$(date +"%H:%M:%S")]: No es_settings.cfg in CRT Mode backup" >> "$LOG_FILE"
         fi
 
-        # HideWindow disables ES launch splash artwork
+        # HideWindow releases ES DRM plane so native CRT tools (grid, geometry) can paint
         local _es_cfg="/userdata/system/configs/emulationstation/es_settings.cfg"
-        if [ -f "$_es_cfg" ] && grep -q 'name="HideWindow"' "$_es_cfg" 2>/dev/null; then
-            sed -i '/<bool name="HideWindow"/d' "$_es_cfg" 2>/dev/null || true
-            echo "[$(date +"%H:%M:%S")]: Removed HideWindow from es_settings.cfg (CRT mode)" >> "$LOG_FILE"
+        if [ -f "$_es_cfg" ]; then
+            if grep -q 'name="HideWindow"' "$_es_cfg" 2>/dev/null; then
+                sed -i 's/<bool name="HideWindow" value="[^"]*"/<bool name="HideWindow" value="true"/' "$_es_cfg" 2>/dev/null || true
+            else
+                sed -i 's|</config>|\t<bool name="HideWindow" value="true" />\n</config>|' "$_es_cfg" 2>/dev/null || true
+            fi
+            echo "[$(date +"%H:%M:%S")]: Ensured HideWindow=true in es_settings.cfg (CRT mode)" >> "$LOG_FILE"
+        else
+            mkdir -p "/userdata/system/configs/emulationstation"
+            printf '<?xml version="1.0"?>\n<config>\n\t<bool name="HideWindow" value="true" />\n</config>\n' > "$_es_cfg"
+            echo "[$(date +"%H:%M:%S")]: Created es_settings.cfg with HideWindow=true (CRT mode)" >> "$LOG_FILE"
         fi
 
         # 3. RESTORE BOOT-CUSTOM.SH (Creates X11 configs on boot)

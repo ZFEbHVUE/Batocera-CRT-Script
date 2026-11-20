@@ -22,8 +22,14 @@ if [ -n "$CURRENT" ]; then
     fi
     if grep -q "^CRT.videomode=" "$CONF" 2>/dev/null; then
         sed -i "s|^CRT.videomode=.*|CRT.videomode=$CURRENT|" "$CONF"
+    else
+        echo "CRT.videomode=$CURRENT" >> "$CONF"
     fi
 fi
+
+# Batocera Launch runs minTomaxResolution on every CRT tool while videomode is
+# "default". On a Switchres CRT that drops the 15 kHz mode before native grid
+# or geometry can run. Pin CRT.videomode to the live mode (see videomode sync).
 
 if command -v batocera-launch >/dev/null 2>&1; then
     exec batocera-launch "$@"
