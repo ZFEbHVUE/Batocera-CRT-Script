@@ -23,6 +23,7 @@ BOOT_PATHS = ('/boot/boot/syslinux.cfg', '/boot/boot/syslinux/syslinux.cfg',
               '/boot/EFI/batocera/syslinux.cfg', '/boot/EFI/BOOT/grub.cfg')
 ALL_PATHS = ('/etc/switchres.ini', '/userdata/system/99-nvidia.conf',
              '/lib/firmware/edid/custom.bin', *BOOT_PATHS)
+BASE_INI = '/tmp/geometry-calibrate-base.ini'
 GEOMETRY_TRIPLET = re.compile(r'^([0-9]+(?:\.[0-9]+)?):(-?[0-9]+):(-?[0-9]+)$')
 
 
@@ -331,13 +332,39 @@ class GeometryEngine:
         return triplet
 
     @staticmethod
+    def ini_value(text: str, key: str) -> str | None:
+        for line in awk_lines(text):
+            match = re.match(rf'^\s*{key}\s+(\S+)', line)
+            if match: return match[1]
+        return None
+
+    @staticmethod
+    def saved_geometry(text: str) -> tuple[str, str, str]:
+        """Return the triplet and the monitor / crt_range0 baseline it was calibrated on."""
+        triplet = base = None
+        for line in awk_lines(text):
+            found = re.match(r'^# crt_script_geometry\s+(\S+)\s*$', line)
+            if found: triplet = found[1]
+            found = re.match(r'^# crt_script_geometry_base\s+(\S+)\s+(\S+)\s*$', line)
+            if found: base = (found[1], found[2])
+        if triplet is None or base is None:
+            # Saves without markers (main, older branch builds): the live range is the baseline.
+            triplet = GeometryEngine.geometry_from_ini(text)
+            base = (GeometryEngine.ini_value(text, 'monitor') or 'custom',
+                    GeometryEngine.ini_value(text, 'crt_range0') or 'auto')
+        require(GEOMETRY_TRIPLET.fullmatch(triplet), 'Invalid saved geometry in switchres.ini.')
+        require(re.fullmatch(r'[A-Za-z0-9_]+', base[0]) and re.fullmatch(r'auto|[0-9.,-]+', base[1]),
+                'Invalid saved geometry baseline in switchres.ini.')
+        return triplet, base[0], base[1]
+
+    @staticmethod
     def custom_monitor_profile_message(text: str) -> str | None:
         """Explain saved ini geometry when monitor custom is active (Calamity-style profile)."""
         if not any(re.match(r'^\s*monitor\s+custom\b', line) for line in awk_lines(text)):
             return None
         triplet_hint = ''
         try:
-            triplet = GeometryEngine.geometry_from_ini(text)
+            triplet = GeometryEngine.saved_geometry(text)[0]
             if triplet != '1.0:0:0':
                 triplet_hint = (
                     f'\nSaved geometry: {triplet} (H size : H shift : V shift).\n'
@@ -360,28 +387,35 @@ class GeometryEngine:
         return f'{match.group(1)}{value}{match.group(2)}'
 
     @staticmethod
-    def stage_ini(original, range_text):
-        # The calibrated crt_range0 already contains the H size / H shift / V shift
-        # the user approved. RetroArch's libswitchres ignores h_* / v_* in the ini,
-        # while the switchres CLI (EDID for ES) applies them on top of the range,
-        # so they must stay neutral or ES and games drift apart.
+    def rewrite_ini(original, monitor_name, range_text, markers=()):
+        # h_* / v_* stay neutral: RetroArch's libswitchres ignores them while the
+        # switchres CLI (EDID for ES) applies them on top of crt_range0, so any
+        # geometry must live inside crt_range0 or ES and games drift apart.
         neutral = dict(h_size='1.0', h_shift='0', v_shift='0')
         result, monitor, crt = [], False, False
-        text = original.decode()
-        for line in awk_lines(text):
+        for line in awk_lines(original.decode()):
             key = next((k for k in neutral if re.match(rf'^\s*{k}\s+', line)), None)
+            if re.match(r'^# crt_script_geometry(_base)?\s', line): continue
             if re.match(r'^\s*monitor\s+', line):
-                if not monitor: result.append('monitor custom')
+                if not monitor: result.append(GeometryEngine._ini_set_field(line, 'monitor', monitor_name))
                 monitor = True
             elif re.match(r'^\s*crt_range0\s+', line):
-                if not crt: result.append('crt_range0 ' + range_text)
+                if not crt: result.append(GeometryEngine._ini_set_field(line, 'crt_range0', range_text))
                 crt = True
             elif key:
                 result.append(GeometryEngine._ini_set_field(line, key, neutral[key]))
             else: result.append(line)
-        if not monitor: result.append('monitor custom')
+        if not monitor: result.append('monitor ' + monitor_name)
         if not crt: result.append('crt_range0 ' + range_text)
+        result.extend(markers)
         return ('\n'.join(result) + '\n').encode()
+
+    @staticmethod
+    def stage_ini(original, range_text, geometry_text, base_monitor, base_range):
+        """Calibrated range for Switchres plus the triplet/baseline the next run starts from."""
+        return GeometryEngine.rewrite_ini(original, 'custom', range_text, (
+            f'# crt_script_geometry {geometry_text}',
+            f'# crt_script_geometry_base {base_monitor} {base_range}'))
 
     @staticmethod
     def modeline(text, width, height):
@@ -479,10 +513,18 @@ class GeometryEngine:
         native_script = self.path('/userdata/system/Batocera-CRT-Script/UsrBin_configs/geometry-calibrate.py')
         if not native_script.is_file():
             native_script = self.path('/usr/bin/geometry')
-        geometry_arg = self.geometry_from_ini(ini_text)
-        native = self.exchange(dict(type='native', args=[
-            sys.executable, str(native_script), '640', '480', '60', '-g', geometry_arg,
-        ]))
+        geometry_arg, base_monitor, base_range = self.saved_geometry(ini_text)
+        # Calibrate against the original baseline so the saved triplet reproduces
+        # the current picture instead of being applied on top of it again.
+        base_ini = self.path(BASE_INI)
+        self.publish(base_ini, self.rewrite_ini(ini_text.encode(), base_monitor, base_range))
+        try:
+            native = self.exchange(dict(type='native', args=[
+                sys.executable, str(native_script), '640', '480', '60', '-g', geometry_arg,
+                '-s', 'switchres -i ' + BASE_INI,
+            ]))
+        finally:
+            self.remove_file(base_ini)
         output, code = native.get('output', ''), native['code']
         if code in (0, 1) and output.rstrip('\n').splitlines()[-1:] == ['Aborted!']: return 0
         require(code == 0, 'Geometry calibration failed.')
@@ -490,12 +532,16 @@ class GeometryEngine:
         require(found, 'Geometry returned no crt_range.')
         range_text = found[1]
         require(re.fullmatch(r'[0-9., \t-]+', range_text), 'Geometry returned an invalid crt_range.')
+        found_geom = re.search(r'^\s*Final\s*geometry:\s*(\S+)', output, re.M)
+        require(found_geom and GEOMETRY_TRIPLET.fullmatch(found_geom[1]), 'Geometry returned no valid geometry triplet.')
+        geometry_text = found_geom[1]
         self.progress('Preparing the calibrated display settings...')
         self.path('/tmp').mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(prefix='geometry-work.', dir=self.path('/tmp')) as directory:
             work = Path(directory)
             staged = work / 'switchres.ini'
-            ini = self.stage_ini(self.read(self.path('/etc/switchres.ini')), range_text)
+            ini = self.stage_ini(self.read(self.path('/etc/switchres.ini')), range_text,
+                                 geometry_text, base_monitor, base_range)
             staged.write_bytes(ini)
             generated = dict()
             if nvidia:

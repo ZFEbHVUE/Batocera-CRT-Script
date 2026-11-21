@@ -300,6 +300,9 @@ def native_command(args: list[str]) -> list[str]:
         return args
     if len(args) == 7 and args[5] == '-g' and _GEOMETRY_TRIPLET.fullmatch(args[6]):
         return args
+    if (len(args) == 9 and args[5] == '-g' and _GEOMETRY_TRIPLET.fullmatch(args[6])
+            and args[7:] == ['-s', 'switchres -i /tmp/geometry-calibrate-base.ini']):
+        return args
     raise ValueError('Unexpected native Geometry command')
 
 
