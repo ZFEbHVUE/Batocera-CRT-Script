@@ -78,12 +78,12 @@
         {
             "trigger": "pageup",
             "type": "key",
-            "target": "KEY_TAB"
+            "target": "KEY_LEFTCTRL"
         },
         {
             "trigger": "pagedown",
             "type": "key",
-            "target": "KEY_TAB"
+            "target": "KEY_LEFTCTRL"
         },
         {
             "trigger": "l2",

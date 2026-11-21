@@ -75,9 +75,12 @@ class mode:
 		return "Mode: {}".format(str(self))
 
 
+HSIZE_DIGITS = 6
+
+
 class geometry:
 	def __init__(self, h_size:float = 1.0, h_shift:int = 0, v_shift:int = 0):
-		self.h_size = float(h_size)
+		self.h_size = round(float(h_size), HSIZE_DIGITS)
 		self.h_shift = int(h_shift)
 		self.v_shift = int(v_shift)
 
@@ -88,7 +91,7 @@ class geometry:
 		return self.h_size == other.h_size and self.h_shift == other.h_shift and self.v_shift == other.v_shift
 
 	def set_geometry(self, h_size:float, h_shift:int, v_shift:int):
-		self.h_size = float(h_size)
+		self.h_size = round(float(h_size), HSIZE_DIGITS)
 		self.h_shift = int(h_shift)
 		self.v_shift = int(v_shift)
 
@@ -100,10 +103,10 @@ class geometry:
 		hsize, hshift, vshift = geom.split(':')
 		return cls(hsize, hshift, vshift)
 
-	def inc_hsize(self, step = 0.01, factor:int = 1): self.h_size += step * factor
+	def inc_hsize(self, step = 0.01, factor:int = 1): self.h_size = round(self.h_size + step * factor, HSIZE_DIGITS)
 	def inc_hshift(self, step = 1, factor:int = 1): self.h_shift += step * factor
 	def inc_vshift(self, step = 1, factor:int = 1): self.v_shift += step * factor
-	def dec_hsize(self, step = 0.01, factor:int = 1): self.h_size -= step * factor
+	def dec_hsize(self, step = 0.01, factor:int = 1): self.h_size = round(self.h_size - step * factor, HSIZE_DIGITS)
 	def dec_hshift(self, step = 1, factor:int = 1): self.h_shift -= step * factor
 	def dec_vshift(self, step = 1, factor:int = 1): self.v_shift -= step * factor
 
