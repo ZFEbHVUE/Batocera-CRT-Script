@@ -302,12 +302,6 @@ class GeometryEngine:
         else: require(reply['code'] in (1, 255), 'The files were saved, but the reboot choice failed.')
 
     @staticmethod
-    def parse_geometry_triplet(text: str) -> tuple[float, int, int]:
-        match = GEOMETRY_TRIPLET.fullmatch(text.strip())
-        require(match, 'Geometry returned an invalid geometry triplet.')
-        return float(match[1]), int(match[2]), int(match[3])
-
-    @staticmethod
     def geometry_from_ini(text: str) -> str:
         """Read h_size / h_shift / v_shift like the native Calamity geometry tool."""
         h_size = h_shift = v_shift = None
@@ -366,43 +360,27 @@ class GeometryEngine:
         return f'{match.group(1)}{value}{match.group(2)}'
 
     @staticmethod
-    def stage_ini(original, range_text, geometry_text: str | None = None):
-        h_size = h_shift = v_shift = None
-        if geometry_text is not None:
-            hs, hi, vi = GeometryEngine.parse_geometry_triplet(geometry_text)
-            h_size, h_shift, v_shift = hs, hi, vi
+    def stage_ini(original, range_text):
+        # The calibrated crt_range0 already contains the H size / H shift / V shift
+        # the user approved. RetroArch's libswitchres ignores h_* / v_* in the ini,
+        # while the switchres CLI (EDID for ES) applies them on top of the range,
+        # so they must stay neutral or ES and games drift apart.
+        neutral = dict(h_size='1.0', h_shift='0', v_shift='0')
         result, monitor, crt = [], False, False
-        seen = dict(h_size=False, h_shift=False, v_shift=False)
         text = original.decode()
         for line in awk_lines(text):
+            key = next((k for k in neutral if re.match(rf'^\s*{k}\s+', line)), None)
             if re.match(r'^\s*monitor\s+', line):
                 if not monitor: result.append('monitor custom')
                 monitor = True
             elif re.match(r'^\s*crt_range0\s+', line):
                 if not crt: result.append('crt_range0 ' + range_text)
                 crt = True
-            elif h_size is not None and re.match(r'^\s*h_size\s+', line):
-                if not seen['h_size']:
-                    result.append(GeometryEngine._ini_set_field(line, 'h_size', h_size))
-                    seen['h_size'] = True
-                else: result.append(line)
-            elif h_shift is not None and re.match(r'^\s*h_shift\s+', line):
-                if not seen['h_shift']:
-                    result.append(GeometryEngine._ini_set_field(line, 'h_shift', h_shift))
-                    seen['h_shift'] = True
-                else: result.append(line)
-            elif v_shift is not None and re.match(r'^\s*v_shift\s+', line):
-                if not seen['v_shift']:
-                    result.append(GeometryEngine._ini_set_field(line, 'v_shift', v_shift))
-                    seen['v_shift'] = True
-                else: result.append(line)
+            elif key:
+                result.append(GeometryEngine._ini_set_field(line, key, neutral[key]))
             else: result.append(line)
         if not monitor: result.append('monitor custom')
         if not crt: result.append('crt_range0 ' + range_text)
-        if h_size is not None:
-            if not seen['h_size']: result.append(f'\th_size                    {h_size}')
-            if not seen['h_shift']: result.append(f'\th_shift                   {h_shift}')
-            if not seen['v_shift']: result.append(f'\tv_shift                   {v_shift}')
         return ('\n'.join(result) + '\n').encode()
 
     @staticmethod
@@ -512,16 +490,12 @@ class GeometryEngine:
         require(found, 'Geometry returned no crt_range.')
         range_text = found[1]
         require(re.fullmatch(r'[0-9., \t-]+', range_text), 'Geometry returned an invalid crt_range.')
-        found_geom = re.search(r'^\s*Final\s*geometry:\s*(\S+)', output, re.M)
-        require(found_geom, 'Geometry returned no geometry triplet.')
-        geometry_text = found_geom[1]
-        require(GEOMETRY_TRIPLET.fullmatch(geometry_text), 'Geometry returned an invalid geometry triplet.')
         self.progress('Preparing the calibrated display settings...')
         self.path('/tmp').mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(prefix='geometry-work.', dir=self.path('/tmp')) as directory:
             work = Path(directory)
             staged = work / 'switchres.ini'
-            ini = self.stage_ini(self.read(self.path('/etc/switchres.ini')), range_text, geometry_text)
+            ini = self.stage_ini(self.read(self.path('/etc/switchres.ini')), range_text)
             staged.write_bytes(ini)
             generated = dict()
             if nvidia:
