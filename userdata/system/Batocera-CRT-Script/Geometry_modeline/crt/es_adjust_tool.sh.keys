@@ -23,12 +23,12 @@
         {
             "trigger": "a",
             "type": "key",
-            "target": "KEY_ENTER"
+            "target": "KEY_ESC"
         },
         {
             "trigger": "b",
             "type": "key",
-            "target": "KEY_ESC"
+            "target": "KEY_ENTER"
         },
         {
             "trigger": "x",

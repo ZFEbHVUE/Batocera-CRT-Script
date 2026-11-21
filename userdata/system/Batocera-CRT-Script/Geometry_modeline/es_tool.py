@@ -699,7 +699,7 @@ def main() -> int:
         legend_y = panel.bottom - int(62 * ui_scale)
         legend1 = font_small.render("LEFT/RIGHT: adjust 1    PAGE UP/DOWN: adjust 10", True, color_dim_green)
         screen.blit(legend1, legend1.get_rect(center=(screen_w // 2, legend_y)))
-        legend2 = font_small.render("[A/ENTER] SAVE   [X/R] RESET   [B/ESC] CANCEL", True, color_dim_green)
+        legend2 = font_small.render("[B/ENTER] SAVE   [X/R] RESET   [A/ESC] CANCEL", True, color_dim_green)
         screen.blit(legend2, legend2.get_rect(center=(screen_w // 2, legend_y + int(22 * ui_scale))))
 
         if status_message and time.monotonic() < status_until:
@@ -768,16 +768,8 @@ def main() -> int:
                     config = original_config
                     running = False
 
-            elif event.type == pygame.JOYHATMOTION and not show_saved:
-                hat_x, hat_y = event.value
-                if hat_y > 0:
-                    selected = (selected - 1) % len(options)
-                elif hat_y < 0:
-                    selected = (selected + 1) % len(options)
-                if hat_x < 0:
-                    adjust_selected(-1)
-                elif hat_x > 0:
-                    adjust_selected(1)
+            # D-pad navigation uses es_adjust_tool.sh.keys (evmapy -> arrow keys).
+            # JOYHATMOTION duplicated each press and skipped every other menu row.
 
             elif event.type == pygame.JOYBUTTONDOWN:
                 if show_saved:

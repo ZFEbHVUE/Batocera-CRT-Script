@@ -81,14 +81,15 @@
             "target": "KEY_TAB"
         },
         {
-            "trigger": "start",
+            "trigger": [
+                "hotkey",
+                "start"
+            ],
             "type": "key",
-            "target": "KEY_ENTER"
-        },
-        {
-            "trigger": "select",
-            "type": "key",
-            "target": "KEY_ESC"
+            "target": [
+                "KEY_LEFTCTRL",
+                "KEY_Q"
+            ]
         }
     ]
 }

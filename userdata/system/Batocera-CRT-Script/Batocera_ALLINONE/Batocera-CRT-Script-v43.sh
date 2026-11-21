@@ -6007,9 +6007,12 @@ if [ "$IS_PHASE2" = true ]; then
   box_center "${BOLD}Dual-Boot Phase 2 Installation Complete${NOCOLOR}"
   box_hash
   box_center ""
+  box_center "${GREEN}${BOLD}CRT Mode is now ready.${NOCOLOR}"
+  box_center ""
   box_center "Please ${BOLD}${YELLOW}power off${NOCOLOR} your system and then power it back on."
   box_center "Do ${BOLD}NOT${NOCOLOR} use the reboot option — a full power cycle is required"
   box_center "so the CRT kernel and overlay load correctly."
+  box_center "Wait to turn on your monitor until Batocera has fully loaded."
   box_center ""
   box_hash
   box_center ""
